@@ -1,0 +1,641 @@
+/*
+Copyright (C) 2016  Prism Framework Team
+
+This file is part of the Prism Framework.
+
+The Prism Framework is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+The Prism Framework is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+*/
+
+
+using System;
+using CoreGraphics;
+using Foundation;
+using UIKit;
+using Prism.Native;
+using Prism.UI;
+using Prism.UI.Controls;
+using Prism.UI.Media;
+
+namespace Prism.iOS.UI.Controls
+{
+    /// <summary>
+    /// Represents an iOS implementation of an <see cref="INativeTextArea"/>.
+    /// </summary>
+    [Preserve(AllMembers = true)]
+    [Register(typeof(INativeTextArea))]
+    public class TextArea : UITextView, INativeTextArea
+    {
+        /// <summary>
+        /// Occurs when the action key, most commonly mapped to the "Return" key, is pressed while the control has focus.
+        /// </summary>
+        public event EventHandler<HandledEventArgs> ActionKeyPressed;
+
+        /// <summary>
+        /// Occurs when the control receives focus.
+        /// </summary>
+        public event EventHandler GotFocus;
+
+        /// <summary>
+        /// Occurs when this instance has been attached to the visual tree and is ready to be rendered.
+        /// </summary>
+        public event EventHandler Loaded;
+
+        /// <summary>
+        /// Occurs when the control loses focus.
+        /// </summary>
+        public event EventHandler LostFocus;
+
+        /// <summary>
+        /// Occurs when the value of a property is changed.
+        /// </summary>
+        public event EventHandler<FrameworkPropertyChangedEventArgs> PropertyChanged;
+
+        /// <summary>
+        /// Occurs when the value of the <see cref="P:Text"/> property has changed.
+        /// </summary>
+        public event EventHandler<TextChangedEventArgs> TextChanged;
+
+        /// <summary>
+        /// Occurs when this instance has been detached from the visual tree.
+        /// </summary>
+        public event EventHandler Unloaded;
+
+        /// <summary>
+        /// Gets or sets the type of action key to use for the soft keyboard when the control has focus.
+        /// </summary>
+        public ActionKeyType ActionKeyType
+        {
+            get { return ReturnKeyType.GetActionKeyType(); }
+            set
+            {
+                var keyType = value.GetReturnKeyType();
+                if (keyType != ReturnKeyType)
+                {
+                    ReturnKeyType = keyType;
+                    OnPropertyChanged(Prism.UI.Controls.TextArea.ActionKeyTypeProperty);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether animations are enabled for this instance.
+        /// </summary>
+        public bool AreAnimationsEnabled
+        {
+            get { return areAnimationsEnabled; }
+            set
+            {
+                if (value != areAnimationsEnabled)
+                {
+                    areAnimationsEnabled = value;
+                    OnPropertyChanged(Visual.AreAnimationsEnabledProperty);
+                }
+            }
+        }
+        private bool areAnimationsEnabled;
+
+        /// <summary>
+        /// Gets or sets the method to invoke when this instance requests an arrangement of its children.
+        /// </summary>
+        public ArrangeRequestHandler ArrangeRequest { get; set; }
+
+        /// <summary>
+        /// Gets or sets the background for the control.
+        /// </summary>
+        public Brush Background
+        {
+            get { return background; }
+            set
+            {
+                if (value != background)
+                {
+                    (background as ImageBrush).ClearImageHandler(OnBackgroundImageLoaded);
+
+                    background = value;
+                    BackgroundColor = background.GetColor(base.Frame.Width, base.Frame.Height, OnBackgroundImageLoaded);
+                    OnPropertyChanged(Control.BackgroundProperty);
+                }
+            }
+        }
+        private Brush background;
+
+        /// <summary>
+        /// Gets or sets the <see cref="Brush"/> to apply to the border of the control.
+        /// </summary>
+        public Brush BorderBrush
+        {
+            get { return borderBrush; }
+            set
+            {
+                if (value != borderBrush)
+                {
+                    (borderBrush as ImageBrush).ClearImageHandler(OnBorderImageLoaded);
+
+                    borderBrush = value;
+                    Layer.BorderColor = borderBrush.GetColor(base.Frame.Width, base.Frame.Height, OnBorderImageLoaded)?.CGColor ?? UIColor.Black.CGColor;
+                    OnPropertyChanged(Control.BorderBrushProperty);
+                }
+            }
+        }
+        private Brush borderBrush;
+
+        /// <summary>
+        /// Gets or sets the width of the border around the control.
+        /// </summary>
+        public double BorderWidth
+        {
+            get { return Layer.BorderWidth; }
+            set
+            {
+                if (value != Layer.BorderWidth)
+                {
+                    Layer.BorderWidth = (nfloat)value;
+                    TextContainerInset = new UIEdgeInsets(Layer.BorderWidth, Layer.BorderWidth, Layer.BorderWidth, Layer.BorderWidth);
+                    OnPropertyChanged(Control.BorderWidthProperty);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the font to use for displaying the text in the control.
+        /// </summary>
+        public object FontFamily
+        {
+            get { return fontFamily; }
+            set
+            {
+                if (value != fontFamily)
+                {
+                    fontFamily = value as Media.FontFamily;
+                    Font = fontFamily.GetUIFont(FontSize, FontStyle);
+                    OnPropertyChanged(Control.FontFamilyProperty);
+                }
+            }
+        }
+        private Media.FontFamily fontFamily;
+
+        /// <summary>
+        /// Gets or sets the size of the text in the control.
+        /// </summary>
+        public double FontSize
+        {
+            get { return Font?.PointSize ?? Fonts.TextAreaFontSize; }
+            set
+            {
+                if (value != (Font?.PointSize ?? Fonts.TextAreaFontSize))
+                {
+                    Font = fontFamily.GetUIFont(value, FontStyle);
+                    OnPropertyChanged(Control.FontSizeProperty);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the style with which to render the text in the control.
+        /// </summary>
+        public FontStyle FontStyle
+        {
+            get { return Font?.GetFontStyle() ?? Fonts.TextAreaFontStyle; }
+            set
+            {
+                if (value != (Font?.GetFontStyle() ?? Fonts.TextAreaFontStyle))
+                {
+                    Font = fontFamily.GetUIFont(FontSize, value);
+                    OnPropertyChanged(Control.FontStyleProperty);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the <see cref="Brush"/> to apply to the foreground content of the control.
+        /// </summary>
+        public Brush Foreground
+        {
+            get { return foreground; }
+            set
+            {
+                if (value != foreground)
+                {
+                    (foreground as ImageBrush).ClearImageHandler(OnForegroundImageLoaded);
+
+                    foreground = value;
+                    TextColor = foreground.GetColor(base.Frame.Width, base.Frame.Height, OnForegroundImageLoaded) ?? UIColor.Black;
+                    OnPropertyChanged(Control.ForegroundProperty);
+                }
+            }
+        }
+        private Brush foreground;
+
+        /// <summary>
+        /// Gets or sets a <see cref="Rectangle"/> that represents the size and position of the element relative to its parent container.
+        /// </summary>
+        public new Rectangle Frame
+        {
+            get { return base.Frame.GetRectangle(); }
+            set { base.Frame = value.GetCGRect(); }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the user can interact with the control.
+        /// </summary>
+        public bool IsEnabled
+        {
+            get { return base.Editable; }
+            set
+            {
+                if (value != base.Editable)
+                {
+                    base.Editable = value;
+                    OnPropertyChanged(Control.IsEnabledProperty);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether the control has focus.
+        /// </summary>
+        public bool IsFocused
+        {
+            get { return IsFirstResponder; }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance can be considered a valid result for hit testing.
+        /// </summary>
+        public bool IsHitTestVisible
+        {
+            get { return UserInteractionEnabled; }
+            set
+            {
+                if (value != UserInteractionEnabled)
+                {
+                    UserInteractionEnabled = value;
+                    OnPropertyChanged(Visual.IsHitTestVisibleProperty);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether this instance has been loaded and is ready for rendering.
+        /// </summary>
+        public bool IsLoaded { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the minimum number of lines of text that should be shown.
+        /// </summary>
+        public int MaxLines
+        {
+            get { return maxLines; }
+            set
+            {
+                if (value != maxLines)
+                {
+                    maxLines = value;
+                    OnPropertyChanged(Prism.UI.Controls.TextArea.MaxLinesProperty);
+                }
+            }
+        }
+        private int maxLines;
+
+        /// <summary>
+        /// Gets or sets the method to invoke when this instance requests a measurement of itself and its children.
+        /// </summary>
+        public MeasureRequestHandler MeasureRequest { get; set; }
+
+        /// <summary>
+        /// Gets or sets the minimum number of lines of text that should be shown.
+        /// </summary>
+        public int MinLines
+        {
+            get { return minLines; }
+            set
+            {
+                if (value != minLines)
+                {
+                    minLines = value;
+                    OnPropertyChanged(Prism.UI.Controls.TextArea.MinLinesProperty);
+                }
+            }
+        }
+        private int minLines;
+
+        /// <summary>
+        /// Gets or sets the text to display when the control does not have a value.
+        /// </summary>
+        public string Placeholder
+        {
+            get { return placeholderLabel == null ? null : placeholderLabel.Text; }
+            set
+            {
+                if (value != Placeholder)
+                {
+                    if (placeholderLabel == null)
+                    {
+                        placeholderLabel = new UILabel()
+                        {
+                            Font = base.Font,
+                            TextColor = new UIColor(0, 0, 0.098f, 0.22f),
+                            LineBreakMode = UILineBreakMode.WordWrap,
+                            Lines = 0
+                        };
+                        Add(placeholderLabel);
+                    }
+
+                    placeholderLabel.Text = value;
+                    placeholderLabel.Alpha = (!string.IsNullOrEmpty(base.Text) || string.IsNullOrEmpty(value)) ? 0 : 1;
+                    PositionPlaceholder();
+
+                    OnPropertyChanged(Prism.UI.Controls.TextArea.PlaceholderProperty);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the text of the control.
+        /// </summary>
+        public override string Text
+        {
+            get { return base.Text; }
+            set
+            {
+                if (value != base.Text)
+                {
+                    base.Text = value;
+                    OnPropertyChanged(Prism.UI.Controls.TextArea.TextProperty);
+                    TextChanged(this, new TextChangedEventArgs(currentValue, base.Text));
+                    currentValue = base.Text;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the alignment of the text within the control.
+        /// </summary>
+        public new TextAlignment TextAlignment
+        {
+            get { return base.TextAlignment.GetTextAlignment(); }
+            set
+            {
+                if (value != base.TextAlignment.GetTextAlignment())
+                {
+                    base.TextAlignment = value.GetTextAlignment();
+                    OnPropertyChanged(Prism.UI.Controls.TextArea.TextAlignmentProperty);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the display state of the element.
+        /// </summary>
+        public Visibility Visibility
+        {
+            get { return visibility; }
+            set
+            {
+                if (value != visibility)
+                {
+                    visibility = value;
+                    Hidden = value != Visibility.Visible;
+                    OnPropertyChanged(Element.VisibilityProperty);
+                }
+            }
+        }
+        private Visibility visibility;
+
+        private CGRect currentFrame;
+        private string currentValue;
+        private UILabel placeholderLabel;
+        
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TextArea"/> class.
+        /// </summary>
+        public TextArea()
+        {
+            base.Changed += (sender, e) =>
+            {
+                if (placeholderLabel != null)
+                {
+                    placeholderLabel.Alpha = string.IsNullOrEmpty(base.Text) ? 1 : 0;
+                }
+
+                OnPropertyChanged(Prism.UI.Controls.TextArea.TextProperty);
+                TextChanged(this, new TextChangedEventArgs(currentValue, Text));
+
+                currentValue = Text;
+            };
+            
+            base.Started += (sender, e) =>
+            {
+                if (SelectedTextRange != null)
+                {
+                    ScrollRectToVisible(GetCaretRectForPosition(SelectedTextRange.Start), true);
+                }
+                
+                OnPropertyChanged(Control.IsFocusedProperty);
+                GotFocus(this, EventArgs.Empty);
+            };
+
+            base.Ended += (sender, e) =>
+            {
+                OnPropertyChanged(Control.IsFocusedProperty);
+                LostFocus(this, EventArgs.Empty);
+            };
+
+            base.ShouldChangeText += (textView, range, text) =>
+            {
+                if (text == "\n")
+                {
+                    var e = new HandledEventArgs();
+                    ActionKeyPressed(this, e);
+                    return !e.IsHandled;
+                }
+                 
+                return true;
+            };
+        }
+
+        /// <summary>
+        /// Attempts to set focus to the control.
+        /// </summary>
+        public void Focus()
+        {
+            BecomeFirstResponder();
+        }
+
+        /// <summary>
+        /// Invalidates the arrangement of this instance's children.
+        /// </summary>
+        public void InvalidateArrange()
+        {
+            SetNeedsLayout();
+        }
+
+        /// <summary>
+        /// Invalidates the measurement of this instance and its children.
+        /// </summary>
+        public void InvalidateMeasure()
+        {
+            SetNeedsLayout();
+        }
+
+        /// <summary>
+        /// Measures the element and returns its desired size.
+        /// </summary>
+        /// <param name="constraints">The width and height that the element is not allowed to exceed.</param>
+        public Size Measure(Size constraints)
+        {
+            var frame = base.Frame;
+            base.Frame = new CGRect(CGPoint.Empty, new CGSize((nfloat)constraints.Width, (nfloat)constraints.Height));
+            SizeToFit();
+
+            nfloat minHeight = (base.Font.LineHeight + 1) * minLines + Layer.BorderWidth * 2;
+            nfloat maxHeight = (base.Font.LineHeight + 1) * maxLines + Layer.BorderWidth * 2;
+
+            var size = new Size(base.Frame.Width, Math.Min(Math.Max(minHeight, Math.Min(maxHeight, base.Frame.Height)), constraints.Height));
+            base.Frame = frame;
+            return new Size(Math.Min(constraints.Width, size.Width + (BorderWidth * 2)),
+                Math.Min(constraints.Height, size.Height + (BorderWidth * 2)));
+        }
+
+        /// <summary>
+        /// Attempts to remove focus from the control.
+        /// </summary>
+        public void Unfocus()
+        {
+            if (IsFirstResponder)
+            {
+                ResignFirstResponder();
+            }
+        }
+
+        /// <summary></summary>
+        public override void LayoutSubviews()
+        {
+            MeasureRequest(false, null);
+            ArrangeRequest(false, null);
+
+            base.ContentInset = new UIEdgeInsets();
+            base.ScrollIndicatorInsets = new UIEdgeInsets();
+            base.LayoutSubviews();
+            PositionPlaceholder();
+
+            if (currentFrame != base.Frame)
+            {
+                BackgroundColor = background.GetColor(base.Frame.Width, base.Frame.Height, null);
+                Layer.BorderColor = borderBrush.GetColor(base.Frame.Width, base.Frame.Height, null)?.CGColor ?? UIColor.Black.CGColor;
+                TextColor = foreground.GetColor(base.Frame.Width, base.Frame.Height, null) ?? UIColor.Black;
+            }
+            currentFrame = base.Frame;
+        }
+
+        /// <summary></summary>
+        public override void MovedToSuperview()
+        {
+            base.MovedToSuperview();
+
+            if (Superview == null && IsLoaded)
+            {
+                OnUnloaded();
+            }
+            else if (Superview != null)
+            {
+                var parent = this.GetNextResponder<INativeVisual>();
+                if (parent == null || parent.IsLoaded)
+                {
+                    OnLoaded();
+                }
+            }
+        }
+
+        /// <summary></summary>
+        /// <param name="keyPath"></param>
+        /// <param name="ofObject"></param>
+        /// <param name="change"></param>
+        /// <param name="context"></param>
+        public override void ObserveValue(NSString keyPath, NSObject ofObject, NSDictionary change, IntPtr context)
+        {
+            if (keyPath == Visual.IsLoadedProperty.Name)
+            {
+                var isloaded = (NSNumber)change.ObjectForKey(NSObject.ChangeNewKey);
+                if (isloaded.BoolValue)
+                {
+                    OnLoaded();
+                }
+                else
+                {
+                    OnUnloaded();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Called when a property value is changed.
+        /// </summary>
+        /// <param name="pd">A property descriptor describing the property whose value has been changed.</param>
+        protected virtual void OnPropertyChanged(PropertyDescriptor pd)
+        {
+            PropertyChanged(this, new FrameworkPropertyChangedEventArgs(pd));
+        }
+
+        private void OnBackgroundImageLoaded(object sender, EventArgs e)
+        {
+            BackgroundColor = background.GetColor(base.Frame.Width, base.Frame.Height, null);
+        }
+
+        private void OnBorderImageLoaded(object sender, EventArgs e)
+        {
+            Layer.BorderColor = borderBrush.GetColor(base.Frame.Width, base.Frame.Height, null)?.CGColor ?? UIColor.Black.CGColor;
+        }
+
+        private void OnForegroundImageLoaded(object sender, EventArgs e)
+        {
+            TextColor = foreground.GetColor(base.Frame.Width, base.Frame.Height, null) ?? UIColor.Black;
+        }
+
+        private void OnLoaded()
+        {
+            if (!IsLoaded)
+            {
+                IsLoaded = true;
+                OnPropertyChanged(Visual.IsLoadedProperty);
+                Loaded(this, EventArgs.Empty);
+            }
+        }
+
+        private void OnUnloaded()
+        {
+            if (IsLoaded)
+            {
+                IsLoaded = false;
+                OnPropertyChanged(Visual.IsLoadedProperty);
+                Unloaded(this, EventArgs.Empty);
+            }
+        }
+
+        private void PositionPlaceholder()
+        {
+            if (placeholderLabel != null)
+            {
+                var location = GetCaretRectForPosition(BeginningOfDocument).Location;
+                var size = placeholderLabel.Text.GetStringSize(new CGSize(base.Frame.Width, int.MaxValue), placeholderLabel.Font);
+
+                location.X += 1;
+                location.Y += 1;
+                placeholderLabel.Frame = new CGRect(location, size);
+            }
+        }
+    }
+}
+
