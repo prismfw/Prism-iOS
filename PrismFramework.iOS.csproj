@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -90,19 +90,10 @@
     <Compile Include="UI\Controls\MenuSeparator.cs" />
     <Compile Include="UI\Media\AudioPlayer.cs" />
     <Compile Include="Systems\Geolocation\Geolocator.cs" />
+    <Compile Include="UI\StatusBar.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.CSharp.targets" />
-  <ItemGroup>
-    <Folder Include="IO\" />
-    <Folder Include="UI\" />
-    <Folder Include="UI\Views\" />
-    <Folder Include="Extensions\" />
-    <Folder Include="UI\Controls\" />
-    <Folder Include="Systems\" />
-    <Folder Include="UI\Media\" />
-    <Folder Include="UI\Media\Imaging\" />
-    <Folder Include="Systems\Geolocation\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <ProjectReference Include="..\Prism-Core\PrismFramework.csproj">
       <Project>{BF3EDE00-0B3E-4C83-82E0-3ED08BE0E2E5}</Project>
