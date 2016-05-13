@@ -24,6 +24,7 @@ using System.Linq;
 using CoreAnimation;
 using CoreGraphics;
 using Foundation;
+using Prism.Input;
 using Prism.Native;
 using Prism.Systems;
 using Prism.UI;
@@ -355,7 +356,7 @@ namespace Prism.iOS
         /// <param name="source">The image.</param>
         public static UIImage GetImage(this INativeImageSource source)
         {
-            var image = source as Prism.iOS.UI.Media.Imaging.ImageSource;
+            var image = source as UI.Media.Imaging.ImageSource;
             return image == null ? source as UIImage : image.UIImage;
         }
 
@@ -384,6 +385,37 @@ namespace Prism.iOS
         public static Point GetPoint(this CGPoint point)
         {
             return new Point(point.X, point.Y);
+        }
+        
+        /// <summary>
+        /// Generates a <see cref="PointerEventArgs"/> from a <see cref="UIEvent"/>.
+        /// </summary>
+        /// <param name="evt">The event.</param>
+        /// <param name="touch">The event's touch.</param>
+        /// <param name="source">The source of the event.</param>
+        public static PointerEventArgs GetPointerEventArgs(this UIEvent evt, UITouch touch, UIView source)
+        {
+            bool v9 = UIDevice.CurrentDevice.CheckSystemVersion(9, 0);
+            return new PointerEventArgs(source, v9 ? touch.Type.GetPointerType() : PointerType.Unknown,
+                touch.LocationInView(source).GetPoint(), v9 ? touch.Force : 1, (long)(evt.Timestamp * 1000));
+        }
+        
+        /// <summary>
+        /// Gets a <see cref="PointerType"/> from a <see cref="UITouchType"/>.
+        /// </summary>
+        /// <param name="type">The touch type.</param>
+        public static PointerType GetPointerType(this UITouchType type)
+        {
+            switch (type)
+            {
+                case UITouchType.Direct:
+                case UITouchType.Indirect:
+                    return PointerType.Touch;
+                case UITouchType.Stylus:
+                    return PointerType.Stylus;
+                default:
+                    return PointerType.Unknown;
+            }
         }
 
         /// <summary>

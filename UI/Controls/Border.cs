@@ -23,6 +23,7 @@ using System;
 using System.Linq;
 using CoreGraphics;
 using Foundation;
+using Prism.Input;
 using Prism.Native;
 using Prism.UI;
 using Prism.UI.Controls;
@@ -42,6 +43,26 @@ namespace Prism.iOS.UI.Controls
         /// Occurs when this instance has been attached to the visual tree and is ready to be rendered.
         /// </summary>
         public event EventHandler Loaded;
+        
+        /// <summary>
+        /// Occurs when the system loses track of the pointer for some reason.
+        /// </summary>
+        public event EventHandler<PointerEventArgs> PointerCanceled;
+        
+        /// <summary>
+        /// Occurs when the pointer has moved while over the element.
+        /// </summary>
+        public event EventHandler<PointerEventArgs> PointerMoved;
+
+        /// <summary>
+        /// Occurs when the pointer has been pressed while over the element.
+        /// </summary>
+        public event EventHandler<PointerEventArgs> PointerPressed;
+
+        /// <summary>
+        /// Occurs when the pointer has been released while over the element.
+        /// </summary>
+        public event EventHandler<PointerEventArgs> PointerReleased;
 
         /// <summary>
         /// Occurs when the value of a property is changed.
@@ -317,7 +338,7 @@ namespace Prism.iOS.UI.Controls
         {
             if (keyPath == Visual.IsLoadedProperty.Name)
             {
-                var isloaded = (NSNumber)change.ObjectForKey(NSObject.ChangeNewKey);
+                var isloaded = (NSNumber)change.ObjectForKey(ChangeNewKey);
                 if (isloaded.BoolValue)
                 {
                     OnLoaded();
@@ -327,6 +348,62 @@ namespace Prism.iOS.UI.Controls
                     OnUnloaded();
                 }
             }
+        }
+        
+        /// <summary></summary>
+        /// <param name="touches"></param>
+        /// <param name="evt"></param>
+        public override void TouchesBegan(NSSet touches, UIEvent evt)
+        {
+            var touch = touches.AnyObject as UITouch;
+            if (touch != null && touch.View == this)
+            {
+                PointerPressed(this, evt.GetPointerEventArgs(touch, this));
+            }
+            
+            base.TouchesBegan(touches, evt);
+        }
+        
+        /// <summary></summary>
+        /// <param name="touches"></param>
+        /// <param name="evt"></param>
+        public override void TouchesCancelled(NSSet touches, UIEvent evt)
+        {
+            var touch = touches.AnyObject as UITouch;
+            if (touch != null && touch.View == this)
+            {
+                PointerCanceled(this, evt.GetPointerEventArgs(touch, this));
+            }
+        
+            base.TouchesCancelled(touches, evt);
+        }
+        
+        /// <summary></summary>
+        /// <param name="touches"></param>
+        /// <param name="evt"></param>
+        public override void TouchesEnded(NSSet touches, UIEvent evt)
+        {
+            var touch = touches.AnyObject as UITouch;
+            if (touch != null && touch.View == this)
+            {
+                PointerReleased(this, evt.GetPointerEventArgs(touch, this));
+            }
+            
+            base.TouchesEnded(touches, evt);
+        }
+        
+        /// <summary></summary>
+        /// <param name="touches"></param>
+        /// <param name="evt"></param>
+        public override void TouchesMoved(NSSet touches, UIEvent evt)
+        {
+            var touch = touches.AnyObject as UITouch;
+            if (touch != null && touch.View == this)
+            {
+                PointerMoved(this, evt.GetPointerEventArgs(touch, this));
+            }
+            
+            base.TouchesMoved(touches, evt);
         }
 
         /// <summary>
@@ -345,6 +422,7 @@ namespace Prism.iOS.UI.Controls
 
         private void OnBorderImageLoaded(object sender, EventArgs e)
         {
+            borderView.BorderColor = borderBrush.GetColor(base.Frame.Width, base.Frame.Height, null)?.CGColor;
             borderView.SetNeedsDisplay();
         }
 
@@ -361,7 +439,7 @@ namespace Prism.iOS.UI.Controls
                     try
                     {
                         subview.ObserveValue(new NSString(Visual.IsLoadedProperty.Name), this,
-                            NSDictionary.FromObjectAndKey(new NSNumber(true), NSObject.ChangeNewKey), IntPtr.Zero);
+                            NSDictionary.FromObjectAndKey(new NSNumber(true), ChangeNewKey), IntPtr.Zero);
                     }
                     catch { }
                 }
@@ -381,7 +459,7 @@ namespace Prism.iOS.UI.Controls
                     try
                     {
                         subview.ObserveValue(new NSString(Visual.IsLoadedProperty.Name), this,
-                            NSDictionary.FromObjectAndKey(new NSNumber(false), NSObject.ChangeNewKey), IntPtr.Zero);
+                            NSDictionary.FromObjectAndKey(new NSNumber(false), ChangeNewKey), IntPtr.Zero);
                     }
                     catch { }
                 }
