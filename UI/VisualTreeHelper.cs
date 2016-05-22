@@ -100,6 +100,12 @@ namespace Prism.iOS.UI
         /// <returns>The parent.</returns>
         public object GetParent(object reference)
         {
+            if (reference is INativePopup)
+            {
+                // Popups should not have visual parents.  This keeps things consistent across platforms.
+                return null;
+            }
+        
             var window = ObjectRetriever.GetNativeObject(Prism.UI.Window.MainWindow) as INativeWindow;
             if (window != null && window.Content == reference)
             {

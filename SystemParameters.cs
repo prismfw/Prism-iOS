@@ -169,6 +169,14 @@ namespace Prism.iOS
         {
             get { return 0; }
         }
+        
+        /// <summary>
+        /// Gets the size of a popup when presented with the default style.
+        /// </summary>
+        public Size PopupSize
+        {
+            get { return new Size(540, 620); }
+        }
 
         /// <summary>
         /// Gets the preferred amount of space between the right edge of a UI element and the right edge of its parent.

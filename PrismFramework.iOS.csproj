@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -49,7 +49,7 @@
     <Compile Include="Timer.cs" />
     <Compile Include="UI\Views\TabbedSplitView.cs" />
     <Compile Include="UI\LoadIndicator.cs" />
-    <Compile Include="UI\ModalWindow.cs" />
+    <Compile Include="UI\Popup.cs" />
     <Compile Include="UI\VisualTreeHelper.cs" />
     <Compile Include="UI\Controls\Panel.cs" />
     <Compile Include="UI\Controls\TextBox.cs" />
