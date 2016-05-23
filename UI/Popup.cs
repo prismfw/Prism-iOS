@@ -156,7 +156,6 @@ namespace Prism.iOS.UI
                 }
             }
         }
-        private bool isLightDismissEnabled;
         
         /// <summary>
         /// Gets a value indicating whether this instance has been loaded and is ready for rendering.
@@ -235,7 +234,7 @@ namespace Prism.iOS.UI
             ModalPresentationStyle = style == PopupPresentationStyle.FullScreen ?
                 UIModalPresentationStyle.FullScreen : UIModalPresentationStyle.FormSheet;
         
-            var viewController = (presenter as UIViewController) ?? (presenter as MainWindow)?.Content as UIViewController;
+            var viewController = (presenter as UIViewController) ?? (presenter as Window)?.Content as UIViewController;
             viewController?.PresentViewController(this, areAnimationsEnabled, () => Opened(this, EventArgs.Empty));
         }
         
@@ -253,12 +252,16 @@ namespace Prism.iOS.UI
             base.ViewWillAppear(animated);
         }
         
+        /// <summary></summary>
+        /// <param name="animated"></param>
         public override void ViewDidAppear(bool animated)
         {
             base.ViewDidAppear(animated);
             View.Window.AddGestureRecognizer(dismissalGesture);
         }
         
+        /// <summary></summary>
+        /// <param name="animated"></param>
         public override void ViewWillDisappear(bool animated)
         {
             View.Window.RemoveGestureRecognizer(dismissalGesture);

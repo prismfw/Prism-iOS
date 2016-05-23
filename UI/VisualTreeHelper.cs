@@ -106,7 +106,7 @@ namespace Prism.iOS.UI
                 return null;
             }
         
-            var window = ObjectRetriever.GetNativeObject(Prism.UI.Window.MainWindow) as INativeWindow;
+            var window = ObjectRetriever.GetNativeObject(Prism.UI.Window.Current) as INativeWindow;
             if (window != null && window.Content == reference)
             {
                 return window;

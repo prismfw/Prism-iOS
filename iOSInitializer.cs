@@ -49,7 +49,7 @@ namespace Prism.iOS
             List<Assembly> appAssemblies = null;
             if (!HasInitialized)
             {
-                var keyWindow = new Prism.iOS.UI.Window(UIScreen.MainScreen.Bounds)
+                var keyWindow = new Prism.iOS.UI.CoreWindow(UIScreen.MainScreen.Bounds)
                 {
                     BackgroundColor = UIColor.White,
                     RootViewController = new UIViewController()

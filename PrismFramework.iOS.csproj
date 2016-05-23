@@ -82,7 +82,6 @@
     <Compile Include="UI\Media\Imaging\ImageCompositor.cs" />
     <Compile Include="UI\Media\Imaging\ImageSource.cs" />
     <Compile Include="UI\Controls\ViewStackHeader.cs" />
-    <Compile Include="UI\MainWindow.cs" />
     <Compile Include="UI\Window.cs" />
     <Compile Include="UI\Controls\TableViewChild.cs" />
     <Compile Include="UI\Controls\ActionMenu.cs" />
