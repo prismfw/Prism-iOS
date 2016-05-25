@@ -40,7 +40,7 @@ namespace Prism.iOS
     /// </summary>
     public static class iOSExtensions
     {
-        private static readonly WeakEventManager imageLoadedEventManager = new WeakEventManager("ImageLoaded", typeof(INativeImageSource));
+        private static readonly WeakEventManager imageLoadedEventManager = new WeakEventManager("ImageLoaded", typeof(INativeBitmapImage));
         
         /// <summary>
         /// Checks the state of the image brush's image.  If the image is not loaded, the specified handler
@@ -67,25 +67,31 @@ namespace Prism.iOS
             {
                 return null;
             }
+            
+            var bitmapImage = source as INativeBitmapImage;
+            if (bitmapImage == null)
+            {
+                return source.GetImageSource();
+            }
 
             if (handler != null)
             {
-                imageLoadedEventManager.RemoveHandler(source, handler);
-                imageLoadedEventManager.AddHandler(source, handler);
+                imageLoadedEventManager.RemoveHandler(bitmapImage, handler);
+                imageLoadedEventManager.AddHandler(bitmapImage, handler);
             }
 
-            if (source.IsLoaded)
+            if (bitmapImage.IsLoaded)
             {
-                imageLoadedEventManager.RemoveHandler(source, handler);
-                return source.GetImage();
+                imageLoadedEventManager.RemoveHandler(bitmapImage, handler);
+                return bitmapImage.GetImageSource();
             }
-            else if (source.IsFaulted)
+            else if (bitmapImage.IsFaulted)
             {
-                imageLoadedEventManager.RemoveHandler(source, handler);
+                imageLoadedEventManager.RemoveHandler(bitmapImage, handler);
             }
             else
             {
-                (source as ILazyLoader)?.LoadInBackground();
+                (bitmapImage as ILazyLoader)?.LoadInBackground();
             }
 
             return null;
@@ -354,10 +360,10 @@ namespace Prism.iOS
         /// Gets an <see cref="UIImage"/> from an <see cref="INativeImageSource"/>.
         /// </summary>
         /// <param name="source">The image.</param>
-        public static UIImage GetImage(this INativeImageSource source)
+        public static UIImage GetImageSource(this INativeImageSource source)
         {
-            var image = source as UI.Media.Imaging.ImageSource;
-            return image == null ? source as UIImage : image.UIImage;
+            var image = source as UI.Media.Imaging.IImageSource;
+            return image == null ? source as UIImage : image.Source;
         }
 
         /// <summary>

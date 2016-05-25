@@ -697,7 +697,7 @@ namespace Prism.iOS.UI.Controls
 
         private void OnBackgroundImageLoaded(object sender, EventArgs e)
         {
-            SetMaxTrackImage((sender as INativeImageSource).GetImage(), UIControlState.Normal);
+            SetMaxTrackImage((sender as INativeImageSource).GetImageSource(), UIControlState.Normal);
         }
 
         private void OnBorderImageLoaded(object sender, EventArgs e)
@@ -707,12 +707,12 @@ namespace Prism.iOS.UI.Controls
 
         private void OnForegroundImageLoaded(object sender, EventArgs e)
         {
-            SetMinTrackImage((sender as INativeImageSource).GetImage(), UIControlState.Normal);
+            SetMinTrackImage((sender as INativeImageSource).GetImageSource(), UIControlState.Normal);
         }
 
         private void OnThumbImageLoaded(object sender, EventArgs e)
         {
-            SetThumbImage((sender as INativeImageSource).GetImage(), UIControlState.Normal);
+            SetThumbImage((sender as INativeImageSource).GetImageSource(), UIControlState.Normal);
         }
 
         private void OnLoaded()

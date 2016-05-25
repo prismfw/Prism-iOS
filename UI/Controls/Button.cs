@@ -665,7 +665,7 @@ namespace Prism.iOS.UI.Controls
 
         private void OnImageLoaded(object sender, EventArgs e)
         {
-            SetImage((sender as INativeImageSource).GetImage(), UIControlState.Normal);
+            SetImage((sender as INativeImageSource).GetImageSource(), UIControlState.Normal);
         }
 
         private void OnLoaded()

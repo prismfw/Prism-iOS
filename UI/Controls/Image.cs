@@ -214,7 +214,7 @@ namespace Prism.iOS.UI.Controls
         /// <param name="constraints">The width and height that the element is not allowed to exceed.</param>
         public Size Measure(Size constraints)
         {
-            if (source == null || !source.IsLoaded)
+            if (source == null || !((source as INativeBitmapImage)?.IsLoaded ?? true))
             {
                 return Size.Empty;
             }
@@ -348,7 +348,7 @@ namespace Prism.iOS.UI.Controls
 
         private void OnImageLoaded(object sender, EventArgs e)
         {
-            Image = (sender as INativeImageSource).GetImage();
+            Image = (sender as INativeImageSource).GetImageSource();
             SizeToFit();
         }
 

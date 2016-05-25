@@ -51,14 +51,14 @@ namespace Prism.iOS.UI.Media.Imaging
         /// <param name="images">The images that are to be composited. The first image will be drawn first and each subsequent image will be drawn on top.</param>
         public Task<Prism.UI.Media.Imaging.ImageSource> CompositeAsync(int width, int height, params INativeImageSource[] images)
         {
-            return Task.Run(() =>
+            return Task.Run<Prism.UI.Media.Imaging.ImageSource>(() =>
             {
                 if (images.Length == 0)
                 {
-                    return new Prism.UI.Media.Imaging.ImageSource(new byte[0]);
+                    return new Prism.UI.Media.Imaging.BitmapImage(new byte[0]);
                 }
 
-                Task.WaitAll(images.Select(img => Task.Run(() =>
+                Task.WaitAll(images.OfType<INativeBitmapImage>().Select(img => Task.Run(() =>
                 {
                     if (!img.IsLoaded)
                     {
@@ -67,12 +67,12 @@ namespace Prism.iOS.UI.Media.Imaging
                     }
                 })).ToArray());
 
-                var uiimages = images.Select(img => img.GetImage()).Where(img => img != null);
+                var uiimages = images.Select(img => img.GetImageSource()).Where(img => img != null);
 
                 var firstImage = uiimages.FirstOrDefault()?.CGImage;
                 if (firstImage == null)
                 {
-                    return new Prism.UI.Media.Imaging.ImageSource(new byte[0]);
+                    return new Prism.UI.Media.Imaging.BitmapImage(new byte[0]);
                 }
 
                 using (var context = new CGBitmapContext(IntPtr.Zero, width, height, firstImage.BitsPerComponent,
@@ -83,7 +83,7 @@ namespace Prism.iOS.UI.Media.Imaging
                         context.DrawImage(new CGRect(0, 0, width, height), image.CGImage);
                     }
 
-                    return new Prism.UI.Media.Imaging.ImageSource(new UIImage(context.ToImage()).AsPNG().ToArray());
+                    return new Prism.UI.Media.Imaging.BitmapImage(new UIImage(context.ToImage()).AsPNG().ToArray());
                 }
             });
         }

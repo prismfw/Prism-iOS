@@ -90,6 +90,7 @@
     <Compile Include="UI\Media\AudioPlayer.cs" />
     <Compile Include="Systems\Geolocation\Geolocator.cs" />
     <Compile Include="UI\StatusBar.cs" />
+    <Compile Include="UI\Media\Imaging\BitmapImage.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.CSharp.targets" />
   <ItemGroup />

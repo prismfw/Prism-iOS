@@ -240,7 +240,7 @@ namespace Prism.iOS.UI.Controls
 
         private void OnImageLoaded(object sender, EventArgs e)
         {
-            Image = (sender as INativeImageSource).GetImage();
+            Image = (sender as INativeImageSource).GetImageSource();
         }
     }
 }
