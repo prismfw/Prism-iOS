@@ -21,7 +21,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 using System;
 using System.Linq;
-using System.Threading.Tasks;
 using CoreGraphics;
 using Foundation;
 using UIKit;
@@ -170,14 +169,6 @@ namespace Prism.iOS.UI
         public void Show()
         {
             UIApplication.SharedApplication.KeyWindow.Hidden = false;
-        }
-
-        /// <summary>
-        /// Captures the contents of the window in an image and returns the result.
-        /// </summary>
-        public Task<Prism.UI.Media.Imaging.ImageSource> TakeScreenshotAsync()
-        {
-            return Task.FromResult(new Prism.UI.Media.Imaging.ImageSource(UIScreen.MainScreen.Capture().AsPNG().ToArray()));
         }
         
         /// <summary>
