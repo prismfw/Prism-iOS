@@ -40,7 +40,7 @@ namespace Prism.iOS.UI.Media.Imaging
         /// </summary>
         public int PixelHeight
         {
-            get { return Source == null ? 0 : (int)Source.Size.Height; }
+            get { return Source == null ? 0 : (int)(Source.Size.Height * Source.CurrentScale); }
         }
 
         /// <summary>
@@ -48,7 +48,15 @@ namespace Prism.iOS.UI.Media.Imaging
         /// </summary>
         public int PixelWidth
         {
-            get { return Source == null ? 0 : (int)Source.Size.Width; }
+            get { return Source == null ? 0 : (int)(Source.Size.Width * Source.CurrentScale); }
+        }
+        
+        /// <summary>
+        /// Gets the scaling factor of the image.
+        /// </summary>
+        public double Scale
+        {
+            get { return Source == null ? 1 : Source.CurrentScale; }
         }
         
         /// <summary>
