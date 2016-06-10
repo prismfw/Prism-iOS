@@ -92,6 +92,8 @@
     <Compile Include="UI\StatusBar.cs" />
     <Compile Include="UI\Media\Imaging\BitmapImage.cs" />
     <Compile Include="UI\Media\Imaging\RenderTargetBitmap.cs" />
+    <Compile Include="UI\Media\Inking\InkStroke.cs" />
+    <Compile Include="UI\Controls\InkCanvas.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.CSharp.targets" />
   <ItemGroup />
@@ -100,5 +102,8 @@
       <Project>{BF3EDE00-0B3E-4C83-82E0-3ED08BE0E2E5}</Project>
       <Name>PrismFramework</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="UI\Media\Inking\" />
   </ItemGroup>
 </Project>
