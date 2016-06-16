@@ -113,6 +113,7 @@ namespace Prism.iOS.UI
 
                     instance = value;
                     instance.MakeKeyAndVisible();
+                    KeyWindowRef = null;
 
                     window = instance as CoreWindow;
                     if (window != null)
@@ -137,6 +138,9 @@ namespace Prism.iOS.UI
         {
             get { return UIApplication.SharedApplication.KeyWindow.Frame.Width; }
         }
+
+        // temporary storage of key window to prevent GC
+        internal static UIWindow KeyWindowRef { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Window"/> class.

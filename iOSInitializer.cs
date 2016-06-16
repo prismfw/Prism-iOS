@@ -49,12 +49,12 @@ namespace Prism.iOS
             List<Assembly> appAssemblies = null;
             if (!HasInitialized)
             {
-                var keyWindow = new Prism.iOS.UI.CoreWindow(UIScreen.MainScreen.Bounds)
+                UI.Window.KeyWindowRef = new Prism.iOS.UI.CoreWindow(UIScreen.MainScreen.Bounds)
                 {
                     BackgroundColor = UIColor.White,
                     RootViewController = new UIViewController()
                 };
-                keyWindow.MakeKeyAndVisible();
+                UI.Window.KeyWindowRef.MakeKeyAndVisible();
 
                 // Any libraries that are not referenced by the entry assembly will be excluded from this list.
                 // This is somewhat intentional since the iOS linker apparently strips these assemblies away anyway.
