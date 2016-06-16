@@ -417,7 +417,7 @@ namespace Prism.iOS.UI.Controls
 
             try
             {
-                if (Uri != Request.Url)
+                if (Uri != (Uri)Request.Url)
                 {
                     Uri = Request.Url;
                     OnPropertyChanged(Prism.UI.Controls.WebBrowser.UriProperty);
