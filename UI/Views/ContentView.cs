@@ -204,7 +204,7 @@ namespace Prism.iOS.UI
         /// <summary>
         /// Gets or sets the title of the view.
         /// </summary>
-        public override string Title
+        public new string Title
         {
             get { return title; }
             set
