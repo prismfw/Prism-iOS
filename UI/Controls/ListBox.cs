@@ -462,8 +462,15 @@ namespace Prism.iOS.UI.Controls
         /// <param name="constraints">The width and height that the element is not allowed to exceed.</param>
         public Size Measure(Size constraints)
         {
-            return new Size(constraints.Width + (ContentInset.Left + ContentInset.Right),
-                constraints.Height + (ContentInset.Top + ContentInset.Bottom));
+            var frame = base.Frame;
+            base.Frame = new CGRect(base.Frame.Location, new CGSize(constraints.Width + (ContentInset.Left + ContentInset.Right),
+                constraints.Height + (ContentInset.Top + ContentInset.Bottom)));
+
+            SizeToFit();
+
+            var size = base.Frame.Size;
+            base.Frame = frame;
+            return new Size(Math.Min(constraints.Width, size.Width), Math.Min(constraints.Height, size.Height));
         }
 
         /// <summary>
