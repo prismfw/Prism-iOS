@@ -265,19 +265,10 @@ namespace Prism.iOS.UI
         /// <param name="animated"></param>
         public override void ViewWillAppear(bool animated)
         {
-            var header = (NavigationController as ViewStack)?.Header;
-            if (header != null)
-            {
-                header.Title = title ?? string.Empty;
-            }
-            
             if (NavigationItem != null)
             {
                 NavigationItem.SetHidesBackButton(!isBackButtonEnabled, false);
-                if (header == null)
-                {
-                    NavigationItem.Title = title ?? string.Empty;
-                }
+                NavigationItem.Title = title ?? string.Empty;
                 
                 (menu as Controls.ActionMenu)?.Attach(this);
             }

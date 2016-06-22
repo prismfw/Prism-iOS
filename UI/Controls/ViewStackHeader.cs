@@ -152,16 +152,27 @@ namespace Prism.iOS.UI.Controls
                 if (item != null && value != item.Title)
                 {
                     item.Title = value ?? string.Empty;
+                    title = item.Title;
                     OnPropertyChanged(Prism.UI.Controls.ViewStackHeader.TitleProperty);
                 }
             }
         }
+        private string title;
 
         private readonly UINavigationBar navigationBar;
 
         internal ViewStackHeader(UINavigationBar navBar)
         {
             navigationBar = navBar;
+        }
+
+        internal void CheckTitle()
+        {
+            if (title != navigationBar.TopItem?.Title)
+            {
+                title = navigationBar.TopItem.Title;
+                OnPropertyChanged(Prism.UI.Controls.ViewStackHeader.TitleProperty);
+            }
         }
 
         private void OnBackgroundImageLoaded(object sender, EventArgs e)

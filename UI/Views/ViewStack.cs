@@ -23,6 +23,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Foundation;
+using ObjCRuntime;
 using Prism.iOS.UI.Controls;
 using Prism.Native;
 using Prism.UI;
@@ -156,6 +157,7 @@ namespace Prism.iOS.UI
         /// </summary>
         public ViewStack()
         {
+            Delegate = new ViewStackDelegate();
             Header = new ViewStackHeader(NavigationBar);
         }
 
@@ -332,6 +334,14 @@ namespace Prism.iOS.UI
         protected virtual void OnPropertyChanged(PropertyDescriptor pd)
         {
             PropertyChanged(this, new FrameworkPropertyChangedEventArgs(pd));
+        }
+
+        private class ViewStackDelegate : UINavigationControllerDelegate
+        {
+            public override void DidShowViewController(UINavigationController navigationController, [Transient]UIViewController viewController, bool animated)
+            {
+                ((navigationController as ViewStack)?.Header as ViewStackHeader)?.CheckTitle();
+            }
         }
     }
 }
