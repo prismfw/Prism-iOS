@@ -21,7 +21,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 using System;
 using System.Linq;
-using CoreGraphics;
 using Foundation;
 using UIKit;
 using Prism.Native;
@@ -119,7 +118,14 @@ namespace Prism.iOS.UI
             {
                 if (View.Superview != null)
                 {
+                    var frame = View.Subviews.FirstOrDefault()?.Frame;
+                
                     View.Superview.Frame = value.GetCGRect();
+                    
+                    if (frame.HasValue)
+                    {
+                        View.Subviews[0].Frame = frame.Value;
+                    }
                 }
                 PreferredContentSize = value.Size.GetCGSize();
             }
@@ -168,6 +174,7 @@ namespace Prism.iOS.UI
         public MeasureRequestHandler MeasureRequest { get; set; }
         
         private UITapGestureRecognizer dismissalGesture;
+        private bool isKeyboardChanging;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Popup"/> class.
@@ -176,7 +183,7 @@ namespace Prism.iOS.UI
         {
             dismissalGesture = new UITapGestureRecognizer((tap) =>
             {
-                if (!View.PointInside(tap.LocationInView(View), null))
+                if (!isKeyboardChanging && !View.PointInside(tap.LocationInView(View), null))
                 {
                     Close();
                 }
@@ -233,7 +240,7 @@ namespace Prism.iOS.UI
         {
             ModalPresentationStyle = style == PopupPresentationStyle.FullScreen ?
                 UIModalPresentationStyle.FullScreen : UIModalPresentationStyle.FormSheet;
-        
+            
             var viewController = (presenter as UIViewController) ?? (presenter as Window)?.Content as UIViewController;
             viewController?.PresentViewController(this, areAnimationsEnabled, () => Opened(this, EventArgs.Empty));
         }
@@ -242,6 +249,11 @@ namespace Prism.iOS.UI
         /// <param name="animated"></param>
         public override void ViewWillAppear(bool animated)
         {
+            NSNotificationCenter.DefaultCenter.AddObserver(this, new ObjCRuntime.Selector("onKeyboardWillChange:"), UIKeyboard.WillShowNotification, null);
+            NSNotificationCenter.DefaultCenter.AddObserver(this, new ObjCRuntime.Selector("onKeyboardWillChange:"), UIKeyboard.WillHideNotification, null);
+            NSNotificationCenter.DefaultCenter.AddObserver(this, new ObjCRuntime.Selector("onKeyboardDidChange:"), UIKeyboard.DidShowNotification, null);
+            NSNotificationCenter.DefaultCenter.AddObserver(this, new ObjCRuntime.Selector("onKeyboardDidChange:"), UIKeyboard.DidHideNotification, null);
+            
             if (!IsLoaded)
             {
                 IsLoaded = true;
@@ -273,7 +285,9 @@ namespace Prism.iOS.UI
         public override void ViewDidDisappear(bool animated)
         {
             base.ViewDidDisappear(animated);
-
+            
+            NSNotificationCenter.DefaultCenter.RemoveObserver(this);
+            
             if (IsLoaded)
             {
                 IsLoaded = false;
@@ -315,6 +329,18 @@ namespace Prism.iOS.UI
         protected virtual void OnPropertyChanged(PropertyDescriptor pd)
         {
             PropertyChanged(this, new FrameworkPropertyChangedEventArgs(pd));
+        }
+        
+        [Export("onKeyboardDidChange:")]
+        private void OnKeyboardDidChange(NSNotification notification)
+        {
+            isKeyboardChanging = false;
+        }
+        
+        [Export("onKeyboardWillChange:")]
+        private void OnKeyboardWillChange(NSNotification notification)
+        {
+            isKeyboardChanging = true;
         }
         
         private class DismissalGestureDelegate : UIGestureRecognizerDelegate
