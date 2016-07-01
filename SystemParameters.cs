@@ -111,7 +111,7 @@ namespace Prism.iOS
         /// </summary>
         public double HorizontalScrollBarHeight
         {
-            get { return 0; }
+            get { return 6; }
         }
 
         /// <summary>
@@ -264,7 +264,7 @@ namespace Prism.iOS
         /// </summary>
         public double VerticalScrollBarWidth
         {
-            get { return 0; }
+            get { return 6; }
         }
 
         /// <summary>
