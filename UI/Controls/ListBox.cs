@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
 using Prism.Input;
@@ -53,9 +54,14 @@ namespace Prism.iOS.UI.Controls
         public static string CurrentSectionHeaderId { get; private set; }
 
         /// <summary>
-        /// Occurs when an accessory in a list box item is selected.
+        /// Occurs when an accessory in a list box item is clicked or tapped.
         /// </summary>
-        public event EventHandler<AccessorySelectedEventArgs> AccessorySelected;
+        public event EventHandler<AccessoryClickedEventArgs> AccessoryClicked;
+        
+        /// <summary>
+        /// Occurs when an item in the list box is clicked or tapped.
+        /// </summary>
+        public event EventHandler<ItemClickedEventArgs> ItemClicked;
 
         /// <summary>
         /// Occurs when this instance has been attached to the visual tree and is ready to be rendered.
@@ -323,7 +329,7 @@ namespace Prism.iOS.UI.Controls
             {
                 if (IndexPathsForSelectedRows == null)
                 {
-                    return null;
+                    return new ReadOnlyCollection<object>(new object[0]);
                 }
 
                 return new List<object>(IndexPathsForSelectedRows.Select(i => GetItemAtIndexPath(i))).AsReadOnly();
@@ -434,9 +440,10 @@ namespace Prism.iOS.UI.Controls
         public void DeselectItem(object item, Animate animate)
         {
             var indexPath = GetIndexPathForItem(item);
-            if (indexPath != null)
+            if (indexPath != null && IndexPathsForSelectedRows != null && IndexPathsForSelectedRows.Contains(indexPath))
             {
                 DeselectRow(indexPath, areAnimationsEnabled && animate == Prism.UI.Animate.On);
+                OnDeselected(indexPath);
             }
         }
 
@@ -463,8 +470,7 @@ namespace Prism.iOS.UI.Controls
         public Size Measure(Size constraints)
         {
             var frame = base.Frame;
-            base.Frame = new CGRect(base.Frame.Location, new CGSize(constraints.Width + (ContentInset.Left + ContentInset.Right),
-                constraints.Height + (ContentInset.Top + ContentInset.Bottom)));
+            base.Frame = new CGRect(0, 0, 0, 0);
 
             SizeToFit();
 
@@ -532,9 +538,11 @@ namespace Prism.iOS.UI.Controls
         public void SelectItem(object item, Animate animate)
         {
             var indexPath = GetIndexPathForItem(item);
-            if (indexPath != null)
+            if (indexPath != null && (IndexPathsForSelectedRows == null || !IndexPathsForSelectedRows.Contains(indexPath)))
             {
+                var previousIndexPath = AllowsMultipleSelection ? null : IndexPathForSelectedRow;
                 SelectRow(indexPath, areAnimationsEnabled && animate == Prism.UI.Animate.On, UITableViewScrollPosition.None);
+                OnSelected(indexPath, previousIndexPath);
             }
         }
 
@@ -787,9 +795,9 @@ namespace Prism.iOS.UI.Controls
             return items[indexPath.Row];
         }
 
-        private void OnAccessorySelected(NSIndexPath indexPath)
+        private void OnAccessoryClicked(NSIndexPath indexPath)
         {
-            AccessorySelected(this, new AccessorySelectedEventArgs(GetItemAtIndexPath(indexPath)));
+            AccessoryClicked(this, new AccessoryClickedEventArgs(GetItemAtIndexPath(indexPath)));
         }
 
         private void OnBackgroundImageLoaded(object sender, EventArgs e)
@@ -802,7 +810,13 @@ namespace Prism.iOS.UI.Controls
 
         private void OnDeselected(NSIndexPath indexPath)
         {
+            OnPropertyChanged(Prism.UI.Controls.ListBox.SelectedItemsProperty);
             SelectionChanged(this, new SelectionChangedEventArgs(null, GetItemAtIndexPath(indexPath)));
+        }
+        
+        private void OnItemClicked(NSIndexPath indexPath)
+        {
+            ItemClicked(this, new ItemClickedEventArgs(GetItemAtIndexPath(indexPath)));
         }
 
         private void OnItemsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
@@ -947,7 +961,7 @@ namespace Prism.iOS.UI.Controls
 
         private void OnSelected(NSIndexPath newIndexPath, NSIndexPath previousIndexPath)
         {
-            if (newIndexPath != previousIndexPath)
+            if (newIndexPath != null && !newIndexPath.Equals(previousIndexPath))
             {
                 OnPropertyChanged(Prism.UI.Controls.ListBox.SelectedItemsProperty);
                 SelectionChanged(this, new SelectionChangedEventArgs(GetItemAtIndexPath(newIndexPath), GetItemAtIndexPath(previousIndexPath)));
@@ -991,7 +1005,7 @@ namespace Prism.iOS.UI.Controls
                 var listBox = tableView as ListBox;
                 if (listBox != null)
                 {
-                    listBox.OnAccessorySelected(indexPath);
+                    listBox.OnAccessoryClicked(indexPath);
                 }
             }
 
@@ -1162,9 +1176,32 @@ namespace Prism.iOS.UI.Controls
 
                 return section == 0 && listBox.items != null ? listBox.items.Count : 0;
             }
+            
+            public override NSIndexPath WillDeselectRow(UITableView tableView, NSIndexPath indexPath)
+            {
+                var listBox = tableView as ListBox;
+                if (listBox == null)
+                {
+                    return indexPath;
+                }
+                
+                var retVal = listBox.SelectionMode != SelectionMode.Multiple ? indexPath : null;
+                
+                if (retVal == null)
+                {
+                    listBox.OnItemClicked(indexPath);
+                }
+                return retVal;
+            }
 
             public override NSIndexPath WillSelectRow(UITableView tableView, NSIndexPath indexPath)
             {
+                var listBox = tableView as ListBox;
+                if (listBox != null)
+                {
+                    listBox.OnItemClicked(indexPath);
+                }
+                
                 if (!tableView.AllowsMultipleSelection)
                 {
                     previouslySelectedCellIndex = tableView.IndexPathForSelectedRow;
