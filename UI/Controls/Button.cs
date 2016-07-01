@@ -439,7 +439,7 @@ namespace Prism.iOS.UI.Controls
         /// <param name="constraints">The width and height that the element is not allowed to exceed.</param>
         public Size Measure(Size constraints)
         {
-            base.LayoutSubviews();
+            base.LayoutIfNeeded();
 
             TitleLabel.SizeToFit();
             var size = TitleLabel.Frame.Size.GetSize();
@@ -488,6 +488,8 @@ namespace Prism.iOS.UI.Controls
         /// <summary></summary>
         public override void LayoutSubviews()
         {
+            base.LayoutSubviews();
+        
             MeasureRequest(false, null);
             ArrangeRequest(false, null);
 
