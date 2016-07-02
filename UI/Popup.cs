@@ -119,9 +119,11 @@ namespace Prism.iOS.UI
                 if (View.Superview != null)
                 {
                     var frame = View.Subviews.FirstOrDefault()?.Frame;
-                
+
+                    var center = View.Superview.Center;
                     View.Superview.Frame = value.GetCGRect();
-                    
+                    View.Superview.Center = center;
+
                     if (frame.HasValue)
                     {
                         View.Subviews[0].Frame = frame.Value;
