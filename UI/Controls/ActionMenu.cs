@@ -158,7 +158,15 @@ namespace Prism.iOS.UI.Controls
             }
         }
         private Brush foreground;
-        
+
+        /// <summary>
+        /// Gets the amount that the menu is inset on top of its parent view.
+        /// </summary>
+        public Thickness Insets
+        {
+            get { return new Thickness(); }
+        }
+
         /// <summary>
         /// Gets a collection of the items within the menu.
         /// </summary>
