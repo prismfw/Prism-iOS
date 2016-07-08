@@ -59,6 +59,16 @@ namespace Prism.iOS.UI
         public event EventHandler Unloaded;
 
         /// <summary>
+        /// Occurs when the current view of the view stack has changed.
+        /// </summary>
+        public event EventHandler ViewChanged;
+
+        /// <summary>
+        /// Occurs when the current view of the view stack is being replaced by a different view.
+        /// </summary>
+        public event EventHandler<NativeViewStackViewChangingEventArgs> ViewChanging;
+
+        /// <summary>
         /// Gets or sets a value indicating whether animations are enabled for this instance.
         /// </summary>
         public bool AreAnimationsEnabled
@@ -336,11 +346,35 @@ namespace Prism.iOS.UI
             PropertyChanged(this, new FrameworkPropertyChangedEventArgs(pd));
         }
 
+        private void OnViewChanged()
+        {
+            ViewChanged(this, EventArgs.Empty);
+        }
+
+        private void OnViewChanging(object oldView, object newView)
+        {
+            ViewChanging(this, new NativeViewStackViewChangingEventArgs(oldView, newView));
+        }
+
         private class ViewStackDelegate : UINavigationControllerDelegate
         {
+            private WeakReference currentViewController;
+
             public override void DidShowViewController(UINavigationController navigationController, [Transient]UIViewController viewController, bool animated)
             {
-                ((navigationController as ViewStack)?.Header as ViewStackHeader)?.CheckTitle();
+                currentViewController = new WeakReference(viewController);
+
+                var viewStack = navigationController as ViewStack;
+                if (viewStack != null)
+                {
+                    (viewStack.Header as ViewStackHeader)?.CheckTitle();
+                    viewStack.OnViewChanged();
+                }
+            }
+
+            public override void WillShowViewController(UINavigationController navigationController, [Transient]UIViewController viewController, bool animated)
+            {
+                (navigationController as ViewStack)?.OnViewChanging(currentViewController?.Target, viewController);
             }
         }
     }
