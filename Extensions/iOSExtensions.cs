@@ -294,6 +294,26 @@ namespace Prism.iOS
         }
 
         /// <summary>
+        /// Gets a <see cref="DisplayOrientations"/> from a <see cref="UIInterfaceOrientation"/>.
+        /// </summary>
+        /// <param name="orientation">The orientation.</param>
+        public static DisplayOrientations GetDisplayOrientations(this UIInterfaceOrientation orientation)
+        {
+            var retval = DisplayOrientations.None;
+            if (orientation == UIInterfaceOrientation.Portrait || orientation == UIInterfaceOrientation.PortraitUpsideDown)
+            {
+                retval |= DisplayOrientations.Portrait;
+            }
+
+            if (orientation == UIInterfaceOrientation.LandscapeLeft || orientation == UIInterfaceOrientation.LandscapeRight)
+            {
+                retval |= DisplayOrientations.Landscape;
+            }
+
+            return retval;
+        }
+
+        /// <summary>
         /// Gets a <see cref="FontStyle"/> from a <see cref="UIFont"/>.
         /// </summary>
         /// <param name="font">The font.</param>
@@ -373,6 +393,31 @@ namespace Prism.iOS
         public static UIEdgeInsets GetInsets(this Thickness thickness)
         {
             return new UIEdgeInsets((nfloat)thickness.Top, (nfloat)thickness.Left, (nfloat)thickness.Bottom, (nfloat)thickness.Right);
+        }
+
+        /// <summary>
+        /// Gets a <see cref="UIInterfaceOrientationMask"/> from a <see cref="DisplayOrientations"/>.
+        /// </summary>
+        /// <param name="orientation">The orientation.</param>
+        public static UIInterfaceOrientationMask GetInterfaceOrientationMask(this DisplayOrientations orientation)
+        {
+            if (orientation == DisplayOrientations.None)
+            {
+                return UIDevice.CurrentDevice.UserInterfaceIdiom == UIUserInterfaceIdiom.Phone ? UIInterfaceOrientationMask.AllButUpsideDown : UIInterfaceOrientationMask.All;
+            }
+
+            UIInterfaceOrientationMask retval = 0;
+            if (orientation.HasFlag(DisplayOrientations.Portrait))
+            {
+                retval |= (UIInterfaceOrientationMask.Portrait | UIInterfaceOrientationMask.PortraitUpsideDown);
+            }
+
+            if (orientation.HasFlag(DisplayOrientations.Landscape))
+            {
+                retval |= UIInterfaceOrientationMask.Landscape;
+            }
+
+            return retval;
         }
 
         /// <summary>

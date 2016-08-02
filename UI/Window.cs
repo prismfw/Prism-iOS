@@ -56,9 +56,19 @@ namespace Prism.iOS.UI
         public event EventHandler Deactivated;
 
         /// <summary>
+        /// Occurs when the orientation of the rendered content has changed.
+        /// </summary>
+        public event EventHandler<DisplayOrientationChangedEventArgs> OrientationChanged;
+
+        /// <summary>
         /// Occurs when the size of the window has changed.
         /// </summary>
         public event EventHandler<WindowSizeChangedEventArgs> SizeChanged;
+
+        /// <summary>
+        /// Gets or sets the preferred orientations in which to automatically rotate the window in response to orientation changes of the physical device.
+        /// </summary>
+        public DisplayOrientations AutorotationPreferences { get; set; }
 
         /// <summary>
         /// Gets or sets the object that acts as the content of the window.
@@ -108,6 +118,7 @@ namespace Prism.iOS.UI
                     var window = instance as CoreWindow;
                     if (window != null)
                     {
+                        window.OrientationChanged -= OnOrientationChanged;
                         window.SizeChanged -= OnSizeChanged;
                     }
 
@@ -118,6 +129,9 @@ namespace Prism.iOS.UI
                     window = instance as CoreWindow;
                     if (window != null)
                     {
+                        window.OrientationChanged -= OnOrientationChanged;
+                        window.OrientationChanged += OnOrientationChanged;
+
                         window.SizeChanged -= OnSizeChanged;
                         window.SizeChanged += OnSizeChanged;
                     }
@@ -125,7 +139,19 @@ namespace Prism.iOS.UI
             }
         }
         private UIWindow instance;
-        
+
+        /// <summary>
+        /// Gets the current orientation of the rendered content within the window.
+        /// </summary>
+        public DisplayOrientations Orientation
+        {
+            get
+            {
+                return UIApplication.SharedApplication.KeyWindow.RootViewController?.InterfaceOrientation.GetDisplayOrientations() ??
+                    (UIScreen.MainScreen.ApplicationFrame.Width > UIScreen.MainScreen.ApplicationFrame.Height ? DisplayOrientations.Landscape : DisplayOrientations.Portrait);
+            }
+        }
+
         /// <summary>
         /// Gets or sets the style for the window.
         /// </summary>
@@ -207,6 +233,11 @@ namespace Prism.iOS.UI
             Deactivated(this, EventArgs.Empty);
         }
 
+        private void OnOrientationChanged(object sender, DisplayOrientationChangedEventArgs e)
+        {
+            OrientationChanged(this, e);
+        }
+
         private void OnSizeChanged(object sender, WindowSizeChangedEventArgs e)
         {
             SizeChanged(this, e);
@@ -219,10 +250,16 @@ namespace Prism.iOS.UI
     public class CoreWindow : UIWindow
     {
         /// <summary>
+        /// Occurs when the orientation of the rendered content has changed.
+        /// </summary>
+        public event EventHandler<DisplayOrientationChangedEventArgs> OrientationChanged;
+
+        /// <summary>
         /// Occurs when the size of the window has changed.
         /// </summary>
         public event EventHandler<WindowSizeChangedEventArgs> SizeChanged;
 
+        private UIInterfaceOrientation currentOrientation;
         private Size currentSize;
 
         /// <summary>
@@ -232,6 +269,9 @@ namespace Prism.iOS.UI
         public CoreWindow(CGRect frame)
             : base(frame)
         {
+            currentOrientation = UIScreen.MainScreen.ApplicationFrame.Width > UIScreen.MainScreen.ApplicationFrame.Height ?
+                UIInterfaceOrientation.LandscapeLeft : UIInterfaceOrientation.Portrait;
+
             currentSize = frame.Size.GetSize();
         }
 
@@ -245,6 +285,15 @@ namespace Prism.iOS.UI
             {
                 SizeChanged?.Invoke(this, new WindowSizeChangedEventArgs(currentSize, newSize));
                 currentSize = newSize;
+            }
+
+            var orientation = RootViewController?.InterfaceOrientation ?? (UIScreen.MainScreen.ApplicationFrame.Width > UIScreen.MainScreen.ApplicationFrame.Height ?
+                UIInterfaceOrientation.LandscapeLeft : UIInterfaceOrientation.Portrait);
+
+            if (currentOrientation != orientation)
+            {
+                OrientationChanged?.Invoke(this, new DisplayOrientationChangedEventArgs(orientation.GetDisplayOrientations()));
+                currentOrientation = orientation;
             }
         }
     }

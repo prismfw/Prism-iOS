@@ -291,6 +291,34 @@ namespace Prism.iOS.UI
             return new Size(Math.Min(View.Frame.Width, constraints.Width), Math.Min(View.Frame.Height, constraints.Height));
         }
 
+        /// <summary>
+        /// The orientations supported by this <see cref="UIViewController"/>.
+        /// </summary>
+        public override UIInterfaceOrientationMask GetSupportedInterfaceOrientations()
+        {
+            return Prism.UI.Window.Current.AutorotationPreferences.GetInterfaceOrientationMask();
+        }
+
+        /// <summary>
+        /// The orientation that best displays the content of this <see cref="UIViewController"/>.
+        /// </summary>
+        /// <returns></returns>
+        public override UIInterfaceOrientation PreferredInterfaceOrientationForPresentation()
+        {
+            var preferences = Prism.UI.Window.Current.AutorotationPreferences;
+            if (preferences.HasFlag(DisplayOrientations.Portrait) && !preferences.HasFlag(DisplayOrientations.Landscape))
+            {
+                return InterfaceOrientation == UIInterfaceOrientation.PortraitUpsideDown ? UIInterfaceOrientation.PortraitUpsideDown : UIInterfaceOrientation.Portrait;
+            }
+
+            if (preferences.HasFlag(DisplayOrientations.Landscape) && !preferences.HasFlag(DisplayOrientations.Portrait))
+            {
+                return InterfaceOrientation == UIInterfaceOrientation.LandscapeRight ? UIInterfaceOrientation.LandscapeRight : UIInterfaceOrientation.LandscapeLeft;
+            }
+
+            return base.PreferredInterfaceOrientationForPresentation();
+        }
+
         /// <summary></summary>
         public override void ViewWillLayoutSubviews()
         {
