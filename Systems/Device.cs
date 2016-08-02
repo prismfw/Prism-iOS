@@ -155,6 +155,10 @@ namespace Prism.iOS.Systems
                         return DeviceOrientation.LandscapeLeft;
                     case UIDeviceOrientation.LandscapeRight:
                         return DeviceOrientation.LandscapeRight;
+                    case UIDeviceOrientation.FaceUp:
+                        return DeviceOrientation.FaceUp;
+                    case UIDeviceOrientation.FaceDown:
+                        return DeviceOrientation.FaceDown;
                     default:
                         return DeviceOrientation.Unknown;
                 }
