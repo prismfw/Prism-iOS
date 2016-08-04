@@ -318,6 +318,22 @@ namespace Prism.iOS.UI.Controls
         public MeasureRequestHandler MeasureRequest { get; set; }
 
         /// <summary>
+        /// Gets or sets the level of opacity for the element.
+        /// </summary>
+        public double Opacity
+        {
+            get { return Alpha; }
+            set
+            {
+                if (value != Alpha)
+                {
+                    Alpha = (nfloat)value;
+                    OnPropertyChanged(Element.OpacityProperty);
+                }
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the password value of the control.
         /// </summary>
         public string Password

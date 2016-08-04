@@ -380,6 +380,22 @@ namespace Prism.iOS.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the level of opacity for the element.
+        /// </summary>
+        public double Opacity
+        {
+            get { return Alpha; }
+            set
+            {
+                if (value != Alpha)
+                {
+                    Alpha = (nfloat)value;
+                    OnPropertyChanged(Element.OpacityProperty);
+                }
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the interval between steps along the track.
         /// </summary>
         public double StepFrequency
