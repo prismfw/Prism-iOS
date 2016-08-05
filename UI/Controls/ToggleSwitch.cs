@@ -318,6 +318,27 @@ namespace Prism.iOS.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the <see cref="Brush"/> to apply to the thumb of the control.
+        /// </summary>
+        public Brush ThumbBrush
+        {
+            get { return thumbBrush; }
+            set
+            {
+                if (value != thumbBrush)
+                {
+                    (thumbBrush as ImageBrush).ClearImageHandler(OnThumbImageLoaded);
+
+                    thumbBrush = value;
+                    ThumbTintColor = value.GetColor(base.Frame.Width, base.Frame.Height, null) ?? UIColor.White;
+
+                    OnPropertyChanged(Prism.UI.Controls.ToggleSwitch.ThumbBrushProperty);
+                }
+            }
+        }
+        private Brush thumbBrush;
+
+        /// <summary>
         /// Gets or sets the value of the toggle switch.
         /// </summary>
         public bool Value
@@ -575,6 +596,11 @@ namespace Prism.iOS.UI.Controls
         private void OnForegroundImageLoaded(object sender, EventArgs e)
         {
             OnTintColor = foreground.GetColor(base.Frame.Width, base.Frame.Height, null);
+        }
+
+        private void OnThumbImageLoaded(object sender, EventArgs e)
+        {
+            ThumbTintColor = thumbBrush.GetColor(base.Frame.Width, base.Frame.Height, null) ?? UIColor.White;
         }
 
         private void OnLoaded()
