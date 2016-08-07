@@ -244,6 +244,14 @@ namespace Prism.iOS.UI
         }
 
         /// <summary>
+        /// Gets the size and location of the bar that contains the tab items.
+        /// </summary>
+        public Rectangle TabBarFrame
+        {
+            get { return tabController.TabBar.Frame.GetRectangle(); }
+        }
+
+        /// <summary>
         /// Gets a list of the tab items that are a part of the view.
         /// </summary>
         public IList TabItems
