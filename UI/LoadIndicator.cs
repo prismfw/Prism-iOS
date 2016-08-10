@@ -56,7 +56,7 @@ namespace Prism.iOS.UI
                     (background as ImageBrush).ClearImageHandler(OnBackgroundImageLoaded);
 
                     background = value;
-                    BackgroundColor = background.GetColor(Frame.Width, Frame.Height, OnBackgroundImageLoaded) ?? UIColor.White;
+                    BackgroundColor = background.GetColor(Bounds.Width, Bounds.Height, OnBackgroundImageLoaded) ?? UIColor.White;
                     OnPropertyChanged(Prism.UI.LoadIndicator.BackgroundProperty);
                 }
             }
@@ -127,8 +127,8 @@ namespace Prism.iOS.UI
 
                     foreground = value;
 
-                    ActivityView.Color = value.GetColor(ActivityView.Frame.Width, ActivityView.Frame.Height, OnForegroundImageLoaded) ?? UIColor.Black;
-                    TextLabel.TextColor = value.GetColor(TextLabel.Frame.Width, TextLabel.Frame.Height, OnForegroundImageLoaded) ?? UIColor.Black;
+                    ActivityView.Color = value.GetColor(ActivityView.Bounds.Width, ActivityView.Bounds.Height, OnForegroundImageLoaded) ?? UIColor.Black;
+                    TextLabel.TextColor = value.GetColor(TextLabel.Bounds.Width, TextLabel.Bounds.Height, OnForegroundImageLoaded) ?? UIColor.Black;
 
                     OnPropertyChanged(Prism.UI.LoadIndicator.ForegroundProperty);
                 }
@@ -158,7 +158,7 @@ namespace Prism.iOS.UI
                     TextLabel.Frame = new CGRect(TextLabel.Frame.Location, CGSize.Empty);
                     TextLabel.SizeToFit();
 
-                    TextLabel.TextColor = foreground.GetColor(TextLabel.Frame.Width, TextLabel.Frame.Height, null) ?? UIColor.Black;
+                    TextLabel.TextColor = foreground.GetColor(TextLabel.Bounds.Width, TextLabel.Bounds.Height, null) ?? UIColor.Black;
 
                     OnPropertyChanged(Prism.UI.LoadIndicator.TitleProperty);
                 }
@@ -215,19 +215,19 @@ namespace Prism.iOS.UI
 
             if (string.IsNullOrEmpty(TextLabel.Text))
             {
-                Frame = new CGRect(0, 0, ActivityView.Frame.Width + margin * 2, ActivityView.Frame.Height + margin * 2);
+                Frame = new CGRect(0, 0, ActivityView.Bounds.Width + margin * 2, ActivityView.Bounds.Height + margin * 2);
             }
             else
             {
-                Frame = new CGRect(0, 0, ActivityView.Frame.Width + TextLabel.Frame.Width + space + margin * 2, ActivityView.Frame.Height + margin * 2);
+                Frame = new CGRect(0, 0, ActivityView.Bounds.Width + TextLabel.Bounds.Width + space + margin * 2, ActivityView.Bounds.Height + margin * 2);
             }
 
-            BackgroundColor = background.GetColor(Frame.Width, Frame.Height, null) ?? UIColor.White;
+            BackgroundColor = background.GetColor(Bounds.Width, Bounds.Height, null) ?? UIColor.White;
 
             Center = window.Center;
 
-            ActivityView.Center = new CGPoint(margin + ActivityView.Frame.Width / 2, Frame.Height / 2);
-            TextLabel.Frame = new CGRect(new CGPoint(ActivityView.Frame.Right + space, Frame.Height / 2 - TextLabel.Font.LineHeight / 2), TextLabel.Frame.Size);
+            ActivityView.Center = new CGPoint(margin + ActivityView.Bounds.Width / 2, Bounds.Height / 2);
+            TextLabel.Frame = new CGRect(new CGPoint(ActivityView.Bounds.Right + space, Bounds.Height / 2 - TextLabel.Font.LineHeight / 2), TextLabel.Bounds.Size);
 
             ActivityView.StartAnimating();
             window.Add(this);
@@ -251,13 +251,13 @@ namespace Prism.iOS.UI
 
         private void OnBackgroundImageLoaded(object sender, EventArgs e)
         {
-            BackgroundColor = background.GetColor(Frame.Width, Frame.Height, null) ?? UIColor.White;
+            BackgroundColor = background.GetColor(Bounds.Width, Bounds.Height, null) ?? UIColor.White;
         }
 
         private void OnForegroundImageLoaded(object sender, EventArgs e)
         {
-            ActivityView.Color = foreground.GetColor(ActivityView.Frame.Width, ActivityView.Frame.Height, null) ?? UIColor.Black;
-            TextLabel.TextColor = foreground.GetColor(TextLabel.Frame.Width, TextLabel.Frame.Height, null) ?? UIColor.Black;
+            ActivityView.Color = foreground.GetColor(ActivityView.Bounds.Width, ActivityView.Bounds.Height, null) ?? UIColor.Black;
+            TextLabel.TextColor = foreground.GetColor(TextLabel.Bounds.Width, TextLabel.Bounds.Height, null) ?? UIColor.Black;
         }
     }
 }

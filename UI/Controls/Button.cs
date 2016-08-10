@@ -123,7 +123,7 @@ namespace Prism.iOS.UI.Controls
                     (background as ImageBrush).ClearImageHandler(OnBackgroundImageLoaded);
 
                     background = value;
-                    BackgroundColor = background.GetColor(base.Frame.Width, base.Frame.Height, OnBackgroundImageLoaded);
+                    BackgroundColor = background.GetColor(Bounds.Width, Bounds.Height, OnBackgroundImageLoaded);
                     OnPropertyChanged(Prism.UI.Controls.Control.BackgroundProperty);
                 }
             }
@@ -143,7 +143,7 @@ namespace Prism.iOS.UI.Controls
                     (borderBrush as ImageBrush).ClearImageHandler(OnBorderImageLoaded);
 
                     borderBrush = value;
-                    Layer.BorderColor = borderBrush.GetColor(base.Frame.Width, base.Frame.Height, OnBorderImageLoaded)?.CGColor ?? UIColor.Black.CGColor;
+                    Layer.BorderColor = borderBrush.GetColor(Bounds.Width, Bounds.Height, OnBorderImageLoaded)?.CGColor ?? UIColor.Black.CGColor;
                     OnPropertyChanged(Prism.UI.Controls.Control.BorderBrushProperty);
                 }
             }
@@ -255,7 +255,7 @@ namespace Prism.iOS.UI.Controls
                     (foreground as ImageBrush).ClearImageHandler(OnForegroundImageLoaded);
                     
                     foreground = value;
-                    SetTitleColor(foreground.GetColor(base.Frame.Width, base.Frame.Height, OnForegroundImageLoaded) ?? new UIColor(0, 0.5f, 1, 1), UIControlState.Normal);
+                    SetTitleColor(foreground.GetColor(Bounds.Width, Bounds.Height, OnForegroundImageLoaded) ?? new UIColor(0, 0.5f, 1, 1), UIControlState.Normal);
                     OnPropertyChanged(Control.ForegroundProperty);
                 }
             }
@@ -267,8 +267,12 @@ namespace Prism.iOS.UI.Controls
         /// </summary>
         public new Rectangle Frame
         {
-            get { return base.Frame.GetRectangle(); }
-            set { base.Frame = value.GetCGRect(); }
+            get { return new Rectangle(Center.X - (Bounds.Width / 2), Center.Y - (Bounds.Height / 2), Bounds.Width, Bounds.Height); }
+            set
+            {
+                Bounds = new CGRect(Bounds.Location, value.Size.GetCGSize()); ;
+                Center = new CGPoint(value.X + (value.Width / 2), value.Y + (value.Height / 2));
+            }
         }
 
         /// <summary>
@@ -373,6 +377,26 @@ namespace Prism.iOS.UI.Controls
         private Thickness padding;
 
         /// <summary>
+        /// Gets or sets transformation information that affects the rendering position of this instance.
+        /// </summary>
+        public INativeTransform RenderTransform
+        {
+            get { return renderTransform; }
+            set
+            {
+                if (value != renderTransform)
+                {
+                    (renderTransform as Media.Transform)?.RemoveView(this);
+                    renderTransform = value;
+                    (renderTransform as Media.Transform)?.AddView(this);
+
+                    OnPropertyChanged(Visual.RenderTransformProperty);
+                }
+            }
+        }
+        private INativeTransform renderTransform;
+
+        /// <summary>
         /// Gets or sets the title of the button.
         /// </summary>
         public new string Title
@@ -406,7 +430,7 @@ namespace Prism.iOS.UI.Controls
         }
         private Visibility visibility;
 
-        private CGRect currentFrame;
+        private CGSize currentSize;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Button"/> class.
@@ -458,18 +482,18 @@ namespace Prism.iOS.UI.Controls
             base.LayoutIfNeeded();
 
             TitleLabel.SizeToFit();
-            var size = TitleLabel.Frame.Size.GetSize();
+            var size = TitleLabel.Bounds.Size.GetSize();
 
             ImageView.SizeToFit();
             if (contentDirection == ContentDirection.Up || contentDirection == ContentDirection.Down)
             {
-                size.Width = Math.Max(size.Width, ImageView.Frame.Width);
-                size.Height += ImageView.Frame.Height;
+                size.Width = Math.Max(size.Width, ImageView.Bounds.Width);
+                size.Height += ImageView.Bounds.Height;
             }
             else
             {
-                size.Width += ImageView.Frame.Width;
-                size.Height = Math.Max(size.Height, ImageView.Frame.Height);
+                size.Width += ImageView.Bounds.Width;
+                size.Height = Math.Max(size.Height, ImageView.Bounds.Height);
             }
 
             size.Width += padding.Right + padding.Left + (BorderWidth * 2);
@@ -509,10 +533,10 @@ namespace Prism.iOS.UI.Controls
             MeasureRequest(false, null);
             ArrangeRequest(false, null);
 
-            var imageSize = ImageView.Frame.Size;
-            var labelSize = TitleLabel.Frame.Size;
-            var width = base.Frame.Width - padding.Left - padding.Right;
-            var height = base.Frame.Height - padding.Top - padding.Bottom;
+            var imageSize = ImageView.Bounds.Size;
+            var labelSize = TitleLabel.Bounds.Size;
+            var width = Bounds.Width - padding.Left - padding.Right;
+            var height = Bounds.Height - padding.Top - padding.Bottom;
 
             switch (contentDirection)
             {
@@ -538,13 +562,13 @@ namespace Prism.iOS.UI.Controls
                     break;
             }
 
-            if (currentFrame != base.Frame)
+            if (currentSize != Bounds.Size)
             {
-                BackgroundColor = background.GetColor(base.Frame.Width, base.Frame.Height, null);
-                Layer.BorderColor = borderBrush.GetColor(base.Frame.Width, base.Frame.Height, null)?.CGColor ?? UIColor.Black.CGColor;
-                SetTitleColor(foreground.GetColor(base.Frame.Width, base.Frame.Height, null) ?? new UIColor(0, 0.5f, 1, 1), UIControlState.Normal);
+                BackgroundColor = background.GetColor(Bounds.Width, Bounds.Height, null);
+                Layer.BorderColor = borderBrush.GetColor(Bounds.Width, Bounds.Height, null)?.CGColor ?? UIColor.Black.CGColor;
+                SetTitleColor(foreground.GetColor(Bounds.Width, Bounds.Height, null) ?? new UIColor(0, 0.5f, 1, 1), UIControlState.Normal);
             }
-            currentFrame = base.Frame;
+            currentSize = Bounds.Size;
         }
 
         /// <summary></summary>
@@ -668,17 +692,17 @@ namespace Prism.iOS.UI.Controls
 
         private void OnBackgroundImageLoaded(object sender, EventArgs e)
         {
-            BackgroundColor = background.GetColor(base.Frame.Width, base.Frame.Height, null);
+            BackgroundColor = background.GetColor(Bounds.Width, Bounds.Height, null);
         }
 
         private void OnBorderImageLoaded(object sender, EventArgs e)
         {
-            Layer.BorderColor = borderBrush.GetColor(base.Frame.Width, base.Frame.Height, null)?.CGColor ?? UIColor.Black.CGColor;
+            Layer.BorderColor = borderBrush.GetColor(Bounds.Width, Bounds.Height, null)?.CGColor ?? UIColor.Black.CGColor;
         }
 
         private void OnForegroundImageLoaded(object sender, EventArgs e)
         {
-            SetTitleColor(foreground.GetColor(base.Frame.Width, base.Frame.Height, null) ?? new UIColor(0, 0.5f, 1, 1), UIControlState.Normal);
+            SetTitleColor(foreground.GetColor(Bounds.Width, Bounds.Height, null) ?? new UIColor(0, 0.5f, 1, 1), UIControlState.Normal);
         }
 
         private void OnImageLoaded(object sender, EventArgs e)

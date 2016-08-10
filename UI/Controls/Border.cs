@@ -109,7 +109,7 @@ namespace Prism.iOS.UI.Controls
                     (background as ImageBrush).ClearImageHandler(OnBackgroundImageLoaded);
 
                     background = value;
-                    BackgroundColor = background.GetColor(base.Frame.Width, base.Frame.Height, OnBackgroundImageLoaded);
+                    BackgroundColor = background.GetColor(base.Bounds.Width, base.Bounds.Height, OnBackgroundImageLoaded);
                     OnPropertyChanged(Prism.UI.Controls.Border.BackgroundProperty);
                 }
             }
@@ -129,7 +129,7 @@ namespace Prism.iOS.UI.Controls
                     (borderBrush as ImageBrush).ClearImageHandler(OnBorderImageLoaded);
 
                     borderBrush = value;
-                    borderView.BorderColor = borderBrush.GetColor(base.Frame.Width, base.Frame.Height, OnBorderImageLoaded)?.CGColor;
+                    borderView.BorderColor = borderBrush.GetColor(base.Bounds.Width, base.Bounds.Height, OnBorderImageLoaded)?.CGColor;
                     OnPropertyChanged(Prism.UI.Controls.Border.BorderBrushProperty);
                     borderView.SetNeedsDisplay();
                 }
@@ -186,11 +186,12 @@ namespace Prism.iOS.UI.Controls
         /// </summary>
         public new Rectangle Frame
         {
-            get { return base.Frame.GetRectangle(); }
+            get { return new Rectangle(Center.X - (Bounds.Width / 2), Center.Y - (Bounds.Height / 2), Bounds.Width, Bounds.Height); }
             set
             {
-                base.Frame = value.GetCGRect();
-                borderView.Frame = new CGRect(CGPoint.Empty, base.Frame.Size);
+                Bounds = new CGRect(Bounds.Location, value.Size.GetCGSize());
+                Center = new CGPoint(value.X + (value.Width / 2), value.Y + (value.Height / 2));
+                borderView.Frame = new CGRect(CGPoint.Empty, base.Bounds.Size);
             }
         }
 
@@ -255,6 +256,26 @@ namespace Prism.iOS.UI.Controls
         private Thickness padding;
 
         /// <summary>
+        /// Gets or sets transformation information that affects the rendering position of this instance.
+        /// </summary>
+        public INativeTransform RenderTransform
+        {
+            get { return renderTransform; }
+            set
+            {
+                if (value != renderTransform)
+                {
+                    (renderTransform as Media.Transform)?.RemoveView(this);
+                    renderTransform = value;
+                    (renderTransform as Media.Transform)?.AddView(this);
+
+                    OnPropertyChanged(Visual.RenderTransformProperty);
+                }
+            }
+        }
+        private INativeTransform renderTransform;
+
+        /// <summary>
         /// Gets or sets the display state of the element.
         /// </summary>
         public Visibility Visibility
@@ -272,7 +293,7 @@ namespace Prism.iOS.UI.Controls
         }
         private Visibility visibility;
 
-        private CGRect currentFrame;
+        private CGSize currentSize;
         private readonly BorderView borderView;
 
         /// <summary>
@@ -309,12 +330,12 @@ namespace Prism.iOS.UI.Controls
 
             base.LayoutSubviews();
 
-            if (currentFrame != base.Frame)
+            if (currentSize != base.Bounds.Size)
             {
-                BackgroundColor = background.GetColor(base.Frame.Width, base.Frame.Height, null);
-                borderView.BorderColor = borderBrush.GetColor(base.Frame.Width, base.Frame.Height, null)?.CGColor;
+                BackgroundColor = background.GetColor(base.Bounds.Width, base.Bounds.Height, null);
+                borderView.BorderColor = borderBrush.GetColor(base.Bounds.Width, base.Bounds.Height, null)?.CGColor;
             }
-            currentFrame = base.Frame;
+            currentSize = base.Bounds.Size;
         }
 
         /// <summary>
@@ -433,12 +454,12 @@ namespace Prism.iOS.UI.Controls
 
         private void OnBackgroundImageLoaded(object sender, EventArgs e)
         {
-            BackgroundColor = background.GetColor(base.Frame.Width, base.Frame.Height, null);
+            BackgroundColor = background.GetColor(base.Bounds.Width, base.Bounds.Height, null);
         }
 
         private void OnBorderImageLoaded(object sender, EventArgs e)
         {
-            borderView.BorderColor = borderBrush.GetColor(base.Frame.Width, base.Frame.Height, null)?.CGColor;
+            borderView.BorderColor = borderBrush.GetColor(base.Bounds.Width, base.Bounds.Height, null)?.CGColor;
             borderView.SetNeedsDisplay();
         }
 

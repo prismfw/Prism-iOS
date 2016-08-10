@@ -158,7 +158,7 @@ namespace Prism.iOS.UI.Controls
                     (foreground as ImageBrush).ClearImageHandler(OnForegroundImageLoaded);
 
                     foreground = value;
-                    TextColor = foreground.GetColor(base.Frame.Width, foreground is ImageBrush ? base.Frame.Height : base.Font.LineHeight, OnForegroundImageLoaded) ?? UIColor.Black;
+                    TextColor = foreground.GetColor(base.Bounds.Width, foreground is ImageBrush ? base.Bounds.Height : base.Font.LineHeight, OnForegroundImageLoaded) ?? UIColor.Black;
                     OnPropertyChanged(Prism.UI.Controls.Label.ForegroundProperty);
                 }
             }
@@ -170,8 +170,12 @@ namespace Prism.iOS.UI.Controls
         /// </summary>
         public new Rectangle Frame
         {
-            get { return base.Frame.GetRectangle(); }
-            set { base.Frame = value.GetCGRect(); }
+            get { return new Rectangle(Center.X - (Bounds.Width / 2), Center.Y - (Bounds.Height / 2), Bounds.Width, Bounds.Height); }
+            set
+            {
+                Bounds = new CGRect(Bounds.Location, value.Size.GetCGSize());
+                Center = new CGPoint(value.X + (value.Width / 2), value.Y + (value.Height / 2));
+            }
         }
 
         /// <summary>
@@ -187,7 +191,7 @@ namespace Prism.iOS.UI.Controls
                     (highlightBrush as ImageBrush).ClearImageHandler(OnHighlightBrushImageLoaded);
 
                     highlightBrush = value;
-                    HighlightedTextColor = highlightBrush.GetColor(base.Frame.Width, highlightBrush is ImageBrush ? base.Frame.Height : base.Font.LineHeight, OnHighlightBrushImageLoaded);
+                    HighlightedTextColor = highlightBrush.GetColor(base.Bounds.Width, highlightBrush is ImageBrush ? base.Bounds.Height : base.Font.LineHeight, OnHighlightBrushImageLoaded);
                     OnPropertyChanged(Prism.UI.Controls.Label.HighlightBrushProperty);
                 }
             }
@@ -254,6 +258,26 @@ namespace Prism.iOS.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets transformation information that affects the rendering position of this instance.
+        /// </summary>
+        public INativeTransform RenderTransform
+        {
+            get { return renderTransform; }
+            set
+            {
+                if (value != renderTransform)
+                {
+                    (renderTransform as Media.Transform)?.RemoveView(this);
+                    renderTransform = value;
+                    (renderTransform as Media.Transform)?.AddView(this);
+
+                    OnPropertyChanged(Visual.RenderTransformProperty);
+                }
+            }
+        }
+        private INativeTransform renderTransform;
+
+        /// <summary>
         /// Gets or sets the text of the label.
         /// </summary>
         public override string Text
@@ -303,7 +327,7 @@ namespace Prism.iOS.UI.Controls
         }
         private Visibility visibility;
         
-        private CGRect currentFrame;
+        private CGSize currentSize;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Label"/> class.
@@ -356,12 +380,12 @@ namespace Prism.iOS.UI.Controls
 
             base.LayoutSubviews();
 
-            if (currentFrame != base.Frame)
+            if (currentSize != base.Bounds.Size)
             {
-                TextColor = foreground.GetColor(base.Frame.Width, foreground is ImageBrush ? base.Frame.Height : base.Font.LineHeight, null) ?? UIColor.Black;
-                HighlightedTextColor = highlightBrush.GetColor(base.Frame.Width, highlightBrush is ImageBrush ? base.Frame.Height : base.Font.LineHeight, null);
+                TextColor = foreground.GetColor(base.Bounds.Width, foreground is ImageBrush ? base.Bounds.Height : base.Font.LineHeight, null) ?? UIColor.Black;
+                HighlightedTextColor = highlightBrush.GetColor(base.Bounds.Width, highlightBrush is ImageBrush ? base.Bounds.Height : base.Font.LineHeight, null);
             }
-            currentFrame = base.Frame;
+            currentSize = base.Bounds.Size;
         }
 
         /// <summary></summary>
@@ -471,12 +495,12 @@ namespace Prism.iOS.UI.Controls
 
         private void OnForegroundImageLoaded(object sender, EventArgs e)
         {
-            TextColor = foreground.GetColor(base.Frame.Width, foreground is ImageBrush ? base.Frame.Height : base.Font.LineHeight, null) ?? UIColor.Black;
+            TextColor = foreground.GetColor(base.Bounds.Width, foreground is ImageBrush ? base.Bounds.Height : base.Font.LineHeight, null) ?? UIColor.Black;
         }
 
         private void OnHighlightBrushImageLoaded(object sender, EventArgs e)
         {
-            HighlightedTextColor = highlightBrush.GetColor(base.Frame.Width, highlightBrush is ImageBrush ? base.Frame.Height : base.Font.LineHeight, null);
+            HighlightedTextColor = highlightBrush.GetColor(base.Bounds.Width, highlightBrush is ImageBrush ? base.Bounds.Height : base.Font.LineHeight, null);
         }
 
         private void OnLoaded()

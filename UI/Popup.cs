@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 using System;
 using System.Linq;
+using CoreGraphics;
 using Foundation;
 using UIKit;
 using Prism.Native;
@@ -113,20 +114,33 @@ namespace Prism.iOS.UI
         /// </summary>
         public Rectangle Frame
         {
-            get { return View.Superview?.Frame.GetRectangle() ?? new Rectangle(new Point(), PreferredContentSize.GetSize()); }
+            get
+            {
+                if (View.Superview == null)
+                {
+                    return new Rectangle(new Point(), PreferredContentSize.GetSize());
+                }
+
+                return new Rectangle(View.Superview.Center.X - (View.Superview.Bounds.Width / 2),
+                    View.Superview.Center.Y - (View.Superview.Bounds.Height / 2),
+                    View.Superview.Bounds.Width, View.Superview.Bounds.Height);
+            }
             set
             {
                 if (View.Superview != null)
                 {
-                    var frame = View.Subviews.FirstOrDefault()?.Frame;
+                    var subview = View.Subviews.FirstOrDefault();
+                    var sCenter = subview?.Center;
+                    var sBounds = subview?.Bounds;
 
                     var center = View.Superview.Center;
-                    View.Superview.Frame = value.GetCGRect();
+                    View.Superview.Bounds = new CGRect(View.Superview.Bounds.Location, value.Size.GetCGSize());
                     View.Superview.Center = center;
 
-                    if (frame.HasValue)
+                    if (subview != null)
                     {
-                        View.Subviews[0].Frame = frame.Value;
+                        subview.Bounds = sBounds.Value;
+                        subview.Center = sCenter.Value;
                     }
                 }
                 PreferredContentSize = value.Size.GetCGSize();
@@ -174,7 +188,27 @@ namespace Prism.iOS.UI
         /// Gets or sets the method to invoke when this instance requests a measurement of itself and its children.
         /// </summary>
         public MeasureRequestHandler MeasureRequest { get; set; }
-        
+
+        /// <summary>
+        /// Gets or sets transformation information that affects the rendering position of this instance.
+        /// </summary>
+        public INativeTransform RenderTransform
+        {
+            get { return renderTransform; }
+            set
+            {
+                if (value != renderTransform)
+                {
+                    (renderTransform as Media.Transform)?.RemoveView(View);
+                    renderTransform = value;
+                    (renderTransform as Media.Transform)?.AddView(View);
+
+                    OnPropertyChanged(Visual.RenderTransformProperty);
+                }
+            }
+        }
+        private INativeTransform renderTransform;
+
         private UITapGestureRecognizer dismissalGesture;
         private bool isKeyboardChanging;
 

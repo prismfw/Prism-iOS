@@ -114,7 +114,7 @@ namespace Prism.iOS.UI.Controls
                     {
                         BackgroundView = new UIView();
                     }
-                    BackgroundView.BackgroundColor = value.GetColor(base.Frame.Width, base.Frame.Height, OnBackgroundImageLoaded) ?? UIColor.GroupTableViewBackgroundColor;
+                    BackgroundView.BackgroundColor = value.GetColor(Bounds.Width, Bounds.Height, OnBackgroundImageLoaded) ?? UIColor.GroupTableViewBackgroundColor;
 
                     OnPropertyChanged(Prism.UI.Controls.ListBoxSectionHeader.BackgroundProperty);
                 }
@@ -156,8 +156,12 @@ namespace Prism.iOS.UI.Controls
         /// </summary>
         public new Rectangle Frame
         {
-            get { return base.Frame.GetRectangle(); }
-            set { base.Frame = value.GetCGRect(); }
+            get { return new Rectangle(Center.X - (Bounds.Width / 2), Center.Y - (Bounds.Height / 2), Bounds.Width, Bounds.Height); }
+            set
+            {
+                Bounds = new CGRect(Bounds.Location, value.Size.GetCGSize());
+                Center = new CGPoint(value.X + (value.Width / 2), value.Y + (value.Height / 2));
+            }
         }
 
         /// <summary>
@@ -208,6 +212,26 @@ namespace Prism.iOS.UI.Controls
         public UITableView Parent { get; private set; }
 
         /// <summary>
+        /// Gets or sets transformation information that affects the rendering position of this instance.
+        /// </summary>
+        public INativeTransform RenderTransform
+        {
+            get { return renderTransform; }
+            set
+            {
+                if (value != renderTransform)
+                {
+                    (renderTransform as Media.Transform)?.RemoveView(this);
+                    renderTransform = value;
+                    (renderTransform as Media.Transform)?.AddView(this);
+
+                    OnPropertyChanged(Visual.RenderTransformProperty);
+                }
+            }
+        }
+        private INativeTransform renderTransform;
+
+        /// <summary>
         /// Gets or sets the display state of the element.
         /// </summary>
         public Visibility Visibility
@@ -225,7 +249,7 @@ namespace Prism.iOS.UI.Controls
         }
         private Visibility visibility;
 
-        private CGRect currentFrame;
+        private CGSize currentSize;
         private double? parentWidth;
 
         /// <summary>
@@ -265,20 +289,20 @@ namespace Prism.iOS.UI.Controls
         /// <summary></summary>
         public override void LayoutSubviews()
         {
-            var oldFrame = base.Frame;
-            var width = Parent?.Frame.Width ?? (ObjectRetriever.GetAgnosticObject(this.GetNextResponder<INativeListBox>()) as Visual)?.RenderSize.Width;
+            var oldBounds = Bounds;
+            var width = Parent?.Bounds.Width ?? (ObjectRetriever.GetAgnosticObject(this.GetNextResponder<INativeListBox>()) as Visual)?.RenderSize.Width;
 
             var desiredSize = MeasureRequest(width != parentWidth, new Size(width ?? double.PositiveInfinity, double.PositiveInfinity));
-            ArrangeRequest(oldFrame.Width != width || oldFrame.Height != desiredSize.Height, new Rectangle(0, base.Frame.Y, width ?? 0, desiredSize.Height));
+            ArrangeRequest(oldBounds.Width != width || oldBounds.Height != desiredSize.Height, new Rectangle(0, Center.Y - (Bounds.Height / 2), width ?? 0, desiredSize.Height));
 
             parentWidth = width;
             base.LayoutSubviews();
 
-            if (background != null && currentFrame != base.Frame && BackgroundView != null)
+            if (background != null && currentSize != Bounds.Size && BackgroundView != null)
             {
-                BackgroundView.BackgroundColor = background.GetColor(base.Frame.Width, base.Frame.Height, null);
+                BackgroundView.BackgroundColor = background.GetColor(Bounds.Width, Bounds.Height, null);
             }
-            currentFrame = base.Frame;
+            currentSize = Bounds.Size;
         }
 
         /// <summary></summary>
@@ -390,7 +414,7 @@ namespace Prism.iOS.UI.Controls
         {
             if (BackgroundView != null)
             {
-                BackgroundView.BackgroundColor = background.GetColor(base.Frame.Width, base.Frame.Height, null) ?? UIColor.GroupTableViewBackgroundColor;
+                BackgroundView.BackgroundColor = background.GetColor(Bounds.Width, Bounds.Height, null) ?? UIColor.GroupTableViewBackgroundColor;
             }
         }
 

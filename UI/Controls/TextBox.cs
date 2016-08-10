@@ -145,7 +145,7 @@ namespace Prism.iOS.UI.Controls
                     (background as ImageBrush).ClearImageHandler(OnBackgroundImageLoaded);
 
                     background = value;
-                    BackgroundColor = background.GetColor(base.Frame.Width, base.Frame.Height, OnBackgroundImageLoaded);
+                    BackgroundColor = background.GetColor(Bounds.Width, Bounds.Height, OnBackgroundImageLoaded);
                     OnPropertyChanged(Prism.UI.Controls.Control.BackgroundProperty);
                 }
             }
@@ -165,7 +165,7 @@ namespace Prism.iOS.UI.Controls
                     (borderBrush as ImageBrush).ClearImageHandler(OnBorderImageLoaded);
 
                     borderBrush = value;
-                    Layer.BorderColor = borderBrush.GetColor(base.Frame.Width, base.Frame.Height, OnBorderImageLoaded)?.CGColor ?? UIColor.Black.CGColor;
+                    Layer.BorderColor = borderBrush.GetColor(Bounds.Width, Bounds.Height, OnBorderImageLoaded)?.CGColor ?? UIColor.Black.CGColor;
                     OnPropertyChanged(Prism.UI.Controls.Control.BorderBrushProperty);
                 }
             }
@@ -251,7 +251,7 @@ namespace Prism.iOS.UI.Controls
                     (foreground as ImageBrush).ClearImageHandler(OnForegroundImageLoaded);
 
                     foreground = value;
-                    TextColor = foreground.GetColor(base.Frame.Width, base.Frame.Height, OnForegroundImageLoaded) ?? UIColor.Black;
+                    TextColor = foreground.GetColor(Bounds.Width, Bounds.Height, OnForegroundImageLoaded) ?? UIColor.Black;
                     OnPropertyChanged(Prism.UI.Controls.Control.ForegroundProperty);
                 }
             }
@@ -263,8 +263,12 @@ namespace Prism.iOS.UI.Controls
         /// </summary>
         public new Rectangle Frame
         {
-            get { return base.Frame.GetRectangle(); }
-            set { base.Frame = value.GetCGRect(); }
+            get { return new Rectangle(Center.X - (Bounds.Width / 2), Center.Y - (Bounds.Height / 2), Bounds.Width, Bounds.Height); }
+            set
+            {
+                Bounds = new CGRect(Bounds.Location, value.Size.GetCGSize());
+                Center = new CGPoint(value.X + (value.Width / 2), value.Y + (value.Height / 2));
+            }
         }
 
         /// <summary>
@@ -350,6 +354,26 @@ namespace Prism.iOS.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets transformation information that affects the rendering position of this instance.
+        /// </summary>
+        public INativeTransform RenderTransform
+        {
+            get { return renderTransform; }
+            set
+            {
+                if (value != renderTransform)
+                {
+                    (renderTransform as Media.Transform)?.RemoveView(this);
+                    renderTransform = value;
+                    (renderTransform as Media.Transform)?.AddView(this);
+
+                    OnPropertyChanged(Visual.RenderTransformProperty);
+                }
+            }
+        }
+        private INativeTransform renderTransform;
+
+        /// <summary>
         /// Gets or sets the text of the control.
         /// </summary>
         public override string Text
@@ -401,7 +425,7 @@ namespace Prism.iOS.UI.Controls
         }
         private Visibility visibility;
 
-        private CGRect currentFrame;
+        private CGSize currentSize;
         private string currentValue = string.Empty;
 
         /// <summary>
@@ -476,7 +500,7 @@ namespace Prism.iOS.UI.Controls
             base.Frame = new CGRect(CGPoint.Empty, new CGSize((nfloat)constraints.Width, (nfloat)constraints.Height));
             SizeToFit();
 
-            var size = new Size(base.Frame.Width, base.Frame.Height);
+            var size = new Size(Bounds.Width, Bounds.Height);
             base.Frame = frame;
             return new Size(Math.Min(constraints.Width, size.Width + (BorderWidth * 2)),
                 Math.Min(constraints.Height, size.Height + (BorderWidth * 2)));
@@ -501,13 +525,13 @@ namespace Prism.iOS.UI.Controls
 
             base.LayoutSubviews();
 
-            if (currentFrame != base.Frame)
+            if (currentSize != Bounds.Size)
             {
-                BackgroundColor = background.GetColor(base.Frame.Width, base.Frame.Height, null);
-                Layer.BorderColor = borderBrush.GetColor(base.Frame.Width, base.Frame.Height, null)?.CGColor ?? UIColor.Black.CGColor;
-                TextColor = foreground.GetColor(base.Frame.Width, base.Frame.Height, null) ?? UIColor.Black;
+                BackgroundColor = background.GetColor(Bounds.Width, Bounds.Height, null);
+                Layer.BorderColor = borderBrush.GetColor(Bounds.Width, Bounds.Height, null)?.CGColor ?? UIColor.Black.CGColor;
+                TextColor = foreground.GetColor(Bounds.Width, Bounds.Height, null) ?? UIColor.Black;
             }
-            currentFrame = base.Frame;
+            currentSize = Bounds.Size;
         }
 
         /// <summary></summary>
@@ -643,17 +667,17 @@ namespace Prism.iOS.UI.Controls
 
         private void OnBackgroundImageLoaded(object sender, EventArgs e)
         {
-            BackgroundColor = background.GetColor(base.Frame.Width, base.Frame.Height, null);
+            BackgroundColor = background.GetColor(Bounds.Width, Bounds.Height, null);
         }
 
         private void OnBorderImageLoaded(object sender, EventArgs e)
         {
-            Layer.BorderColor = borderBrush.GetColor(base.Frame.Width, base.Frame.Height, null)?.CGColor ?? UIColor.Black.CGColor;
+            Layer.BorderColor = borderBrush.GetColor(Bounds.Width, Bounds.Height, null)?.CGColor ?? UIColor.Black.CGColor;
         }
 
         private void OnForegroundImageLoaded(object sender, EventArgs e)
         {
-            TextColor = foreground.GetColor(base.Frame.Width, base.Frame.Height, null) ?? UIColor.Black;
+            TextColor = foreground.GetColor(Bounds.Width, Bounds.Height, null) ?? UIColor.Black;
         }
 
         private void OnLoaded()

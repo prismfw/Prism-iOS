@@ -153,7 +153,7 @@ namespace Prism.iOS.UI.Controls
                         var tf = this.GetSubview<UITextField>();
                         if (tf != null)
                         {
-                            tf.BackgroundColor = image.GetColor(tf.Frame.Width, tf.Frame.Height, imageBrush.Stretch);
+                            tf.BackgroundColor = image.GetColor(tf.Bounds.Width, tf.Bounds.Height, imageBrush.Stretch);
                         }
                     }
                     else
@@ -161,7 +161,7 @@ namespace Prism.iOS.UI.Controls
                         var tf = this.GetSubview<UITextField>();
                         if (tf != null)
                         {
-                            tf.BackgroundColor = background.GetColor(tf.Frame.Width, tf.Frame.Height, null);
+                            tf.BackgroundColor = background.GetColor(tf.Bounds.Width, tf.Bounds.Height, null);
                         }
                     }
 
@@ -182,7 +182,7 @@ namespace Prism.iOS.UI.Controls
                 if (value != borderBrush)
                 {
                     borderBrush = value;
-                    BarTintColor = borderBrush.GetColor(base.Frame.Width, base.Frame.Height, OnBorderImageLoaded);
+                    BarTintColor = borderBrush.GetColor(Bounds.Width, Bounds.Height, OnBorderImageLoaded);
                     OnPropertyChanged(Control.BorderBrushProperty);
                 }
             }
@@ -289,7 +289,7 @@ namespace Prism.iOS.UI.Controls
                         var tf = this.GetSubview<UITextField>();
                         if (tf != null)
                         {
-                            tf.TextColor = image.GetColor(tf.Frame.Width, tf.Frame.Height, imageBrush.Stretch) ?? UIColor.Black;
+                            tf.TextColor = image.GetColor(tf.Bounds.Width, tf.Bounds.Height, imageBrush.Stretch) ?? UIColor.Black;
                         }
                     }
                     else
@@ -297,7 +297,7 @@ namespace Prism.iOS.UI.Controls
                         var tf = this.GetSubview<UITextField>();
                         if (tf != null)
                         {
-                            tf.TextColor = foreground.GetColor(tf.Frame.Width, tf.Frame.Height, null) ?? UIColor.Black;
+                            tf.TextColor = foreground.GetColor(tf.Bounds.Width, tf.Bounds.Height, null) ?? UIColor.Black;
                         }
                     }
 
@@ -312,8 +312,12 @@ namespace Prism.iOS.UI.Controls
         /// </summary>
         public new Rectangle Frame
         {
-            get { return base.Frame.GetRectangle(); }
-            set { base.Frame = value.GetCGRect(); }
+            get { return new Rectangle(Center.X - (Bounds.Width / 2), Center.Y - (Bounds.Height / 2), Bounds.Width, Bounds.Height); }
+            set
+            {
+                Bounds = new CGRect(Bounds.Location, value.Size.GetCGSize());
+                Center = new CGPoint(value.X + (value.Width / 2), value.Y + (value.Height / 2));
+            }
         }
 
         /// <summary>
@@ -423,6 +427,26 @@ namespace Prism.iOS.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets transformation information that affects the rendering position of this instance.
+        /// </summary>
+        public INativeTransform RenderTransform
+        {
+            get { return renderTransform; }
+            set
+            {
+                if (value != renderTransform)
+                {
+                    (renderTransform as Media.Transform)?.RemoveView(this);
+                    renderTransform = value;
+                    (renderTransform as Media.Transform)?.AddView(this);
+
+                    OnPropertyChanged(Visual.RenderTransformProperty);
+                }
+            }
+        }
+        private INativeTransform renderTransform;
+
+        /// <summary>
         /// Gets or sets the display state of the element.
         /// </summary>
         public Visibility Visibility
@@ -440,7 +464,7 @@ namespace Prism.iOS.UI.Controls
         }
         private Visibility visibility;
 
-        private CGRect currentFrame;
+        private CGSize currentSize;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SearchBox"/> class.
@@ -513,7 +537,7 @@ namespace Prism.iOS.UI.Controls
             base.Frame = new CGRect(CGPoint.Empty, new CGSize((nfloat)constraints.Width, (nfloat)constraints.Height));
             SizeToFit();
 
-            var size = new Size(base.Frame.Width, base.Frame.Height);
+            var size = new Size(Bounds.Width, Bounds.Height);
             base.Frame = frame;
             return size;
         }
@@ -537,18 +561,18 @@ namespace Prism.iOS.UI.Controls
 
             base.LayoutSubviews();
 
-            if (currentFrame != base.Frame)
+            if (currentSize != Bounds.Size)
             {
-                BarTintColor = borderBrush.GetColor(base.Frame.Width, base.Frame.Height, null);
+                BarTintColor = borderBrush.GetColor(Bounds.Width, Bounds.Height, null);
 
                 var tf = this.GetSubview<UITextField>();
                 if (tf != null)
                 {
-                    tf.BackgroundColor = background.GetColor(tf.Frame.Width, tf.Frame.Height, null);
-                    tf.TextColor = foreground.GetColor(tf.Frame.Width, tf.Frame.Height, null) ?? UIColor.Black;
+                    tf.BackgroundColor = background.GetColor(tf.Bounds.Width, tf.Bounds.Height, null);
+                    tf.TextColor = foreground.GetColor(tf.Bounds.Width, tf.Bounds.Height, null) ?? UIColor.Black;
                 }
             }
-            currentFrame = base.Frame;
+            currentSize = Bounds.Size;
         }
 
         /// <summary></summary>
@@ -661,13 +685,13 @@ namespace Prism.iOS.UI.Controls
             var tf = this.GetSubview<UITextField>();
             if (tf != null)
             {
-                tf.BackgroundColor = background.GetColor(tf.Frame.Width, tf.Frame.Height, null);
+                tf.BackgroundColor = background.GetColor(tf.Bounds.Width, tf.Bounds.Height, null);
             }
         }
 
         private void OnBorderImageLoaded(object sender, EventArgs e)
         {
-            BarTintColor = borderBrush.GetColor(base.Frame.Width, base.Frame.Height, null);
+            BarTintColor = borderBrush.GetColor(Bounds.Width, Bounds.Height, null);
         }
 
         private void OnForegroundImageLoaded(object sender, EventArgs e)
@@ -675,7 +699,7 @@ namespace Prism.iOS.UI.Controls
             var tf = this.GetSubview<UITextField>();
             if (tf != null)
             {
-                tf.TextColor = foreground.GetColor(tf.Frame.Width, tf.Frame.Height, null) ?? UIColor.Black;
+                tf.TextColor = foreground.GetColor(tf.Bounds.Width, tf.Bounds.Height, null) ?? UIColor.Black;
             }
         }
 

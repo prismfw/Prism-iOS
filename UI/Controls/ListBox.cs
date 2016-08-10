@@ -143,7 +143,7 @@ namespace Prism.iOS.UI.Controls
                     {
                         BackgroundView = new UIView();
                     }
-                    BackgroundView.BackgroundColor = value.GetColor(base.Frame.Width, base.Frame.Height, OnBackgroundImageLoaded);
+                    BackgroundView.BackgroundColor = value.GetColor(Bounds.Width, Bounds.Height, OnBackgroundImageLoaded);
 
                     OnPropertyChanged(Prism.UI.Controls.ListBox.BackgroundProperty);
                 }
@@ -202,8 +202,12 @@ namespace Prism.iOS.UI.Controls
         /// </summary>
         public new Rectangle Frame
         {
-            get { return base.Frame.GetRectangle(); }
-            set { base.Frame = value.GetCGRect(); }
+            get { return new Rectangle(Center.X - (Bounds.Width / 2), Center.Y - (Bounds.Height / 2), Bounds.Width, Bounds.Height); }
+            set
+            {
+                Bounds = new CGRect(Bounds.Location, value.Size.GetCGSize());
+                Center = new CGPoint(value.X + (value.Width / 2), value.Y + (value.Height / 2));
+            }
         }
 
         /// <summary>
@@ -327,6 +331,26 @@ namespace Prism.iOS.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets transformation information that affects the rendering position of this instance.
+        /// </summary>
+        public INativeTransform RenderTransform
+        {
+            get { return renderTransform; }
+            set
+            {
+                if (value != renderTransform)
+                {
+                    (renderTransform as Media.Transform)?.RemoveView(this);
+                    renderTransform = value;
+                    (renderTransform as Media.Transform)?.AddView(this);
+
+                    OnPropertyChanged(Visual.RenderTransformProperty);
+                }
+            }
+        }
+        private INativeTransform renderTransform;
+
+        /// <summary>
         /// Gets or sets the method to be used for retrieving section headers in the list box.
         /// </summary>
         public ListBoxSectionHeaderRequestHandler SectionHeaderRequest { get; set; }
@@ -397,7 +421,7 @@ namespace Prism.iOS.UI.Controls
                     (separatorBrush as ImageBrush).ClearImageHandler(OnSeparatorImageLoaded);
 
                     separatorBrush = value;
-                    SeparatorColor = separatorBrush.GetColor(base.Frame.Width, base.Frame.Height, OnSeparatorImageLoaded) ?? new UIColor(0.78f, 0.78f, 0.8f, 1);
+                    SeparatorColor = separatorBrush.GetColor(Bounds.Width, Bounds.Height, OnSeparatorImageLoaded) ?? new UIColor(0.78f, 0.78f, 0.8f, 1);
                     OnPropertyChanged(Prism.UI.Controls.ListBox.SeparatorBrushProperty);
                 }
             }
@@ -424,7 +448,7 @@ namespace Prism.iOS.UI.Controls
 
         private CGPoint currentContentOffset;
         private CGSize currentContentSize;
-        private CGRect currentFrame;
+        private CGSize currentSize;
         private NSIndexPath lastCellIndex = null;
 
         /// <summary>
@@ -485,14 +509,7 @@ namespace Prism.iOS.UI.Controls
         /// <param name="constraints">The width and height that the element is not allowed to exceed.</param>
         public Size Measure(Size constraints)
         {
-            var frame = base.Frame;
-            base.Frame = new CGRect(0, 0, 0, 0);
-
-            SizeToFit();
-
-            var size = base.Frame.Size;
-            base.Frame = frame;
-            return new Size(Math.Min(constraints.Width, size.Width), Math.Min(constraints.Height, size.Height));
+            return new Size(Math.Min(constraints.Width, ContentSize.Width), Math.Min(constraints.Height, ContentSize.Height));
         }
 
         /// <summary>
@@ -570,16 +587,16 @@ namespace Prism.iOS.UI.Controls
 
             base.LayoutSubviews();
 
-            if (currentFrame != base.Frame)
+            if (currentSize != Bounds.Size)
             {
-                currentFrame = base.Frame;
+                currentSize = Bounds.Size;
 
                 if (BackgroundView != null)
                 {
-                    BackgroundView.BackgroundColor = background.GetColor(base.Frame.Width, base.Frame.Height, null);
+                    BackgroundView.BackgroundColor = background.GetColor(Bounds.Width, Bounds.Height, null);
                 }
 
-                SeparatorColor = separatorBrush.GetColor(base.Frame.Width, base.Frame.Height, null) ?? new UIColor(0.78f, 0.78f, 0.8f, 1);
+                SeparatorColor = separatorBrush.GetColor(Bounds.Width, Bounds.Height, null) ?? new UIColor(0.78f, 0.78f, 0.8f, 1);
             }
 
             if (currentContentOffset != base.ContentOffset)
@@ -820,7 +837,7 @@ namespace Prism.iOS.UI.Controls
         {
             if (BackgroundView != null)
             {
-                BackgroundView.BackgroundColor = background.GetColor(base.Frame.Width, base.Frame.Height, null);
+                BackgroundView.BackgroundColor = background.GetColor(Bounds.Width, Bounds.Height, null);
             }
         }
 
@@ -986,7 +1003,7 @@ namespace Prism.iOS.UI.Controls
 
         private void OnSeparatorImageLoaded(object sender, EventArgs e)
         {
-            SeparatorColor = separatorBrush.GetColor(base.Frame.Width, base.Frame.Height, null) ?? new UIColor(0.78f, 0.78f, 0.8f, 1);
+            SeparatorColor = separatorBrush.GetColor(Bounds.Width, Bounds.Height, null) ?? new UIColor(0.78f, 0.78f, 0.8f, 1);
         }
 
         private void OnUnloaded()
@@ -1034,7 +1051,7 @@ namespace Prism.iOS.UI.Controls
                 }
 
                 cell.LayoutIfNeeded();
-                return cell.Frame.Height;
+                return cell.Bounds.Height;
             }
 
             public override nfloat EstimatedHeightForHeader(UITableView tableView, nint section)
@@ -1051,7 +1068,7 @@ namespace Prism.iOS.UI.Controls
                 }
 
                 header.LayoutIfNeeded();
-                return header.Frame.Height;
+                return header.Bounds.Height;
             }
             
             public override UITableViewCell GetCell(UITableView tableView, NSIndexPath indexPath)
@@ -1073,7 +1090,10 @@ namespace Prism.iOS.UI.Controls
 
                 var cell = (UITableViewCell)listBox.ItemRequest(item, tableView.DequeueReusableCell(CurrentItemId) as INativeListBoxItem);
                 (cell as ITableViewChild)?.SetParent(tableView);
-                cell.Frame = new CGRect(cell.Frame.Location, new CGSize(tableView.Frame.Width, tableView.EstimatedRowHeight));
+
+                var location = new CGPoint(cell.Center.X - (cell.Bounds.Width / 2), cell.Center.Y - (cell.Bounds.Height / 2));
+                cell.Bounds = new CGRect(cell.Bounds.X, cell.Bounds.Y, tableView.Bounds.Width, tableView.EstimatedRowHeight);
+                cell.Center = new CGPoint(location.X + (tableView.Bounds.Width / 2), location.Y + (tableView.EstimatedRowHeight / 2));
                 cells[indexPath] = cell;
 
                 CurrentItemId = null;
@@ -1094,7 +1114,7 @@ namespace Prism.iOS.UI.Controls
                 }
 
                 header.LayoutSubviews();
-                return header.Frame.Height;
+                return header.Bounds.Height;
             }
 
             public override nfloat GetHeightForRow(UITableView tableView, NSIndexPath indexPath)
@@ -1106,7 +1126,7 @@ namespace Prism.iOS.UI.Controls
                 }
 
                 cell.LayoutSubviews();
-                return cell.Frame.Height;
+                return cell.Bounds.Height;
             }
 
             public override UIView GetViewForHeader(UITableView tableView, nint section)
@@ -1126,7 +1146,9 @@ namespace Prism.iOS.UI.Controls
                 if (header != null)
                 {
                     (header as ITableViewChild)?.SetParent(tableView);
-                    header.Frame = new CGRect(header.Frame.Location, new CGSize(tableView.Frame.Width, tableView.EstimatedSectionHeaderHeight));
+                    var location = new CGPoint(header.Center.X - (header.Bounds.Width / 2), header.Center.Y - (header.Bounds.Height / 2));
+                    header.Bounds = new CGRect(header.Bounds.X, header.Bounds.Y, tableView.Bounds.Width, tableView.EstimatedSectionHeaderHeight);
+                    header.Center = new CGPoint(location.X + (tableView.Bounds.Width / 2), location.Y + (tableView.EstimatedSectionHeaderHeight / 2));
                 }
 
                 headers[section] = header;

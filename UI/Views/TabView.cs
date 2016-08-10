@@ -95,7 +95,7 @@ namespace Prism.iOS.UI
                     (background as ImageBrush).ClearImageHandler(OnBackgroundImageLoaded);
 
                     background = value;
-                    TabBar.BarTintColor = background.GetColor(TabBar.Frame.Width, TabBar.Frame.Height, OnBackgroundImageLoaded);
+                    TabBar.BarTintColor = background.GetColor(TabBar.Bounds.Width, TabBar.Bounds.Height, OnBackgroundImageLoaded);
                     OnPropertyChanged(Prism.UI.TabView.BackgroundProperty);
                 }
             }
@@ -115,7 +115,7 @@ namespace Prism.iOS.UI
                     (foreground as ImageBrush).ClearImageHandler(OnForegroundImageLoaded);
 
                     foreground = value;
-                    TabBar.TintColor = foreground.GetColor(TabBar.Frame.Width, TabBar.Frame.Height, OnForegroundImageLoaded);
+                    TabBar.TintColor = foreground.GetColor(TabBar.Bounds.Width, TabBar.Bounds.Height, OnForegroundImageLoaded);
                     OnPropertyChanged(Prism.UI.TabView.ForegroundProperty);
                 }
             }
@@ -128,8 +128,12 @@ namespace Prism.iOS.UI
         /// </summary>
         public Rectangle Frame
         {
-            get { return View.Frame.GetRectangle(); }
-            set { View.Frame = value.GetCGRect(); }
+            get { return new Rectangle(View.Center.X - (View.Bounds.Width / 2), View.Center.Y - (View.Bounds.Height / 2), View.Bounds.Width, View.Bounds.Height); }
+            set
+            {
+                View.Bounds = new CGRect(View.Bounds.Location, value.Size.GetCGSize());
+                View.Center = new CGPoint(value.X + (value.Width / 2), value.Y + (value.Height / 2));
+            }
         }
 
         /// <summary>
@@ -159,6 +163,26 @@ namespace Prism.iOS.UI
         public MeasureRequestHandler MeasureRequest { get; set; }
 
         /// <summary>
+        /// Gets or sets transformation information that affects the rendering position of this instance.
+        /// </summary>
+        public INativeTransform RenderTransform
+        {
+            get { return renderTransform; }
+            set
+            {
+                if (value != renderTransform)
+                {
+                    (renderTransform as Media.Transform)?.RemoveView(View);
+                    renderTransform = value;
+                    (renderTransform as Media.Transform)?.AddView(View);
+
+                    OnPropertyChanged(Visual.RenderTransformProperty);
+                }
+            }
+        }
+        private INativeTransform renderTransform;
+
+        /// <summary>
         /// Gets or sets the zero-based index of the selected tab item.
         /// </summary>
         public new int SelectedIndex
@@ -179,7 +203,11 @@ namespace Prism.iOS.UI
         /// </summary>
         public Rectangle TabBarFrame
         {
-            get { return TabBar.Frame.GetRectangle(); }
+            get
+            {
+                return new Rectangle(TabBar.Center.X - (TabBar.Bounds.Width / 2),
+                    TabBar.Center.Y - (TabBar.Bounds.Height / 2), TabBar.Bounds.Width, TabBar.Bounds.Height);
+            }
         }
 
         /// <summary>
@@ -223,7 +251,7 @@ namespace Prism.iOS.UI
         /// <param name="constraints">The width and height that the object is not allowed to exceed.</param>
         public Size Measure(Size constraints)
         {
-            return new Size(Math.Min(View.Frame.Width, constraints.Width), Math.Min(View.Frame.Height, constraints.Height));
+            return new Size(Math.Min(View.Bounds.Width, constraints.Width), Math.Min(View.Bounds.Height, constraints.Height));
         }
 
         /// <summary>
@@ -339,12 +367,12 @@ namespace Prism.iOS.UI
 
         private void OnBackgroundImageLoaded(object sender, EventArgs e)
         {
-            TabBar.BarTintColor = background.GetColor(TabBar.Frame.Width, TabBar.Frame.Height, null);
+            TabBar.BarTintColor = background.GetColor(TabBar.Bounds.Width, TabBar.Bounds.Height, null);
         }
 
         private void OnForegroundImageLoaded(object sender, EventArgs e)
         {
-            TabBar.TintColor = foreground.GetColor(TabBar.Frame.Width, TabBar.Frame.Height, null);
+            TabBar.TintColor = foreground.GetColor(TabBar.Bounds.Width, TabBar.Bounds.Height, null);
         }
 
         private void OnTabItemSelected(NativeItemSelectedEventArgs e)

@@ -20,7 +20,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using Prism.Input;
 using Prism.Native;
@@ -152,7 +151,7 @@ namespace Prism.iOS.UI.Controls
                     (background as ImageBrush).ClearImageHandler(OnBackgroundImageLoaded);
 
                     background = value;
-                    BackgroundColor = value.GetColor(base.Frame.Width, base.Frame.Height, OnBackgroundImageLoaded);
+                    BackgroundColor = value.GetColor(Bounds.Width, Bounds.Height, OnBackgroundImageLoaded);
                     OnPropertyChanged(Prism.UI.Controls.ListBoxItem.BackgroundProperty);
                 }
             }
@@ -193,8 +192,12 @@ namespace Prism.iOS.UI.Controls
         /// </summary>
         public new Rectangle Frame
         {
-            get { return base.Frame.GetRectangle(); }
-            set { base.Frame = value.GetCGRect(); }
+            get { return new Rectangle(Center.X - (Bounds.Width / 2), Center.Y - (Bounds.Height / 2), Bounds.Width, Bounds.Height); }
+            set
+            {
+                Bounds = new CGRect(Bounds.Location, value.Size.GetCGSize());
+                Center = new CGPoint(value.X + (value.Width / 2), value.Y + (value.Height / 2));
+            }
         }
 
         /// <summary>
@@ -253,6 +256,26 @@ namespace Prism.iOS.UI.Controls
         public UITableView Parent { get; private set; }
 
         /// <summary>
+        /// Gets or sets transformation information that affects the rendering position of this instance.
+        /// </summary>
+        public INativeTransform RenderTransform
+        {
+            get { return renderTransform; }
+            set
+            {
+                if (value != renderTransform)
+                {
+                    (renderTransform as Media.Transform)?.RemoveView(this);
+                    renderTransform = value;
+                    (renderTransform as Media.Transform)?.AddView(this);
+
+                    OnPropertyChanged(Visual.RenderTransformProperty);
+                }
+            }
+        }
+        private INativeTransform renderTransform;
+
+        /// <summary>
         /// Gets or sets the background of the item when it is selected.
         /// </summary>
         public Brush SelectedBackground
@@ -274,7 +297,7 @@ namespace Prism.iOS.UI.Controls
                     {
                         SelectedBackgroundView = new UIView()
                         {
-                            BackgroundColor = value.GetColor(base.Frame.Width, base.Frame.Height, OnSelectedBackgroundImageLoaded)
+                            BackgroundColor = value.GetColor(Bounds.Width, Bounds.Height, OnSelectedBackgroundImageLoaded)
                         };
                     }
 
@@ -318,7 +341,8 @@ namespace Prism.iOS.UI.Controls
         }
         private Visibility visibility;
 
-        private CGRect currentFrame;
+        private CGPoint currentCenter;
+        private CGSize currentSize;
         private double? parentWidth;
 
         /// <summary>
@@ -359,25 +383,27 @@ namespace Prism.iOS.UI.Controls
         /// <summary></summary>
         public override void LayoutSubviews()
         {
-            var oldFrame = base.Frame;
-            var width = Parent?.Frame.Width ?? (ObjectRetriever.GetAgnosticObject(this.GetNextResponder<INativeListBox>()) as Visual)?.RenderSize.Width;
+            var oldCenter = Center;
+            var oldBounds = Bounds;
+            var width = Parent?.Bounds.Width ?? (ObjectRetriever.GetAgnosticObject(this.GetNextResponder<INativeListBox>()) as Visual)?.RenderSize.Width;
 
             var desiredSize = MeasureRequest(width != parentWidth, new Size(width ?? double.PositiveInfinity, double.PositiveInfinity));
-            ArrangeRequest(oldFrame.X != currentFrame.X || oldFrame.Width != width || oldFrame.Height != desiredSize.Height, new Rectangle(0, base.Frame.Y, width ?? 0, desiredSize.Height));
+            ArrangeRequest(oldCenter.X != currentCenter.X || oldBounds.Width != width || oldBounds.Height != desiredSize.Height, new Rectangle(0, Center.Y - (Bounds.Height / 2), width ?? 0, desiredSize.Height));
 
             parentWidth = width;
             base.LayoutSubviews();
 
-            if (currentFrame != base.Frame)
+            currentCenter = Center;
+            if (currentSize != Bounds.Size)
             {
-                BackgroundColor = background.GetColor(base.Frame.Width, base.Frame.Height, null);
+                BackgroundColor = background.GetColor(Bounds.Width, Bounds.Height, null);
 
                 if (SelectedBackgroundView != null)
                 {
-                    SelectedBackgroundView.BackgroundColor = selectedBackground.GetColor(base.Frame.Width, base.Frame.Height, null);
+                    SelectedBackgroundView.BackgroundColor = selectedBackground.GetColor(Bounds.Width, Bounds.Height, null);
                 }
             }
-            currentFrame = base.Frame;
+            currentSize = Bounds.Size;
         }
 
         /// <summary></summary>
@@ -499,14 +525,14 @@ namespace Prism.iOS.UI.Controls
 
         private void OnBackgroundImageLoaded(object sender, EventArgs e)
         {
-            BackgroundColor = background.GetColor(base.Frame.Width, base.Frame.Height, null);
+            BackgroundColor = background.GetColor(Bounds.Width, Bounds.Height, null);
         }
 
         private void OnSelectedBackgroundImageLoaded(object sender, EventArgs e)
         {
             if (SelectedBackgroundView != null)
             {
-                SelectedBackgroundView.BackgroundColor = selectedBackground.GetColor(base.Frame.Width, base.Frame.Height, null);
+                SelectedBackgroundView.BackgroundColor = selectedBackground.GetColor(Bounds.Width, Bounds.Height, null);
             }
         }
 

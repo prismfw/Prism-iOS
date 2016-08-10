@@ -51,7 +51,7 @@ namespace Prism.iOS.UI.Controls
                     (background as ImageBrush).ClearImageHandler(OnBackgroundImageLoaded);
 
                     background = value;
-                    navigationBar.BarTintColor = background.GetColor(navigationBar.Frame.Width, navigationBar.Frame.Height, OnBackgroundImageLoaded);
+                    navigationBar.BarTintColor = background.GetColor(navigationBar.Bounds.Width, navigationBar.Bounds.Height, OnBackgroundImageLoaded);
                     OnPropertyChanged(Prism.UI.Controls.ViewStackHeader.BackgroundProperty);
                 }
             }
@@ -127,7 +127,7 @@ namespace Prism.iOS.UI.Controls
                     foreground = value;
 
                     var uifont = navigationBar.TitleTextAttributes.Font;
-                    var size = Title.GetStringSize(navigationBar.Frame.Size, uifont);
+                    var size = Title.GetStringSize(navigationBar.Bounds.Size, uifont);
                     navigationBar.TitleTextAttributes = new UIStringAttributes()
                     {
                         Font = uifont,
@@ -177,7 +177,7 @@ namespace Prism.iOS.UI.Controls
 
         private void OnBackgroundImageLoaded(object sender, EventArgs e)
         {
-            navigationBar.BarTintColor = background.GetColor(navigationBar.Frame.Width, navigationBar.Frame.Height, null);
+            navigationBar.BarTintColor = background.GetColor(navigationBar.Bounds.Width, navigationBar.Bounds.Height, null);
         }
 
         private void OnForegroundImageLoaded(object sender, EventArgs e)
@@ -193,7 +193,7 @@ namespace Prism.iOS.UI.Controls
         private void SetForeground()
         {
             var uifont = fontFamily.GetUIFont(fontSize, fontStyle);
-            var size = Title.GetStringSize(navigationBar.Frame.Size, uifont);
+            var size = Title.GetStringSize(navigationBar.Bounds.Size, uifont);
             navigationBar.TitleTextAttributes = new UIStringAttributes()
             {
                 Font = uifont,

@@ -146,6 +146,16 @@ namespace Prism.iOS
         }
 
         /// <summary>
+        /// Gets a <see cref="CGAffineTransform"/> from a <see cref="Matrix"/>.
+        /// </summary>
+        /// <param name="matrix">The matrix.</param>
+        public static CGAffineTransform GetCGAffineTransform(this Matrix matrix)
+        {
+            return new CGAffineTransform((nfloat)matrix.M11, (nfloat)matrix.M12, (nfloat)matrix.M21,
+                (nfloat)matrix.M22, (nfloat)matrix.OffsetX, (nfloat)matrix.OffsetY);
+        }
+
+        /// <summary>
         /// Gets a <see cref="CGColor"/> from a <see cref="Color"/>.
         /// </summary>
         /// <param name="color">The color.</param>
@@ -418,6 +428,15 @@ namespace Prism.iOS
             }
 
             return retval;
+        }
+
+        /// <summary>
+        /// Gets a <see cref="Matrix"/> from a <see cref="CGAffineTransform"/>.
+        /// </summary>
+        /// <param name="transform">The transform.</param>
+        public static Matrix GetMatrix(this CGAffineTransform transform)
+        {
+            return new Matrix(transform.xx, transform.yx, transform.xy, transform.yy, transform.x0, transform.y0);
         }
 
         /// <summary>

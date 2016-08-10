@@ -101,8 +101,12 @@ namespace Prism.iOS.UI
         /// </summary>
         public Rectangle Frame
         {
-            get { return View.Frame.GetRectangle(); }
-            set { View.Frame = value.GetCGRect(); }
+            get { return new Rectangle(View.Center.X - (View.Bounds.Width / 2), View.Center.Y - (View.Bounds.Height / 2), View.Bounds.Width, View.Bounds.Height); }
+            set
+            {
+                View.Bounds = new CGRect(View.Bounds.Location, value.Size.GetCGSize());
+                View.Center = new CGPoint(value.X + (value.Width / 2), value.Y + (value.Height / 2));
+            }
         }
 
         /// <summary>
@@ -194,6 +198,26 @@ namespace Prism.iOS.UI
         }
 
         /// <summary>
+        /// Gets or sets transformation information that affects the rendering position of this instance.
+        /// </summary>
+        public INativeTransform RenderTransform
+        {
+            get { return renderTransform; }
+            set
+            {
+                if (value != renderTransform)
+                {
+                    (renderTransform as Media.Transform)?.RemoveView(View);
+                    renderTransform = value;
+                    (renderTransform as Media.Transform)?.AddView(View);
+
+                    OnPropertyChanged(Visual.RenderTransformProperty);
+                }
+            }
+        }
+        private INativeTransform renderTransform;
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="SplitView"/> class.
         /// </summary>
         public SplitView()
@@ -223,7 +247,7 @@ namespace Prism.iOS.UI
         /// <param name="constraints">The width and height that the object is not allowed to exceed.</param>
         public Size Measure(Size constraints)
         {
-            return new Size(Math.Min(View.Frame.Width, constraints.Width), Math.Min(View.Frame.Height, constraints.Height));
+            return new Size(Math.Min(View.Bounds.Width, constraints.Width), Math.Min(View.Bounds.Height, constraints.Height));
         }
 
         /// <summary>
@@ -263,9 +287,9 @@ namespace Prism.iOS.UI
                 OnPropertyChanged(Prism.UI.SplitView.ActualMasterWidthProperty);
             }
 
-            if ((View.Frame.Width - PrimaryColumnWidth) != ActualDetailWidth)
+            if ((View.Bounds.Width - PrimaryColumnWidth) != ActualDetailWidth)
             {
-                ActualDetailWidth = (View.Frame.Width - PrimaryColumnWidth);
+                ActualDetailWidth = (View.Bounds.Width - PrimaryColumnWidth);
                 OnPropertyChanged(Prism.UI.SplitView.ActualDetailWidthProperty);
             }
             

@@ -26,7 +26,6 @@ using Foundation;
 using UIKit;
 using Prism.Native;
 using Prism.UI;
-using Prism.UI.Controls;
 using Prism.UI.Media;
 
 namespace Prism.iOS.UI
@@ -88,7 +87,7 @@ namespace Prism.iOS.UI
                     (background as ImageBrush).ClearImageHandler(OnBackgroundImageLoaded);
 
                     background = value;
-                    View.BackgroundColor = background.GetColor(View.Frame.Width, View.Frame.Height, OnBackgroundImageLoaded) ?? UIColor.White;
+                    View.BackgroundColor = background.GetColor(View.Bounds.Width, View.Bounds.Height, OnBackgroundImageLoaded) ?? UIColor.White;
                     OnPropertyChanged(Prism.UI.ContentView.BackgroundProperty);
                 }
             }
@@ -125,8 +124,12 @@ namespace Prism.iOS.UI
         /// </summary>
         public Rectangle Frame
         {
-            get { return View.Frame.GetRectangle(); }
-            set { View.Frame = value.GetCGRect(); }
+            get { return new Rectangle(View.Center.X - (View.Bounds.Width / 2), View.Center.Y - (View.Bounds.Height / 2), View.Bounds.Width, View.Bounds.Height); }
+            set
+            {
+                View.Bounds = new CGRect(View.Bounds.Location, value.Size.GetCGSize());
+                View.Center = new CGPoint(value.X + (value.Width / 2), value.Y + (value.Height / 2));
+            }
         }
         
         /// <summary>
@@ -202,6 +205,26 @@ namespace Prism.iOS.UI
         private INativeActionMenu menu;
 
         /// <summary>
+        /// Gets or sets transformation information that affects the rendering position of this instance.
+        /// </summary>
+        public INativeTransform RenderTransform
+        {
+            get { return renderTransform; }
+            set
+            {
+                if (value != renderTransform)
+                {
+                    (renderTransform as Media.Transform)?.RemoveView(View);
+                    renderTransform = value;
+                    (renderTransform as Media.Transform)?.AddView(View);
+
+                    OnPropertyChanged(Visual.RenderTransformProperty);
+                }
+            }
+        }
+        private INativeTransform renderTransform;
+
+        /// <summary>
         /// Gets or sets the title of the view.
         /// </summary>
         public new string Title
@@ -258,7 +281,7 @@ namespace Prism.iOS.UI
         /// <param name="constraints">The width and height that the object is not allowed to exceed.</param>
         public Size Measure(Size constraints)
         {
-            return new Size(Math.Min(View.Frame.Width, constraints.Width), Math.Min(View.Frame.Height, constraints.Height));
+            return new Size(Math.Min(View.Bounds.Width, constraints.Width), Math.Min(View.Bounds.Height, constraints.Height));
         }
 
         /// <summary>
@@ -350,7 +373,7 @@ namespace Prism.iOS.UI
         {
             base.ViewDidLoad();
 
-            View.BackgroundColor = background.GetColor(View.Frame.Width, View.Frame.Height, null) ?? UIColor.White;
+            View.BackgroundColor = background.GetColor(View.Bounds.Width, View.Bounds.Height, null) ?? UIColor.White;
         }
 
         /// <summary></summary>
@@ -367,7 +390,7 @@ namespace Prism.iOS.UI
         {
             if (background != null)
             {
-                View.BackgroundColor = background.GetColor(View.Frame.Width, View.Frame.Height, null);
+                View.BackgroundColor = background.GetColor(View.Bounds.Width, View.Bounds.Height, null);
             }
 
             base.ViewDidLayoutSubviews();
@@ -401,7 +424,7 @@ namespace Prism.iOS.UI
 
         private void OnBackgroundImageLoaded(object sender, EventArgs e)
         {
-            View.BackgroundColor = background.GetColor(View.Frame.Width, View.Frame.Height, null) ?? UIColor.White;
+            View.BackgroundColor = background.GetColor(View.Bounds.Width, View.Bounds.Height, null) ?? UIColor.White;
         }
     }
 }

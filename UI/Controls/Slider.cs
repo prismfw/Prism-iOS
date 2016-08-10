@@ -133,7 +133,7 @@ namespace Prism.iOS.UI.Controls
                     else
                     {
                         SetMaxTrackImage(null, UIControlState.Normal);
-                        MaximumTrackTintColor = value.GetColor(base.Frame.Width, base.Frame.Height, null);
+                        MaximumTrackTintColor = value.GetColor(Bounds.Width, Bounds.Height, null);
                     }
 
                     OnPropertyChanged(Control.BackgroundProperty);
@@ -155,7 +155,7 @@ namespace Prism.iOS.UI.Controls
                     (borderBrush as ImageBrush).ClearImageHandler(OnBorderImageLoaded);
 
                     borderBrush = value;
-                    Layer.BorderColor = borderBrush.GetColor(base.Frame.Width, base.Frame.Height, OnBorderImageLoaded)?.CGColor ?? UIColor.Black.CGColor;
+                    Layer.BorderColor = borderBrush.GetColor(Bounds.Width, Bounds.Height, OnBorderImageLoaded)?.CGColor ?? UIColor.Black.CGColor;
                     OnPropertyChanged(Control.BorderBrushProperty);
                 }
             }
@@ -260,7 +260,7 @@ namespace Prism.iOS.UI.Controls
                     else
                     {
                         SetMinTrackImage(null, UIControlState.Normal);
-                        MinimumTrackTintColor = value.GetColor(base.Frame.Width, base.Frame.Height, null);
+                        MinimumTrackTintColor = value.GetColor(Bounds.Width, Bounds.Height, null);
                     }
 
                     OnPropertyChanged(Control.ForegroundProperty);
@@ -274,8 +274,12 @@ namespace Prism.iOS.UI.Controls
         /// </summary>
         public new Rectangle Frame
         {
-            get { return base.Frame.GetRectangle(); }
-            set { base.Frame = value.GetCGRect(); }
+            get { return new Rectangle(Center.X - (Bounds.Width / 2), Center.Y - (Bounds.Height / 2), Bounds.Width, Bounds.Height); }
+            set
+            {
+                Bounds = new CGRect(Bounds.Location, value.Size.GetCGSize());
+                Center = new CGPoint(value.X + (value.Width / 2), value.Y + (value.Height / 2));
+            }
         }
 
         /// <summary>
@@ -396,6 +400,26 @@ namespace Prism.iOS.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets transformation information that affects the rendering position of this instance.
+        /// </summary>
+        public INativeTransform RenderTransform
+        {
+            get { return renderTransform; }
+            set
+            {
+                if (value != renderTransform)
+                {
+                    (renderTransform as Media.Transform)?.RemoveView(this);
+                    renderTransform = value;
+                    (renderTransform as Media.Transform)?.AddView(this);
+
+                    OnPropertyChanged(Visual.RenderTransformProperty);
+                }
+            }
+        }
+        private INativeTransform renderTransform;
+
+        /// <summary>
         /// Gets or sets the interval between steps along the track.
         /// </summary>
         public double StepFrequency
@@ -440,7 +464,7 @@ namespace Prism.iOS.UI.Controls
                     else
                     {
                         SetThumbImage(null, UIControlState.Normal);
-                        ThumbTintColor = value.GetColor(base.Frame.Width, base.Frame.Height, null) ?? UIColor.White;
+                        ThumbTintColor = value.GetColor(Bounds.Width, Bounds.Height, null) ?? UIColor.White;
                     }
 
                     OnPropertyChanged(Prism.UI.Controls.Slider.ThumbBrushProperty);
@@ -485,7 +509,7 @@ namespace Prism.iOS.UI.Controls
         }
         private Visibility visibility;
 
-        private CGRect currentFrame;
+        private CGSize currentSize;
         private double currentValue;
         
         /// <summary>
@@ -547,7 +571,7 @@ namespace Prism.iOS.UI.Controls
             base.Frame = new CGRect(base.Frame.Location, constraints.GetCGSize());
             SizeToFit();
 
-            var size = base.Frame.Size;
+            var size = Bounds.Size;
             base.Frame = frame;
             return new Size(Math.Min(constraints.Width, size.Width + (BorderWidth * 2)),
                 Math.Min(constraints.Height, size.Height + (BorderWidth * 2)));
@@ -585,11 +609,11 @@ namespace Prism.iOS.UI.Controls
 
             base.LayoutSubviews();
 
-            if (currentFrame != base.Frame)
+            if (currentSize != Bounds.Size)
             {
-                Layer.BorderColor = borderBrush.GetColor(base.Frame.Width, base.Frame.Height, null)?.CGColor ?? UIColor.Black.CGColor;
+                Layer.BorderColor = borderBrush.GetColor(Bounds.Width, Bounds.Height, null)?.CGColor ?? UIColor.Black.CGColor;
             }
-            currentFrame = base.Frame;
+            currentSize = Bounds.Size;
         }
 
         /// <summary></summary>
@@ -718,7 +742,7 @@ namespace Prism.iOS.UI.Controls
 
         private void OnBorderImageLoaded(object sender, EventArgs e)
         {
-            Layer.BorderColor = borderBrush.GetColor(base.Frame.Width, base.Frame.Height, null)?.CGColor ?? UIColor.Black.CGColor;
+            Layer.BorderColor = borderBrush.GetColor(Bounds.Width, Bounds.Height, null)?.CGColor ?? UIColor.Black.CGColor;
         }
 
         private void OnForegroundImageLoaded(object sender, EventArgs e)

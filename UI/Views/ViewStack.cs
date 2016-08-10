@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using CoreGraphics;
 using Foundation;
 using ObjCRuntime;
 using Prism.iOS.UI.Controls;
@@ -103,8 +104,12 @@ namespace Prism.iOS.UI
         /// </summary>
         public Rectangle Frame
         {
-            get { return View.Frame.GetRectangle(); }
-            set { View.Frame = value.GetCGRect(); }
+            get { return new Rectangle(View.Center.X - (View.Bounds.Width / 2), View.Center.Y - (View.Bounds.Height / 2), View.Bounds.Width, View.Bounds.Height); }
+            set
+            {
+                View.Bounds = new CGRect(View.Bounds.Location, value.Size.GetCGSize());
+                View.Center = new CGPoint(value.X + (value.Width / 2), value.Y + (value.Height / 2));
+            }
         }
 
         /// <summary>
@@ -153,6 +158,26 @@ namespace Prism.iOS.UI
         /// Gets or sets the method to invoke when this instance requests a measurement of itself and its children.
         /// </summary>
         public MeasureRequestHandler MeasureRequest { get; set; }
+
+        /// <summary>
+        /// Gets or sets transformation information that affects the rendering position of this instance.
+        /// </summary>
+        public INativeTransform RenderTransform
+        {
+            get { return renderTransform; }
+            set
+            {
+                if (value != renderTransform)
+                {
+                    (renderTransform as Media.Transform)?.RemoveView(View);
+                    renderTransform = value;
+                    (renderTransform as Media.Transform)?.AddView(View);
+
+                    OnPropertyChanged(Visual.RenderTransformProperty);
+                }
+            }
+        }
+        private INativeTransform renderTransform;
 
         /// <summary>
         /// Gets a collection of the views that are currently a part of the stack.
@@ -206,7 +231,7 @@ namespace Prism.iOS.UI
         /// <param name="constraints">The width and height that the object is not allowed to exceed.</param>
         public Size Measure(Size constraints)
         {
-            return new Size(Math.Min(View.Frame.Width, constraints.Width), Math.Min(View.Frame.Height, constraints.Height));
+            return new Size(Math.Min(View.Bounds.Width, constraints.Width), Math.Min(View.Bounds.Height, constraints.Height));
         }
 
         /// <summary>

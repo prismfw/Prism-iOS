@@ -64,7 +64,7 @@ namespace Prism.iOS.UI.Controls
                         var controller = (attachedParent as UIViewController)?.PresentedViewController as UIAlertController;
                         if (controller != null)
                         {
-                            controller.View.BackgroundColor = image.GetColor(controller.View.Frame.Width, controller.View.Frame.Height, imageBrush.Stretch);
+                            controller.View.BackgroundColor = image.GetColor(controller.View.Bounds.Width, controller.View.Bounds.Height, imageBrush.Stretch);
                         }
                     }
                     else
@@ -72,7 +72,7 @@ namespace Prism.iOS.UI.Controls
                         var controller = (attachedParent as UIViewController)?.PresentedViewController as UIAlertController;
                         if (controller != null)
                         {
-                            controller.View.BackgroundColor = background.GetColor(controller.View.Frame.Width, controller.View.Frame.Height, null);
+                            controller.View.BackgroundColor = background.GetColor(controller.View.Bounds.Width, controller.View.Bounds.Height, null);
                         }
                     }
                     
@@ -120,7 +120,7 @@ namespace Prism.iOS.UI.Controls
                         var controller = (attachedParent as UIViewController)?.PresentedViewController as UIAlertController;
                         if (controller != null)
                         {
-                            controller.View.TintColor = image.GetColor(controller.View.Frame.Width, controller.View.Frame.Height, imageBrush.Stretch);
+                            controller.View.TintColor = image.GetColor(controller.View.Bounds.Width, controller.View.Bounds.Height, imageBrush.Stretch);
                         }
                         
                         var color = image.GetColor(30, 30, imageBrush.Stretch);
@@ -143,7 +143,7 @@ namespace Prism.iOS.UI.Controls
                         var controller = (attachedParent as UIViewController)?.PresentedViewController as UIAlertController;
                         if (controller != null)
                         {
-                            controller.View.TintColor = foreground.GetColor(controller.View.Frame.Width, controller.View.Frame.Height, null);
+                            controller.View.TintColor = foreground.GetColor(controller.View.Bounds.Width, controller.View.Bounds.Height, null);
                         }
                         
                         SetOverflowColor();
@@ -342,8 +342,8 @@ namespace Prism.iOS.UI.Controls
             }
             
             controller.AddAction(UIAlertAction.Create(cancelButtonTitle, UIAlertActionStyle.Cancel, null));
-            controller.View.BackgroundColor = background.GetColor(controller.View.Frame.Width, controller.View.Frame.Height, null);
-            controller.View.TintColor = foreground.GetColor(controller.View.Frame.Width, controller.View.Frame.Height, null);
+            controller.View.BackgroundColor = background.GetColor(controller.View.Bounds.Width, controller.View.Bounds.Height, null);
+            controller.View.TintColor = foreground.GetColor(controller.View.Bounds.Width, controller.View.Bounds.Height, null);
             if (controller.PopoverPresentationController != null)
             {
                 controller.PopoverPresentationController.BarButtonItem = (UIBarButtonItem)sender;
@@ -394,7 +394,7 @@ namespace Prism.iOS.UI.Controls
             var controller = (attachedParent as UIViewController)?.PresentedViewController as UIAlertController;
             if (controller != null)
             {
-                controller.View.BackgroundColor = background.GetColor(controller.View.Frame.Width, controller.View.Frame.Height, null);
+                controller.View.BackgroundColor = background.GetColor(controller.View.Bounds.Width, controller.View.Bounds.Height, null);
             }
         }
 
@@ -403,7 +403,7 @@ namespace Prism.iOS.UI.Controls
             var controller = (attachedParent as UIViewController)?.PresentedViewController as UIAlertController;
             if (controller != null)
             {
-                controller.View.TintColor = foreground.GetColor(controller.View.Frame.Width, controller.View.Frame.Height, null);
+                controller.View.TintColor = foreground.GetColor(controller.View.Bounds.Width, controller.View.Bounds.Height, null);
             }
             
             SetOverflowColor();
