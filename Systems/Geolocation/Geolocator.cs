@@ -228,7 +228,7 @@ namespace Prism.iOS.Systems.Geolocation
             
             public override void Failed (CLLocationManager manager, NSError error)
             {
-                Utilities.Logger.Error("Error encountered in Geolocator: " + error.LocalizedDescription);
+                Prism.Utilities.Logger.Error("Error encountered in Geolocator: " + error.LocalizedDescription);
                 
                 var geolocator = (Geolocator)manager;
                 geolocator.lastLocation = null;

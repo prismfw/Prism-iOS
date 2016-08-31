@@ -47,7 +47,7 @@
     <Compile Include="UI\Controls\Label.cs" />
     <Compile Include="UI\Views\SplitView.cs" />
     <Compile Include="UI\Views\TabView.cs" />
-    <Compile Include="Timer.cs" />
+    <Compile Include="Utilities\Timer.cs" />
     <Compile Include="UI\Views\TabbedSplitView.cs" />
     <Compile Include="UI\LoadIndicator.cs" />
     <Compile Include="UI\Popup.cs" />

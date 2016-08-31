@@ -82,7 +82,7 @@ namespace Prism.iOS.UI
             var value = NSBundle.MainBundle.ObjectForInfoDictionary("UIViewControllerBasedStatusBarAppearance");
             if (value == null || ((value as NSNumber)?.BoolValue ?? true))
             {
-                Utilities.Logger.Warn("StatusBar requires an entry in Info.plist with a key of UIViewControllerBasedStatusBarAppearance and a value of false.  Calls into StatusBar will not have an effect without this entry!");
+                Prism.Utilities.Logger.Warn("StatusBar requires an entry in Info.plist with a key of UIViewControllerBasedStatusBarAppearance and a value of false.  Calls into StatusBar will not have an effect without this entry!");
             }
         }
         

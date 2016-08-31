@@ -23,7 +23,7 @@ using System;
 using Foundation;
 using Prism.Native;
 
-namespace Prism.iOS
+namespace Prism.iOS.Utilities
 {
     /// <summary>
     /// Represents an iOS implementation of an <see cref="INativeTimer"/>.
