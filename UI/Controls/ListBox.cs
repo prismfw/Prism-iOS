@@ -488,6 +488,14 @@ namespace Prism.iOS.UI.Controls
         }
 
         /// <summary>
+        /// Returns a collection of the <see cref="INativeListBoxItem"/> objects that are in the list.
+        /// </summary>
+        public IEnumerable<INativeListBoxItem> GetChildItems()
+        {
+            return VisibleCells.OfType<INativeListBoxItem>();
+        }
+
+        /// <summary>
         /// Invalidates the arrangement of this instance's children.
         /// </summary>
         public void InvalidateArrange()
