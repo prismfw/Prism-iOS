@@ -118,6 +118,15 @@ namespace Prism.iOS.UI
         public INativeViewStackHeader Header { get; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether the back button is enabled.
+        /// </summary>
+        public bool IsBackButtonEnabled
+        {
+            get { return !(TopViewController?.NavigationItem?.HidesBackButton) ?? true; }
+            set { TopViewController?.NavigationItem?.SetHidesBackButton(!value, false); }
+        }
+
+        /// <summary>
         /// Gets or sets a value indicating whether the header is hidden.
         /// </summary>
         public bool IsHeaderHidden
