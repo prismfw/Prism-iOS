@@ -218,6 +218,11 @@ namespace Prism.iOS.UI
         private INativeTransform renderTransform;
 
         /// <summary>
+        /// Gets or sets the visual theme that should be used by this instance.
+        /// </summary>
+        public Theme RequestedTheme { get; set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="SplitView"/> class.
         /// </summary>
         public SplitView()

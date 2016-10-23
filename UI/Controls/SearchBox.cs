@@ -331,13 +331,13 @@ namespace Prism.iOS.UI.Controls
                 if (value != isEnabled)
                 {
                     isEnabled = value;
-                    OnPropertyChanged(Control.IsEnabledProperty);
-
                     var tf = this.GetSubview<UITextField>();
                     if (tf != null)
                     {
                         tf.Enabled = value;
                     }
+
+                    OnPropertyChanged(Control.IsEnabledProperty);
                 }
             }
         }
@@ -445,6 +445,11 @@ namespace Prism.iOS.UI.Controls
             }
         }
         private INativeTransform renderTransform;
+
+        /// <summary>
+        /// Gets or sets the visual theme that should be used by this instance.
+        /// </summary>
+        public Theme RequestedTheme { get; set; }
 
         /// <summary>
         /// Gets or sets the display state of the element.

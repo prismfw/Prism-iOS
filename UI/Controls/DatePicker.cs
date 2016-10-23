@@ -416,6 +416,11 @@ namespace Prism.iOS.UI.Controls
         private INativeTransform renderTransform;
 
         /// <summary>
+        /// Gets or sets the visual theme that should be used by this instance.
+        /// </summary>
+        public Theme RequestedTheme { get; set; }
+
+        /// <summary>
         /// Gets or sets the selected date.
         /// </summary>
         public DateTime? SelectedDate
@@ -428,13 +433,14 @@ namespace Prism.iOS.UI.Controls
                     var oldValue = selectedDate;
                     selectedDate = value;
                     OnPropertyChanged(Prism.UI.Controls.DatePicker.SelectedDateProperty);
-                    DateChanged(this, new DateChangedEventArgs(oldValue, selectedDate));
 
-                    SetTitle();
                     if (IsOpen)
                     {
                         datePickerController.SetValue(areAnimationsEnabled);
                     }
+
+                    DateChanged(this, new DateChangedEventArgs(oldValue, selectedDate));
+                    SetTitle();
                 }
             }
         }

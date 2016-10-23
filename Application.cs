@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 using System;
 using Foundation;
 using Prism.Native;
-using Prism.Utilities;
+using Prism.UI;
 using UIKit;
 
 namespace Prism.iOS
@@ -53,6 +53,14 @@ namespace Prism.iOS
         /// Occurs when an unhandled exception is encountered.
         /// </summary>
         public event EventHandler<ErrorEventArgs> UnhandledException;
+
+        /// <summary>
+        /// Gets the default theme that is used by the application.
+        /// </summary>
+        public Theme DefaultTheme
+        {
+            get { return Theme.Light; }
+        }
 
         /// <summary>
         /// Gets the platform on which the application is running.

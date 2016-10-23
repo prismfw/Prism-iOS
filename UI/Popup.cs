@@ -209,6 +209,11 @@ namespace Prism.iOS.UI
         }
         private INativeTransform renderTransform;
 
+        /// <summary>
+        /// Gets or sets the visual theme that should be used by this instance.
+        /// </summary>
+        public Theme RequestedTheme { get; set; }
+
         private UITapGestureRecognizer dismissalGesture;
         private bool isKeyboardChanging;
 
