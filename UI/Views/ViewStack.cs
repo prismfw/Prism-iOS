@@ -359,6 +359,9 @@ namespace Prism.iOS.UI
             MeasureRequest(false, null);
             ArrangeRequest(false, null);
 
+            Header.MeasureRequest(false, new Size(View.Frame.Width, NavigationBar?.Frame.Bottom ?? 0));
+            Header.ArrangeRequest(false, null);
+
             base.ViewWillLayoutSubviews();
         }
 
@@ -371,6 +374,8 @@ namespace Prism.iOS.UI
                 IsLoaded = true;
                 OnPropertyChanged(Visual.IsLoadedProperty);
                 Loaded(this, EventArgs.Empty);
+
+                (Header as ViewStackHeader)?.OnLoaded();
             }
 
             base.ViewWillAppear(animated);
@@ -387,6 +392,8 @@ namespace Prism.iOS.UI
                 IsLoaded = false;
                 OnPropertyChanged(Visual.IsLoadedProperty);
                 Unloaded(this, EventArgs.Empty);
+
+                (Header as ViewStackHeader)?.OnUnloaded();
             }
         }
 

@@ -20,8 +20,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
 using System;
+using CoreGraphics;
 using Foundation;
 using Prism.Native;
+using Prism.UI;
 using Prism.UI.Media;
 using UIKit;
 
@@ -34,9 +36,41 @@ namespace Prism.iOS.UI.Controls
     public sealed class ViewStackHeader : INativeViewStackHeader
     {
         /// <summary>
+        /// Occurs when this instance has been attached to the visual tree and is ready to be rendered.
+        /// </summary>
+        public event EventHandler Loaded;
+
+        /// <summary>
         /// Occurs when the value of a property is changed.
         /// </summary>
         public event EventHandler<FrameworkPropertyChangedEventArgs> PropertyChanged;
+
+        /// <summary>
+        /// Occurs when this instance has been detached from the visual tree.
+        /// </summary>
+        public event EventHandler Unloaded;
+
+        /// <summary>
+        /// Gets or sets a value indicating whether animations are enabled for this instance.
+        /// </summary>
+        public bool AreAnimationsEnabled
+        {
+            get { return areAnimationsEnabled; }
+            set
+            {
+                if (value != areAnimationsEnabled)
+                {
+                    areAnimationsEnabled = value;
+                    OnPropertyChanged(Visual.AreAnimationsEnabledProperty);
+                }
+            }
+        }
+        private bool areAnimationsEnabled;
+
+        /// <summary>
+        /// Gets or sets the method to invoke when this instance requests an arrangement of its children.
+        /// </summary>
+        public ArrangeRequestHandler ArrangeRequest { get; set; }
 
         /// <summary>
         /// Gets or sets the background for the header.
@@ -141,6 +175,89 @@ namespace Prism.iOS.UI.Controls
         private Brush foreground;
 
         /// <summary>
+        /// Gets or sets a <see cref="Rectangle"/> that represents the size and position of the element relative to its parent container.
+        /// </summary>
+        public Rectangle Frame
+        {
+            get
+            {
+                return new Rectangle(navigationBar.Center.X - (navigationBar.Bounds.Width / 2),
+                    navigationBar.Center.Y - (navigationBar.Bounds.Height / 2), navigationBar.Bounds.Width, navigationBar.Bounds.Height + navigationBar.Frame.Y);
+            }
+            set
+            {
+                value.Height -= navigationBar.Frame.Y;
+                navigationBar.Bounds = new CGRect(navigationBar.Bounds.Location, value.Size.GetCGSize());
+                navigationBar.Center = new CGPoint(value.X + (value.Width / 2), value.Y + (value.Height / 2) + navigationBar.Frame.Y);
+
+                if (background is LinearGradientBrush || background is ImageBrush)
+                {
+                    navigationBar.BarTintColor = background.GetColor(navigationBar.Bounds.Width, navigationBar.Bounds.Height, null);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance can be considered a valid result for hit testing.
+        /// </summary>
+        public bool IsHitTestVisible
+        {
+            get { return navigationBar.UserInteractionEnabled; }
+            set
+            {
+                if (value != navigationBar.UserInteractionEnabled)
+                {
+                    navigationBar.UserInteractionEnabled = value;
+                    OnPropertyChanged(Visual.IsHitTestVisibleProperty);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether the header is inset on top of the view stack content.
+        /// A value of <c>false</c> indicates that the header offsets the view stack content.
+        /// </summary>
+        public bool IsInset
+        {
+            get { return true; }
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether this instance has been loaded and is ready for rendering.
+        /// </summary>
+        public bool IsLoaded { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the method to invoke when this instance requests a measurement of itself and its children.
+        /// </summary>
+        public MeasureRequestHandler MeasureRequest { get; set; }
+
+        /// <summary>
+        /// Gets or sets transformation information that affects the rendering position of this instance.
+        /// </summary>
+        public INativeTransform RenderTransform
+        {
+            get { return renderTransform; }
+            set
+            {
+                if (value != renderTransform)
+                {
+                    (renderTransform as Media.Transform)?.RemoveView(navigationBar);
+                    renderTransform = value;
+                    (renderTransform as Media.Transform)?.AddView(navigationBar);
+
+                    OnPropertyChanged(Visual.RenderTransformProperty);
+                }
+            }
+        }
+        private INativeTransform renderTransform;
+
+        /// <summary>
+        /// Gets or sets the visual theme that should be used by this instance.
+        /// </summary>
+        public Theme RequestedTheme { get; set; }
+
+        /// <summary>
         /// Gets or sets the title for the header.
         /// </summary>
         public string Title
@@ -166,12 +283,57 @@ namespace Prism.iOS.UI.Controls
             navigationBar = navBar;
         }
 
+        /// <summary>
+        /// Invalidates the arrangement of this instance's children.
+        /// </summary>
+        public void InvalidateArrange()
+        {
+            navigationBar.SetNeedsLayout();
+        }
+
+        /// <summary>
+        /// Invalidates the measurement of this instance and its children.
+        /// </summary>
+        public void InvalidateMeasure()
+        {
+            navigationBar.SetNeedsLayout();
+        }
+
+        /// <summary>
+        /// Measures the element and returns its desired size.
+        /// </summary>
+        /// <param name="constraints">The width and height that the element is not allowed to exceed.</param>
+        public Size Measure(Size constraints)
+        {
+            return new Size(constraints.Width, navigationBar.Frame.Bottom);
+        }
+
         internal void CheckTitle()
         {
             if (title != navigationBar.TopItem?.Title)
             {
                 title = navigationBar.TopItem.Title;
                 OnPropertyChanged(Prism.UI.Controls.ViewStackHeader.TitleProperty);
+            }
+        }
+
+        internal void OnLoaded()
+        {
+            if (!IsLoaded)
+            {
+                IsLoaded = true;
+                OnPropertyChanged(Visual.IsLoadedProperty);
+                Loaded(this, EventArgs.Empty);
+            }
+        }
+
+        internal void OnUnloaded()
+        {
+            if (IsLoaded)
+            {
+                IsLoaded = false;
+                OnPropertyChanged(Visual.IsLoadedProperty);
+                Unloaded(this, EventArgs.Empty);
             }
         }
 
