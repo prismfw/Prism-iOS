@@ -239,11 +239,11 @@ namespace Prism.iOS.UI.Controls
         /// </summary>
         public double FontSize
         {
-            get { return this.GetSubview<UITextField>()?.Font?.PointSize ?? Fonts.SearchBoxFontSize; }
+            get { return this.GetSubview<UITextField>()?.Font?.PointSize ?? 0; }
             set
             {
                 var tf = this.GetSubview<UITextField>();
-                if (tf != null && value != (tf.Font?.PointSize ?? Fonts.SearchBoxFontSize))
+                if (tf != null && value != (tf.Font?.PointSize ?? 0))
                 {
                     tf.Font = fontFamily.GetUIFont(value, tf.Font.GetFontStyle());
                     OnPropertyChanged(Control.FontSizeProperty);
@@ -256,7 +256,7 @@ namespace Prism.iOS.UI.Controls
         /// </summary>
         public FontStyle FontStyle
         {
-            get { return this.GetSubview<UITextField>()?.Font?.GetFontStyle() ?? Fonts.SearchBoxFontStyle; }
+            get { return this.GetSubview<UITextField>()?.Font?.GetFontStyle() ?? FontStyle.Normal; }
             set
             {
                 var tf = this.GetSubview<UITextField>();

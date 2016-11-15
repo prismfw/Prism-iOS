@@ -218,10 +218,10 @@ namespace Prism.iOS.UI.Controls
         /// </summary>
         public double FontSize
         {
-            get { return Font?.PointSize ?? Fonts.DatePickerFontSize; }
+            get { return Font?.PointSize ?? 0; }
             set
             {
-                if (value != (Font?.PointSize ?? Fonts.DatePickerFontSize))
+                if (value != (Font?.PointSize ?? 0))
                 {
                     Font = fontFamily.GetUIFont(value, FontStyle);
                     OnPropertyChanged(Control.FontSizeProperty);
@@ -234,10 +234,10 @@ namespace Prism.iOS.UI.Controls
         /// </summary>
         public FontStyle FontStyle
         {
-            get { return Font?.GetFontStyle() ?? Fonts.DatePickerFontStyle; }
+            get { return Font?.GetFontStyle() ?? FontStyle.Normal; }
             set
             {
-                if (value != (Font?.GetFontStyle() ?? Fonts.DatePickerFontStyle))
+                if (value != (Font?.GetFontStyle() ?? FontStyle.Normal))
                 {
                     Font = fontFamily.GetUIFont(FontSize, value);
                     OnPropertyChanged(Control.FontStyleProperty);

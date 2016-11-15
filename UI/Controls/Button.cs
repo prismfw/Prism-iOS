@@ -215,10 +215,10 @@ namespace Prism.iOS.UI.Controls
         /// </summary>
         public double FontSize
         {
-            get { return Font?.PointSize ?? Fonts.ButtonFontSize; }
+            get { return Font?.PointSize ?? 0; }
             set
             {
-                if (value != (Font?.PointSize ?? Fonts.ButtonFontSize))
+                if (value != (Font?.PointSize ?? 0))
                 {
                     Font = fontFamily.GetUIFont(value, FontStyle);
                     OnPropertyChanged(Control.FontSizeProperty);
@@ -231,10 +231,10 @@ namespace Prism.iOS.UI.Controls
         /// </summary>
         public FontStyle FontStyle
         {
-            get { return Font?.GetFontStyle() ?? Fonts.ButtonFontStyle; }
+            get { return Font?.GetFontStyle() ?? FontStyle.Normal; }
             set
             {
-                if (value != (Font?.GetFontStyle() ?? Fonts.ButtonFontStyle))
+                if (value != (Font?.GetFontStyle() ?? FontStyle.Normal))
                 {
                     Font = fontFamily.GetUIFont(FontSize, value);
                     OnPropertyChanged(Control.FontStyleProperty);

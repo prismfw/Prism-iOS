@@ -95,7 +95,7 @@ namespace Prism.iOS.UI.Controls
                     var attributes = GetTitleTextAttributes(UIControlState.Normal);
                     SetTitleTextAttributes(new UITextAttributes()
                     {
-                        Font = fontFamily.GetUIFont(attributes.Font?.PointSize ?? Fonts.TabItemFontSize, attributes.Font?.GetFontStyle() ?? Fonts.TabItemFontStyle),
+                        Font = fontFamily.GetUIFont(attributes.Font?.PointSize ?? 0, attributes.Font?.GetFontStyle() ?? FontStyle.Normal),
                         TextColor = attributes.TextColor
                     }, UIControlState.Normal);
 

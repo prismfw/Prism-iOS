@@ -118,10 +118,10 @@ namespace Prism.iOS.UI.Controls
         /// </summary>
         public double FontSize
         {
-            get { return Font?.PointSize ?? Fonts.StandardLabelFontSize; }
+            get { return Font?.PointSize ?? 0; }
             set
             {
-                if (value != (Font?.PointSize ?? Fonts.StandardLabelFontSize))
+                if (value != (Font?.PointSize ?? 0))
                 {
                     Font = fontFamily.GetUIFont(value, FontStyle);
                     OnPropertyChanged(Prism.UI.Controls.Label.FontSizeProperty);
@@ -134,10 +134,10 @@ namespace Prism.iOS.UI.Controls
         /// </summary>
         public FontStyle FontStyle
         {
-            get { return Font?.GetFontStyle() ?? Fonts.StandardLabelFontStyle; }
+            get { return Font?.GetFontStyle() ?? FontStyle.Normal; }
             set
             {
-                if (value != (Font?.GetFontStyle() ?? Fonts.StandardLabelFontStyle))
+                if (value != (Font?.GetFontStyle() ?? FontStyle.Normal))
                 {
                     Font = fontFamily.GetUIFont(FontSize, value);
                     OnPropertyChanged(Prism.UI.Controls.Label.FontStyleProperty);
