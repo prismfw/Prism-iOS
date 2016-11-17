@@ -347,25 +347,52 @@ namespace Prism.iOS.UI.Controls
         public Theme RequestedTheme { get; set; }
 
         /// <summary>
-        /// Gets or sets the <see cref="Brush"/> to apply to the thumb of the control.
+        /// Gets or sets the <see cref="Brush"/> to apply to the thumb of the control when the control's value is false.
         /// </summary>
-        public Brush ThumbBrush
+        public Brush ThumbOffBrush
         {
-            get { return thumbBrush; }
+            get { return thumbOffBrush; }
             set
             {
-                if (value != thumbBrush)
+                if (value != thumbOffBrush)
                 {
-                    (thumbBrush as ImageBrush).ClearImageHandler(OnThumbImageLoaded);
+                    (thumbOffBrush as ImageBrush).ClearImageHandler(OnThumbOffImageLoaded);
 
-                    thumbBrush = value;
-                    ThumbTintColor = value.GetColor(Bounds.Width, Bounds.Height, null) ?? UIColor.White;
+                    thumbOffBrush = value;
+                    if (!On)
+                    {
+                        ThumbTintColor = value.GetColor(Bounds.Width, Bounds.Height, null);
+                    }
 
-                    OnPropertyChanged(Prism.UI.Controls.ToggleSwitch.ThumbBrushProperty);
+                    OnPropertyChanged(Prism.UI.Controls.ToggleSwitch.ThumbOffBrushProperty);
                 }
             }
         }
-        private Brush thumbBrush;
+        private Brush thumbOffBrush;
+
+        /// <summary>
+        /// Gets or sets the <see cref="Brush"/> to apply to the thumb of the control when the control's value is true.
+        /// </summary>
+        public Brush ThumbOnBrush
+        {
+            get { return thumbOnBrush; }
+            set
+            {
+                if (value != thumbOnBrush)
+                {
+                    (thumbOnBrush as ImageBrush).ClearImageHandler(OnThumbOnImageLoaded);
+
+                    thumbOnBrush = value;
+                    if (On)
+                    {
+                        ThumbTintColor = value.GetColor(Bounds.Width, Bounds.Height, null);
+                    }
+
+                    OnPropertyChanged(Prism.UI.Controls.ToggleSwitch.ThumbOnBrushProperty);
+                }
+            }
+        }
+        private Brush thumbOnBrush;
 
         /// <summary>
         /// Gets or sets the value of the toggle switch.
@@ -415,6 +442,15 @@ namespace Prism.iOS.UI.Controls
 
             base.ValueChanged += (sender, e) =>
             {
+                if (On && (thumbOnBrush != null || ThumbTintColor != null))
+                {
+                    ThumbTintColor = thumbOnBrush.GetColor(Bounds.Width, Bounds.Height, null);
+                }
+                else if (!On && (thumbOffBrush != null || ThumbTintColor != null))
+                {
+                    ThumbTintColor = thumbOffBrush.GetColor(Bounds.Width, Bounds.Height, null);
+                }
+
                 OnPropertyChanged(Prism.UI.Controls.ToggleSwitch.ValueProperty);
                 ValueChanged(this, EventArgs.Empty);
             };
@@ -627,9 +663,20 @@ namespace Prism.iOS.UI.Controls
             OnTintColor = foreground.GetColor(Bounds.Width, Bounds.Height, null);
         }
 
-        private void OnThumbImageLoaded(object sender, EventArgs e)
+        private void OnThumbOffImageLoaded(object sender, EventArgs e)
         {
-            ThumbTintColor = thumbBrush.GetColor(Bounds.Width, Bounds.Height, null) ?? UIColor.White;
+            if (!On)
+            {
+                ThumbTintColor = thumbOffBrush.GetColor(Bounds.Width, Bounds.Height, null);
+            }
+        }
+
+        private void OnThumbOnImageLoaded(object sender, EventArgs e)
+        {
+            if (On)
+            {
+                ThumbTintColor = thumbOnBrush.GetColor(Bounds.Width, Bounds.Height, null);
+            }
         }
 
         private void OnLoaded()
