@@ -78,75 +78,75 @@ namespace Prism.iOS
             // The following resources are not stored since their values can change during runtime.
             if (key == SystemResources.BaseFontFamilyKey)
             {
-                key = new Prism.UI.Media.FontFamily(UIFont.PreferredBody.FamilyName);
+                value = new Prism.UI.Media.FontFamily(UIFont.PreferredBody.FamilyName);
             }
             else if (key == SystemResources.BaseFontSizeKey)
             {
-                key = UIFont.PreferredBody.PointSize;
+                value = (double)UIFont.PreferredBody.PointSize;
             }
             else if (key == SystemResources.BaseFontStyleKey)
             {
-                key = UIFont.PreferredBody.GetFontStyle();
+                value = UIFont.PreferredBody.GetFontStyle();
             }
             else if (key == SystemResources.DetailLabelFontSizeKey)
             {
-                key = UIFont.PreferredCaption1.PointSize;
+                value = (double)UIFont.PreferredCaption1.PointSize;
             }
             else if (key == SystemResources.DetailLabelFontStyleKey)
             {
-                key = UIFont.PreferredCaption1.GetFontStyle();
+                value = UIFont.PreferredCaption1.GetFontStyle();
             }
             else if (key == SystemResources.SectionHeaderFontSizeKey)
             {
-                key = UIFont.PreferredHeadline.PointSize;
+                value = (double)UIFont.PreferredHeadline.PointSize;
             }
             else if (key == SystemResources.SectionHeaderFontStyleKey)
             {
-                key = UIFont.PreferredHeadline.GetFontStyle();
+                value = UIFont.PreferredHeadline.GetFontStyle();
             }
             else if (key == SystemResources.GroupedSectionHeaderFontSizeKey)
             {
-                key = UIFont.PreferredFootnote.PointSize;
+                value = (double)UIFont.PreferredFootnote.PointSize;
             }
             else if (key == SystemResources.GroupedSectionHeaderFontStyleKey)
             {
-                key = UIFont.PreferredFootnote.GetFontStyle();
+                value = UIFont.PreferredFootnote.GetFontStyle();
             }
             else if (key == SystemResources.TextBoxFontSizeKey)
             {
-                key = UIFont.LabelFontSize;
+                value = (double)UIFont.LabelFontSize;
             }
             else if (key == SystemResources.TextBoxFontStyleKey)
             {
-                key = UIFont.SystemFontOfSize(UIFont.LabelFontSize).GetFontStyle();
+                value = UIFont.SystemFontOfSize(UIFont.LabelFontSize).GetFontStyle();
             }
             else if (key == SystemResources.ButtonFontSizeKey)
             {
-                key = UIFont.ButtonFontSize;
+                value = (double)UIFont.ButtonFontSize;
             }
             else if (key == SystemResources.ButtonFontStyleKey)
             {
-                key = UIFont.SystemFontOfSize(UIFont.ButtonFontSize).GetFontStyle();
+                value = UIFont.SystemFontOfSize(UIFont.ButtonFontSize).GetFontStyle();
             }
             else if (key == SystemResources.ViewHeaderFontSizeKey)
             {
-                key = UIFont.PreferredHeadline.PointSize;
+                value = (double)UIFont.PreferredHeadline.PointSize;
             }
             else if (key == SystemResources.ViewHeaderFontStyleKey)
             {
-                key = UIFont.PreferredHeadline.GetFontStyle();
+                value = UIFont.PreferredHeadline.GetFontStyle();
             }
             else if (key == SystemResources.SearchBoxFontSizeKey)
             {
-                key = UIFont.SystemFontSize;
+                value = (double)UIFont.SystemFontSize;
             }
             else if (key == SystemResources.SearchBoxFontStyleKey)
             {
-                key = UIFont.SystemFontOfSize(UIFont.SystemFontSize).GetFontStyle();
+                value = UIFont.SystemFontOfSize(UIFont.SystemFontSize).GetFontStyle();
             }
             else if (key == SystemResources.TabItemFontStyleKey)
             {
-                key = UIFont.SystemFontOfSize(10.0f).GetFontStyle();
+                value = UIFont.SystemFontOfSize(10.0f).GetFontStyle();
             }
 
             return value != null;
