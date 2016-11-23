@@ -130,13 +130,26 @@ namespace Prism.iOS.UI.Controls
         /// </summary>
         public new Rectangle Frame
         {
-            get { return new Rectangle(Center.X - (Bounds.Width / 2), Center.Y - (Bounds.Height / 2), Bounds.Width, Bounds.Height); }
+            get { return frame; }
             set
             {
+                frame = value;
+
+                float actualSize = value.Width >= largeSize && value.Height >= largeSize ? largeSize : smallSize;
+                value.X = Math.Ceiling(value.X + (value.Width - actualSize) / 2);
+                value.Y = Math.Ceiling(value.Y + (value.Height - actualSize) / 2);
+                value.Width = actualSize;
+                value.Height = actualSize;
+
                 Bounds = new CGRect(Bounds.Location, value.Size.GetCGSize());
                 Center = new CGPoint(value.X + (value.Width / 2), value.Y + (value.Height / 2));
+
+                var color = Color;
+                ActivityIndicatorViewStyle = actualSize >= largeSize ? UIActivityIndicatorViewStyle.WhiteLarge : UIActivityIndicatorViewStyle.White;
+                Color = color;
             }
         }
+        private Rectangle frame;
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance can be considered a valid result for hit testing.
@@ -222,7 +235,9 @@ namespace Prism.iOS.UI.Controls
             }
         }
         private Visibility visibility;
-        
+
+        private readonly float largeSize = 35f;
+        private readonly float smallSize = 20f;
         private CGSize currentSize;
 
         /// <summary>
@@ -230,6 +245,7 @@ namespace Prism.iOS.UI.Controls
         /// </summary>
         public ActivityIndicator()
         {
+            Color = UIColor.Black;
             HidesWhenStopped = false;
         }
 
