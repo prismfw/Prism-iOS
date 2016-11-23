@@ -100,9 +100,9 @@ namespace Prism.iOS.UI
         /// <returns>The parent.</returns>
         public object GetParent(object reference)
         {
-            if (reference is INativePopup)
+            if (reference is INativePopup || reference is INativeLoadIndicator)
             {
-                // Popups should not have visual parents.  This keeps things consistent across platforms.
+                // Popups and load indicators should not have visual parents.  This keeps things consistent across platforms.
                 return null;
             }
         
@@ -116,11 +116,11 @@ namespace Prism.iOS.UI
             if (controller != null)
             {
                 return controller.ParentViewController ?? controller.NavigationController ??
-                    controller.SplitViewController ?? controller.TabBarController ?? controller.NextResponder;
+                    controller.SplitViewController ?? controller.TabBarController ?? controller.NextResponder as UIViewController;
             }
 
             var view = reference as UIResponder;
-            return view == null ? null : view.NextResponder;
+            return view == null ? null : (object)(view.NextResponder as UIView) ?? view.NextResponder as UIViewController;
         }
     }
 }
