@@ -48,17 +48,25 @@ namespace Prism.iOS.UI
                 return window.Content == null ? 0 : 1;
             }
 
+            int count = 0;
+            var vto = reference as IVisualTreeObject;
+            if (vto != null)
+            {
+                count = vto.Children.Length;
+            }
+
             var view = reference as UIView;
             if (view == null)
             {
                 var controller = reference as UIViewController;
                 if (controller != null)
                 {
+                    count += controller.ChildViewControllers.Length;
                     view = controller.View;
                 }
             }
 
-            return view == null ? 0 : view.Subviews.Length;
+            return (view == null ? 0 : view.Subviews.Length) + count;
         }
 
         /// <summary>
@@ -81,16 +89,28 @@ namespace Prism.iOS.UI
                 var controller = reference as UIViewController;
                 if (controller != null)
                 {
-                    if (controller.ChildViewControllers.Length > 0)
+                    if (controller.ChildViewControllers.Length > childIndex)
                     {
                         return controller.ChildViewControllers.ElementAtOrDefault(childIndex);
                     }
 
+                    childIndex -= controller.ChildViewControllers.Length;
                     view = controller.View;
                 }
             }
+            
+            if (view == null)
+            {
+                return (reference as IVisualTreeObject)?.Children.ElementAtOrDefault(childIndex);
+            }
 
-            return view == null ? null : view.Subviews.ElementAtOrDefault(childIndex);
+            if (childIndex < view.Subviews.Length)
+            {
+                return view.Subviews.ElementAtOrDefault(childIndex);
+            }
+            
+            var vto = reference as IVisualTreeObject;
+            return vto?.Children.ElementAtOrDefault(childIndex - view.Subviews.Length);
         }
 
         /// <summary>
@@ -104,6 +124,12 @@ namespace Prism.iOS.UI
             {
                 // Popups and load indicators should not have visual parents.  This keeps things consistent across platforms.
                 return null;
+            }
+
+            var vto = reference as IVisualTreeObject;
+            if (vto?.Parent != null)
+            {
+                return vto.Parent;
             }
         
             var window = ObjectRetriever.GetNativeObject(Prism.UI.Window.Current) as INativeWindow;

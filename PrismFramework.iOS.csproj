@@ -95,6 +95,7 @@
     <Compile Include="UI\Media\Imaging\RenderTargetBitmap.cs" />
     <Compile Include="UI\Media\Inking\InkStroke.cs" />
     <Compile Include="UI\Controls\InkCanvas.cs" />
+    <Compile Include="UI\VisualTreeObject.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.CSharp.targets" />
   <ItemGroup />

@@ -37,7 +37,7 @@ namespace Prism.iOS.UI
     /// </summary>
     [Preserve(AllMembers = true)]
     [Register(typeof(INativeViewStack))]
-    public class ViewStack : UINavigationController, INativeViewStack
+    public class ViewStack : UINavigationController, INativeViewStack, IVisualTreeObject
     {
         /// <summary>
         /// Occurs when this instance has been attached to the visual tree and is ready to be rendered.
@@ -90,6 +90,14 @@ namespace Prism.iOS.UI
         /// Gets or sets the method to invoke when this instance requests an arrangement of its children.
         /// </summary>
         public ArrangeRequestHandler ArrangeRequest { get; set; }
+        
+        /// <summary>
+        /// Gets the visual children of the object.
+        /// </summary>
+        public object[] Children
+        {
+            get { return new object[] { Header }; }
+        }
 
         /// <summary>
         /// Gets the view that is currently on top of the stack.
@@ -200,6 +208,8 @@ namespace Prism.iOS.UI
         {
             get { return ViewControllers; }
         }
+        
+        object IVisualTreeObject.Parent { get; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ViewStack"/> class.
