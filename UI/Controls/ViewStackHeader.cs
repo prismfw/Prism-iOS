@@ -20,6 +20,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using CoreGraphics;
 using Foundation;
 using Prism.Native;
@@ -33,7 +35,7 @@ namespace Prism.iOS.UI.Controls
     /// Represents an iOS implementation of an <see cref="INativeViewStackHeader"/>.
     /// </summary>
     [Preserve(AllMembers = true)]
-    public sealed class ViewStackHeader : INativeViewStackHeader
+    public sealed class ViewStackHeader : INativeViewStackHeader, IVisualTreeObject
     {
         /// <summary>
         /// Occurs when this instance has been attached to the visual tree and is ready to be rendered.
@@ -85,12 +87,48 @@ namespace Prism.iOS.UI.Controls
                     (background as ImageBrush).ClearImageHandler(OnBackgroundImageLoaded);
 
                     background = value;
-                    navigationBar.BarTintColor = background.GetColor(navigationBar.Bounds.Width, navigationBar.Bounds.Height, OnBackgroundImageLoaded);
+                    NavigationBar.BarTintColor = background.GetColor(NavigationBar.Bounds.Width, NavigationBar.Bounds.Height, OnBackgroundImageLoaded);
                     OnPropertyChanged(Prism.UI.Controls.ViewStackHeader.BackgroundProperty);
                 }
             }
         }
         private Brush background;
+        
+        /// <summary>
+        /// Gets the visual children of the object.
+        /// </summary>
+        public object[] Children
+        {
+            get
+            {
+                ActionMenu currentMenu = null;
+                for (int i = menuRefs.Count - 1; i >= 0; i--)
+                {
+                    var menu = menuRefs[i].Target as ActionMenu;
+                    if (menu == null)
+                    {
+                        menuRefs.RemoveAt(i);
+                        continue;
+                    }
+                    
+                    if (menu.AttachedController?.NavigationItem == NavigationBar.TopItem)
+                    {
+                        currentMenu = menu;
+                        break;
+                    }
+                }
+                
+                var children = new object[NavigationBar.Subviews.Length + (currentMenu == null ? 0 : 1)];
+                NavigationBar.Subviews.CopyTo(children, 0);
+                
+                if (currentMenu != null)
+                {
+                    children[children.Length - 1] = currentMenu;
+                }
+                
+                return children;
+            }
+        }
 
         /// <summary>
         /// Gets or sets the font to use for displaying the title text.
@@ -160,9 +198,9 @@ namespace Prism.iOS.UI.Controls
 
                     foreground = value;
 
-                    var uifont = navigationBar.TitleTextAttributes.Font;
-                    var size = Title.GetStringSize(navigationBar.Bounds.Size, uifont);
-                    navigationBar.TitleTextAttributes = new UIStringAttributes()
+                    var uifont = NavigationBar.TitleTextAttributes.Font;
+                    var size = Title.GetStringSize(NavigationBar.Bounds.Size, uifont);
+                    NavigationBar.TitleTextAttributes = new UIStringAttributes()
                     {
                         Font = uifont,
                         ForegroundColor = foreground.GetColor(size.Width, size.Height, OnForegroundImageLoaded)
@@ -181,18 +219,18 @@ namespace Prism.iOS.UI.Controls
         {
             get
             {
-                return new Rectangle(navigationBar.Center.X - (navigationBar.Bounds.Width / 2),
-                    navigationBar.Center.Y - (navigationBar.Bounds.Height / 2), navigationBar.Bounds.Width, navigationBar.Bounds.Height + navigationBar.Frame.Y);
+                return new Rectangle(NavigationBar.Center.X - (NavigationBar.Bounds.Width / 2),
+                    NavigationBar.Center.Y - (NavigationBar.Bounds.Height / 2), NavigationBar.Bounds.Width, NavigationBar.Bounds.Height + NavigationBar.Frame.Y);
             }
             set
             {
-                value.Height -= navigationBar.Frame.Y;
-                navigationBar.Bounds = new CGRect(navigationBar.Bounds.Location, value.Size.GetCGSize());
-                navigationBar.Center = new CGPoint(value.X + (value.Width / 2), value.Y + (value.Height / 2) + navigationBar.Frame.Y);
+                value.Height -= NavigationBar.Frame.Y;
+                NavigationBar.Bounds = new CGRect(NavigationBar.Bounds.Location, value.Size.GetCGSize());
+                NavigationBar.Center = new CGPoint(value.X + (value.Width / 2), value.Y + (value.Height / 2) + NavigationBar.Frame.Y);
 
                 if (background is LinearGradientBrush || background is ImageBrush)
                 {
-                    navigationBar.BarTintColor = background.GetColor(navigationBar.Bounds.Width, navigationBar.Bounds.Height, null);
+                    NavigationBar.BarTintColor = background.GetColor(NavigationBar.Bounds.Width, NavigationBar.Bounds.Height, null);
                 }
             }
         }
@@ -202,12 +240,12 @@ namespace Prism.iOS.UI.Controls
         /// </summary>
         public bool IsHitTestVisible
         {
-            get { return navigationBar.UserInteractionEnabled; }
+            get { return NavigationBar.UserInteractionEnabled; }
             set
             {
-                if (value != navigationBar.UserInteractionEnabled)
+                if (value != NavigationBar.UserInteractionEnabled)
                 {
-                    navigationBar.UserInteractionEnabled = value;
+                    NavigationBar.UserInteractionEnabled = value;
                     OnPropertyChanged(Visual.IsHitTestVisibleProperty);
                 }
             }
@@ -233,6 +271,14 @@ namespace Prism.iOS.UI.Controls
         public MeasureRequestHandler MeasureRequest { get; set; }
 
         /// <summary>
+        /// Gets the visual parent of the object.
+        /// </summary>
+        public object Parent
+        {
+            get { return NavigationBar.NextResponder; }
+        }
+
+        /// <summary>
         /// Gets or sets transformation information that affects the rendering position of this instance.
         /// </summary>
         public INativeTransform RenderTransform
@@ -242,9 +288,9 @@ namespace Prism.iOS.UI.Controls
             {
                 if (value != renderTransform)
                 {
-                    (renderTransform as Media.Transform)?.RemoveView(navigationBar);
+                    (renderTransform as Media.Transform)?.RemoveView(NavigationBar);
                     renderTransform = value;
-                    (renderTransform as Media.Transform)?.AddView(navigationBar);
+                    (renderTransform as Media.Transform)?.AddView(NavigationBar);
 
                     OnPropertyChanged(Visual.RenderTransformProperty);
                 }
@@ -262,10 +308,10 @@ namespace Prism.iOS.UI.Controls
         /// </summary>
         public string Title
         {
-            get { return navigationBar.TopItem?.Title ?? string.Empty; }
+            get { return NavigationBar.TopItem?.Title ?? string.Empty; }
             set
             {
-                var item = navigationBar.TopItem;
+                var item = NavigationBar.TopItem;
                 if (item != null && value != item.Title)
                 {
                     item.Title = value ?? string.Empty;
@@ -276,11 +322,14 @@ namespace Prism.iOS.UI.Controls
         }
         private string title;
 
-        private readonly UINavigationBar navigationBar;
+        internal UINavigationBar NavigationBar { get; }
+
+        // for reporting ActionMenus as children
+        private readonly List<WeakReference> menuRefs = new List<WeakReference>();
 
         internal ViewStackHeader(UINavigationBar navBar)
         {
-            navigationBar = navBar;
+            NavigationBar = navBar;
         }
 
         /// <summary>
@@ -288,7 +337,7 @@ namespace Prism.iOS.UI.Controls
         /// </summary>
         public void InvalidateArrange()
         {
-            navigationBar.SetNeedsLayout();
+            NavigationBar.SetNeedsLayout();
         }
 
         /// <summary>
@@ -296,7 +345,7 @@ namespace Prism.iOS.UI.Controls
         /// </summary>
         public void InvalidateMeasure()
         {
-            navigationBar.SetNeedsLayout();
+            NavigationBar.SetNeedsLayout();
         }
 
         /// <summary>
@@ -305,14 +354,26 @@ namespace Prism.iOS.UI.Controls
         /// <param name="constraints">The width and height that the element is not allowed to exceed.</param>
         public Size Measure(Size constraints)
         {
-            return new Size(constraints.Width, navigationBar.Frame.Bottom);
+            return new Size(constraints.Width, NavigationBar.Frame.Bottom);
+        }
+
+        internal void SetMenu(ActionMenu menu)
+        {
+            if (menu == null)
+            {
+                menuRefs.RemoveAll(r => r.Target == null);
+            }
+            else if (!menuRefs.Any(r => r.Target == menu))
+            {
+                menuRefs.Add(new WeakReference(menu));
+            }
         }
 
         internal void CheckTitle()
         {
-            if (title != navigationBar.TopItem?.Title)
+            if (title != NavigationBar.TopItem?.Title)
             {
-                title = navigationBar.TopItem.Title;
+                title = NavigationBar.TopItem.Title;
                 OnPropertyChanged(Prism.UI.Controls.ViewStackHeader.TitleProperty);
             }
         }
@@ -325,6 +386,22 @@ namespace Prism.iOS.UI.Controls
                 OnPropertyChanged(Visual.IsLoadedProperty);
                 Loaded(this, EventArgs.Empty);
             }
+
+            for (int i = menuRefs.Count - 1; i >= 0; i--)
+            {
+                var menu = menuRefs[i].Target as ActionMenu;
+                if (menu == null)
+                {
+                    menuRefs.RemoveAt(i);
+                    continue;
+                }
+                
+                if (menu.AttachedController?.NavigationItem == NavigationBar.TopItem)
+                {
+                    menu.OnLoaded();
+                    break;
+                }
+            }
         }
 
         internal void OnUnloaded()
@@ -335,11 +412,27 @@ namespace Prism.iOS.UI.Controls
                 OnPropertyChanged(Visual.IsLoadedProperty);
                 Unloaded(this, EventArgs.Empty);
             }
+
+            for (int i = menuRefs.Count - 1; i >= 0; i--)
+            {
+                var menu = menuRefs[i].Target as ActionMenu;
+                if (menu == null)
+                {
+                    menuRefs.RemoveAt(i);
+                    continue;
+                }
+                
+                if (menu.AttachedController?.NavigationItem == NavigationBar.TopItem)
+                {
+                    menu.OnUnloaded();
+                    break;
+                }
+            }
         }
 
         private void OnBackgroundImageLoaded(object sender, EventArgs e)
         {
-            navigationBar.BarTintColor = background.GetColor(navigationBar.Bounds.Width, navigationBar.Bounds.Height, null);
+            NavigationBar.BarTintColor = background.GetColor(NavigationBar.Bounds.Width, NavigationBar.Bounds.Height, null);
         }
 
         private void OnForegroundImageLoaded(object sender, EventArgs e)
@@ -355,8 +448,8 @@ namespace Prism.iOS.UI.Controls
         private void SetForeground()
         {
             var uifont = fontFamily.GetUIFont(fontSize, fontStyle);
-            var size = Title.GetStringSize(navigationBar.Bounds.Size, uifont);
-            navigationBar.TitleTextAttributes = new UIStringAttributes()
+            var size = Title.GetStringSize(NavigationBar.Bounds.Size, uifont);
+            NavigationBar.TitleTextAttributes = new UIStringAttributes()
             {
                 Font = uifont,
                 ForegroundColor = foreground.GetColor(size.Width, size.Height, null) ?? UIColor.Black

@@ -173,8 +173,9 @@ namespace Prism.iOS.UI
                     menu = value;
                     if (NavigationItem != null)
                     {
-                        (menu as Controls.ActionMenu).Attach(this);
+                        (menu as Controls.ActionMenu)?.Attach(this);
                     }
+
                     OnPropertyChanged(Prism.UI.ContentView.MenuProperty);
                 }
             }
@@ -298,12 +299,6 @@ namespace Prism.iOS.UI
         /// <param name="animated"></param>
         public override void ViewWillAppear(bool animated)
         {
-            if (NavigationItem != null)
-            {
-                NavigationItem.Title = title ?? string.Empty;
-                (menu as Controls.ActionMenu)?.Attach(this);
-            }
-
             if (!IsLoaded)
             {
                 IsLoaded = true;
@@ -319,6 +314,12 @@ namespace Prism.iOS.UI
                     }
                     catch { }
                 }
+            }
+
+            if (NavigationItem != null)
+            {
+                NavigationItem.Title = title ?? string.Empty;
+                (menu as Controls.ActionMenu)?.Attach(this);
             }
 
             base.ViewWillAppear(animated);
@@ -346,6 +347,8 @@ namespace Prism.iOS.UI
                     catch { }
                 }
             }
+
+            (menu as Controls.ActionMenu)?.OnUnloaded();
         }
 
         /// <summary></summary>
