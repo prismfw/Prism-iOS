@@ -35,15 +35,15 @@ namespace Prism.iOS.UI.Controls
     public class MenuButton : UIBarButtonItem, INativeMenuButton
     {
         /// <summary>
-        /// Occurs when the button is clicked.
-        /// </summary>
-        public new event EventHandler Clicked;
-    
-        /// <summary>
         /// Occurs when the value of a property is changed.
         /// </summary>
         public event EventHandler<FrameworkPropertyChangedEventArgs> PropertyChanged;
-        
+
+        /// <summary>
+        /// Gets or sets the action to perform when the button is pressed by the user.
+        /// </summary>
+        public new Action Action { get; set; }
+
         /// <summary>
         /// Gets or sets the <see cref="Brush"/> to apply to the foreground content of the menu item.
         /// </summary>
@@ -128,7 +128,7 @@ namespace Prism.iOS.UI.Controls
         /// </summary>
         public MenuButton()
         {
-            base.Clicked += (o, e) => OnClick();
+            base.Clicked += (o, e) => Action();
         }
         
         /// <summary>
@@ -136,7 +136,7 @@ namespace Prism.iOS.UI.Controls
         /// </summary>
         public UIAlertAction GetAlertAction()
         {
-            var action = UIAlertAction.Create(Title, UIAlertActionStyle.Default, (a) => OnClick());
+            var action = UIAlertAction.Create(Title, UIAlertActionStyle.Default, (a) => Action());
             action.Enabled = IsEnabled;
             return action;
         }
@@ -148,11 +148,6 @@ namespace Prism.iOS.UI.Controls
         protected virtual void OnPropertyChanged(PropertyDescriptor pd)
         {
             PropertyChanged(this, new FrameworkPropertyChangedEventArgs(pd));
-        }
-        
-        private void OnClick()
-        {
-            Clicked(this, EventArgs.Empty);
         }
         
         private void OnForegroundImageLoaded(object sender, EventArgs e)
