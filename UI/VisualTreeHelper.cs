@@ -52,7 +52,7 @@ namespace Prism.iOS.UI
             var vto = reference as IVisualTreeObject;
             if (vto != null)
             {
-                count = vto.Children.Length;
+                count = vto.Children?.Length ?? 0;
             }
 
             var view = reference as UIView;
@@ -110,7 +110,7 @@ namespace Prism.iOS.UI
             }
             
             var vto = reference as IVisualTreeObject;
-            return vto?.Children.ElementAtOrDefault(childIndex - view.Subviews.Length);
+            return vto?.Children?.ElementAtOrDefault(childIndex - view.Subviews.Length);
         }
 
         /// <summary>

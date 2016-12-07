@@ -24,6 +24,7 @@ using System.Linq;
 using Foundation;
 using UIKit;
 using Prism.Native;
+using Prism.UI;
 using Prism.UI.Media;
 
 namespace Prism.iOS.UI.Controls
@@ -33,12 +34,44 @@ namespace Prism.iOS.UI.Controls
     /// </summary>
     [Preserve(AllMembers = true)]
     [Register(typeof(INativeTabItem))]
-    public class TabItem : UITabBarItem, INativeTabItem
+    public class TabItem : UITabBarItem, INativeTabItem, IVisualTreeObject
     {
+        /// <summary>
+        /// Occurs when this instance has been attached to the visual tree and is ready to be rendered.
+        /// </summary>
+        public event EventHandler Loaded;
+
         /// <summary>
         /// Occurs when the value of a property is changed.
         /// </summary>
         public event EventHandler<FrameworkPropertyChangedEventArgs> PropertyChanged;
+
+        /// <summary>
+        /// Occurs when this instance has been detached from the visual tree.
+        /// </summary>
+        public event EventHandler Unloaded;
+
+        /// <summary>
+        /// Gets or sets a value indicating whether animations are enabled for this instance.
+        /// </summary>
+        public bool AreAnimationsEnabled
+        {
+            get { return areAnimationsEnabled; }
+            set
+            {
+                if (value != areAnimationsEnabled)
+                {
+                    areAnimationsEnabled = value;
+                    OnPropertyChanged(Visual.AreAnimationsEnabledProperty);
+                }
+            }
+        }
+        private bool areAnimationsEnabled;
+
+        /// <summary>
+        /// Gets or sets the method to invoke when this instance requests an arrangement of its children.
+        /// </summary>
+        public ArrangeRequestHandler ArrangeRequest { get; set; }
 
         /// <summary>
         /// Gets or sets the object that acts as the content of the item.
@@ -177,6 +210,11 @@ namespace Prism.iOS.UI.Controls
         private Brush foreground;
 
         /// <summary>
+        /// Gets or sets a <see cref="Rectangle"/> that represents the size and position of the element relative to its parent container.
+        /// </summary>
+        public Rectangle Frame { get; set; }
+
+        /// <summary>
         /// Gets or sets an <see cref="INativeImageSource"/> for an image to display with the item.
         /// </summary>
         public INativeImageSource ImageSource
@@ -197,6 +235,71 @@ namespace Prism.iOS.UI.Controls
         private INativeImageSource imageSource;
 
         /// <summary>
+        /// Gets or sets a value indicating whether this instance can be considered a valid result for hit testing.
+        /// </summary>
+        public bool IsHitTestVisible
+        {
+            get { return isHitTestVisible; }
+            set
+            {
+                if (value != isHitTestVisible)
+                {
+                    isHitTestVisible = value;
+                    if (View != null)
+                    {
+                        View.UserInteractionEnabled = value;
+                    }
+
+                    OnPropertyChanged(Visual.IsHitTestVisibleProperty);
+                }
+            }
+        }
+        private bool isHitTestVisible = true;
+
+        /// <summary>
+        /// Gets a value indicating whether this instance has been loaded and is ready for rendering.
+        /// </summary>
+        public bool IsLoaded { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the method to invoke when this instance requests a measurement of itself and its children.
+        /// </summary>
+        public MeasureRequestHandler MeasureRequest { get; set; }
+
+        /// <summary>
+        /// Gets the visual parent of the object.
+        /// </summary>
+        public object Parent
+        {
+            get { return View?.GetNextResponder<INativeTabView>(); }
+        }
+
+        /// <summary>
+        /// Gets or sets transformation information that affects the rendering position of this instance.
+        /// </summary>
+        public INativeTransform RenderTransform
+        {
+            get { return renderTransform; }
+            set
+            {
+                if (value != renderTransform)
+                {
+                    (renderTransform as Media.Transform)?.RemoveView(View);
+                    renderTransform = value;
+                    (renderTransform as Media.Transform)?.AddView(View);
+                    
+                    OnPropertyChanged(Visual.RenderTransformProperty);
+                }
+            }
+        }
+        private INativeTransform renderTransform;
+
+        /// <summary>
+        /// Gets or sets the visual theme that should be used by this instance.
+        /// </summary>
+        public Theme RequestedTheme { get; set; }
+
+        /// <summary>
         /// Gets or sets the title for the item.
         /// </summary>
         public override string Title
@@ -211,12 +314,65 @@ namespace Prism.iOS.UI.Controls
                 }
             }
         }
+        
+        private UIView View
+        {
+            get { return ValueForKey(new NSString("view")) as UIView; }
+        }
+
+        object[] IVisualTreeObject.Children { get; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TabItem"/> class.
         /// </summary>
         public TabItem()
         {
+        }
+
+        /// <summary>
+        /// Invalidates the arrangement of this instance's children.
+        /// </summary>
+        public void InvalidateArrange()
+        {
+            ArrangeRequest(false, null);
+        }
+
+        /// <summary>
+        /// Invalidates the measurement of this instance and its children.
+        /// </summary>
+        public void InvalidateMeasure()
+        {
+            MeasureRequest(false, null);
+        }
+
+        /// <summary>
+        /// Measures the element and returns its desired size.
+        /// </summary>
+        /// <param name="constraints">The width and height that the element is not allowed to exceed.</param>
+        public Size Measure(Size constraints)
+        {
+            return View?.Frame.Size.GetSize() ?? new Size();
+        }
+
+        /// <summary></summary>
+        /// <param name="keyPath"></param>
+        /// <param name="ofObject"></param>
+        /// <param name="change"></param>
+        /// <param name="context"></param>
+        public override void ObserveValue(NSString keyPath, NSObject ofObject, NSDictionary change, IntPtr context)
+        {
+            if (keyPath == Visual.IsLoadedProperty.Name)
+            {
+                var isloaded = (NSNumber)change.ObjectForKey(ChangeNewKey);
+                if (isloaded.BoolValue)
+                {
+                    OnLoaded();
+                }
+                else
+                {
+                    OnUnloaded();
+                }
+            }
         }
 
         /// <summary>
@@ -241,6 +397,26 @@ namespace Prism.iOS.UI.Controls
         private void OnImageLoaded(object sender, EventArgs e)
         {
             Image = (sender as INativeImageSource).GetImageSource();
+        }
+ 
+        private void OnLoaded()
+        {
+            if (!IsLoaded)
+            {
+                IsLoaded = true;
+                OnPropertyChanged(Visual.IsLoadedProperty);
+                Loaded(this, EventArgs.Empty);
+            }
+        }
+ 
+        private void OnUnloaded()
+        {
+            if (IsLoaded)
+            {
+                IsLoaded = false;
+                OnPropertyChanged(Visual.IsLoadedProperty);
+                Unloaded(this, EventArgs.Empty);
+            }
         }
     }
 }

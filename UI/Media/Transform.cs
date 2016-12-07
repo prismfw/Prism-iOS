@@ -72,9 +72,12 @@ namespace Prism.iOS.UI.Media
         /// <param name="view">The view to be added.</param>
         public void AddView(UIView view)
         {
-            views.Add(new WeakReference(view));
-            view.Layer.AffineTransform = matrix.GetCGAffineTransform();
-            view.SetNeedsDisplay();
+            if (view != null)
+            {
+                views.Add(new WeakReference(view));
+                view.Layer.AffineTransform = matrix.GetCGAffineTransform();
+                view.SetNeedsDisplay();
+            }
         }
 
         /// <summary>
@@ -83,9 +86,12 @@ namespace Prism.iOS.UI.Media
         /// <param name="view">The view to be removed.</param>
         public void RemoveView(UIView view)
         {
-            views.RemoveAll(r => r.Target == view);
-            view.Layer.AffineTransform = CGAffineTransform.MakeIdentity();
-            view.SetNeedsDisplay();
+            if (view != null)
+            {
+                views.RemoveAll(r => r.Target == view);
+                view.Layer.AffineTransform = CGAffineTransform.MakeIdentity();
+                view.SetNeedsDisplay();
+            }
         }
     }
 }

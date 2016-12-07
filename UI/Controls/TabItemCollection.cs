@@ -92,21 +92,13 @@ namespace Prism.iOS.UI.Controls
                         controller.TabBarItem = item;
                         controllers[i] = controller;
 
-                        parent.SetViewControllers(controllers, ShouldAnimateChanges);
+                        parent.SetViewControllers(controllers, true);
                         return;
                     }
                 }
             }
         }
 
-        private bool ShouldAnimateChanges
-        {
-            get
-            {
-                var tabView = (parent as INativeTabView) ?? parent.GetNextResponder<INativeTabView>();
-                return tabView == null ? false : tabView.AreAnimationsEnabled;
-            }
-        }
         private readonly UITabBarController parent;
         
         public TabItemCollection(UITabBarController parent)
@@ -135,14 +127,14 @@ namespace Prism.iOS.UI.Controls
             controller.TabBarItem = item;
 
             controllers[count] = controller;
-            parent.SetViewControllers(controllers, ShouldAnimateChanges);
+            parent.SetViewControllers(controllers, true);
 
             return parent.ViewControllers.Length - count;
         }
 
         public void Clear()
         {
-            parent.SetViewControllers(new UIViewController[0], ShouldAnimateChanges);
+            parent.SetViewControllers(new UIViewController[0], true);
         }
 
         public bool Contains(object value)
@@ -191,7 +183,7 @@ namespace Prism.iOS.UI.Controls
 
                         var controllers = new List<UIViewController>(parent.ViewControllers);
                         controllers.Insert(i, controller);
-                        parent.SetViewControllers(controllers.ToArray(), ShouldAnimateChanges);
+                        parent.SetViewControllers(controllers.ToArray(), true);
 
                         return;
                     }
@@ -207,7 +199,7 @@ namespace Prism.iOS.UI.Controls
                 var controllers = new List<UIViewController>(parent.ViewControllers);
                 if (controllers.RemoveAll(vc => vc.TabBarItem == item) > 0)
                 {
-                    parent.SetViewControllers(controllers.ToArray(), ShouldAnimateChanges);
+                    parent.SetViewControllers(controllers.ToArray(), true);
                 }
             }
         }
@@ -221,7 +213,7 @@ namespace Prism.iOS.UI.Controls
                 if (controllers[i].TabBarItem is INativeTabItem && currentIndex++ == index)
                 {
                     controllers.RemoveAt(i);
-                    parent.SetViewControllers(controllers.ToArray(), ShouldAnimateChanges);
+                    parent.SetViewControllers(controllers.ToArray(), true);
                     return;
                 }
             }

@@ -38,7 +38,7 @@ namespace Prism.iOS.UI
     /// </summary>
     [Preserve(AllMembers = true)]
     [Register(typeof(INativeTabView))]
-    public class TabView : UITabBarController, INativeTabView
+    public class TabView : UITabBarController, INativeTabView, IVisualTreeObject
     {
         /// <summary>
         /// Occurs when this instance has been attached to the visual tree and is ready to be rendered.
@@ -101,6 +101,14 @@ namespace Prism.iOS.UI
             }
         }
         private Brush background;
+        
+        /// <summary>
+        /// Gets the visual children of the object.
+        /// </summary>
+        public object[] Children
+        {
+            get { return ViewControllers?.Select(c => c.TabBarItem).ToArray(); }
+        }
 
         /// <summary>
         /// Gets or sets the <see cref="Brush"/> to apply to the selected tab item.
@@ -224,6 +232,8 @@ namespace Prism.iOS.UI
         }
         private readonly TabItemCollection tabItems;
 
+        object IVisualTreeObject.Parent { get; }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="TabView"/> class.
         /// </summary>
@@ -288,6 +298,47 @@ namespace Prism.iOS.UI
         }
 
         /// <summary></summary>
+        /// <param name="viewControllers"></param>
+        /// <param name="animated"></param>
+        public override void SetViewControllers(UIViewController[] viewControllers, bool animated)
+        {
+            var oldTabs = ViewControllers?.Select(c => c.TabBarItem).Where(t => t is INativeVisual).ToArray();
+            base.SetViewControllers(viewControllers, animated && areAnimationsEnabled);
+  
+            if (IsLoaded && oldTabs != null)
+            {
+                foreach (var tab in oldTabs)
+                {
+                    if (!ViewControllers?.Any(c => c.TabBarItem == tab) ?? false)
+                    {
+                        try
+                        {
+                            tab.ObserveValue(new NSString(Visual.IsLoadedProperty.Name), this,
+                                NSDictionary.FromObjectAndKey(new NSNumber(false), NSObject.ChangeNewKey), IntPtr.Zero);
+                        }
+                        catch { }
+                    }
+                }
+  
+                if (ViewControllers != null)
+                {
+                    foreach (var controller in ViewControllers)
+                    {
+                        if (controller.TabBarItem is INativeVisual)
+                        {
+                            try
+                            {
+                                controller.TabBarItem.ObserveValue(new NSString(Visual.IsLoadedProperty.Name), this,
+                                    NSDictionary.FromObjectAndKey(new NSNumber(true), NSObject.ChangeNewKey), IntPtr.Zero);
+                            }
+                            catch { }
+                        }
+                    }
+                }
+            }
+        }
+
+        /// <summary></summary>
         public override void ViewWillLayoutSubviews()
         {
             MeasureRequest(false, null);
@@ -319,12 +370,25 @@ namespace Prism.iOS.UI
                 
                 SetViewControllers(controllers, false);
             }
-        
+
             if (!IsLoaded)
             {
                 IsLoaded = true;
                 OnPropertyChanged(Visual.IsLoadedProperty);
                 Loaded(this, EventArgs.Empty);
+                
+                foreach (var controller in ViewControllers)
+                {
+                    if (controller.TabBarItem is INativeVisual)
+                    {
+                        try
+                        {
+                            controller.TabBarItem.ObserveValue(new NSString(Visual.IsLoadedProperty.Name), this,
+                                NSDictionary.FromObjectAndKey(new NSNumber(true), NSObject.ChangeNewKey), IntPtr.Zero);
+                        }
+                        catch { }
+                    }
+                }
             }
 
             base.ViewWillAppear(animated);
@@ -341,6 +405,19 @@ namespace Prism.iOS.UI
                 IsLoaded = false;
                 OnPropertyChanged(Visual.IsLoadedProperty);
                 Unloaded(this, EventArgs.Empty);
+
+                foreach (var controller in ViewControllers)
+                {
+                    if (controller.TabBarItem is INativeVisual)
+                    {
+                        try
+                        {
+                            controller.TabBarItem.ObserveValue(new NSString(Visual.IsLoadedProperty.Name), this,
+                                NSDictionary.FromObjectAndKey(new NSNumber(false), NSObject.ChangeNewKey), IntPtr.Zero);
+                        }
+                        catch { }
+                    }
+                }
             }
         }
 
@@ -409,7 +486,7 @@ namespace Prism.iOS.UI
                     {
                         tabView.OnPropertyChanged(Prism.UI.TabView.SelectedIndexProperty);
                     }
-                    
+ 
                     tabView.OnTabItemSelected(new NativeItemSelectedEventArgs(previousController == null ? null :
                         previousController.TabBarItem, viewController.TabBarItem));
                 }
