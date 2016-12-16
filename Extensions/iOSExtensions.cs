@@ -177,10 +177,11 @@ namespace Prism.iOS
             }
 
             var components = new byte[4];
-            for (int i = 0; i < color.Components.Length; i++)
+            for (int i = 0; i < 3; i++)
             {
-                components[i] = (byte)(color.Components[i] * 255);
+                components[i] = (byte)(color.Components[Math.Min(i, color.Components.Length - 2)] * 255);
             }
+            components[3] = (byte)(color.Components.Last() * 255);
 
             // components are in rgba order
             return new Color(components[3], components[0], components[1], components[2]);
@@ -244,6 +245,12 @@ namespace Prism.iOS
         /// <param name="handler">The event handler to invoke when an image brush's image has loaded.</param>
         public static UIColor GetColor(this Brush brush, nfloat width, nfloat height, EventHandler handler)
         {
+            var data = brush as DataBrush;
+            if (data != null)
+            {
+                return data.Data as UIColor;
+            }
+
             var solid = brush as SolidColorBrush;
             if (solid != null)
             {

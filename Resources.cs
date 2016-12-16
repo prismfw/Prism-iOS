@@ -19,9 +19,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 
 
-using System;
-using System.Collections.Generic;
 using Prism.Native;
+using Prism.UI.Media;
 using UIKit;
 
 namespace Prism.iOS
@@ -32,22 +31,6 @@ namespace Prism.iOS
     [Register(typeof(INativeResources), IsSingleton = true)]
     public class Resources : INativeResources
     {
-        private readonly Dictionary<object, object> resourceValues = new Dictionary<object, object>()
-        {
-            { SystemResources.HorizontalScrollBarHeightKey, 6.0 },
-            { SystemResources.ListBoxItemDetailHeightKey, 52.0 },
-            { SystemResources.ListBoxItemIndicatorSizeKey, new Size(33, 24) },
-            { SystemResources.ListBoxItemInfoButtonSizeKey, new Size(46, 34) },
-            { SystemResources.ListBoxItemInfoIndicatorSizeKey, new Size(67, 34) },
-            { SystemResources.ListBoxItemStandardHeightKey, 44.0 },
-            { SystemResources.PopupSizeKey, new Size(540, 620) },
-            { SystemResources.SearchBoxBorderWidthKey, 1.0 },
-            { SystemResources.SelectListDisplayItemPaddingKey, new Thickness(12, 8, 12, 8) },
-            { SystemResources.SelectListListItemPaddingKey, new Thickness(18, 10, 0, 10) },
-            { SystemResources.TabItemFontSizeKey, 10.0 },
-            { SystemResources.VerticalScrollBarWidthKey, 6.0 },
-        };
-
         /// <summary>
         /// Gets the names of all available fonts.
         /// </summary>
@@ -65,91 +48,193 @@ namespace Prism.iOS
         /// <returns><c>true</c> if the system resources contain a resource with the specified key; otherwise, <c>false</c>.</returns>
         public bool TryGetResource(object owner, object key, out object value)
         {
-            if (resourceValues.TryGetValue(key, out value))
+            var resourceKey = key as ResourceKey;
+            if (resourceKey != null)
             {
-                return true;
-            }
-            
-            if (!(key is ResourceKey))
-            {
-                return false;
-            }
-            
-            // The following resources are not stored since their values can change during runtime.
-            if (key == SystemResources.BaseFontFamilyKey)
-            {
-                value = new Prism.UI.Media.FontFamily(UIFont.PreferredBody.FamilyName);
-            }
-            else if (key == SystemResources.BaseFontSizeKey)
-            {
-                value = (double)UIFont.PreferredBody.PointSize;
-            }
-            else if (key == SystemResources.BaseFontStyleKey)
-            {
-                value = UIFont.PreferredBody.GetFontStyle();
-            }
-            else if (key == SystemResources.DetailLabelFontSizeKey)
-            {
-                value = (double)UIFont.PreferredCaption1.PointSize;
-            }
-            else if (key == SystemResources.DetailLabelFontStyleKey)
-            {
-                value = UIFont.PreferredCaption1.GetFontStyle();
-            }
-            else if (key == SystemResources.SectionHeaderFontSizeKey)
-            {
-                value = (double)UIFont.PreferredHeadline.PointSize;
-            }
-            else if (key == SystemResources.SectionHeaderFontStyleKey)
-            {
-                value = UIFont.PreferredHeadline.GetFontStyle();
-            }
-            else if (key == SystemResources.GroupedSectionHeaderFontSizeKey)
-            {
-                value = (double)UIFont.PreferredFootnote.PointSize;
-            }
-            else if (key == SystemResources.GroupedSectionHeaderFontStyleKey)
-            {
-                value = UIFont.PreferredFootnote.GetFontStyle();
-            }
-            else if (key == SystemResources.TextBoxFontSizeKey)
-            {
-                value = (double)UIFont.LabelFontSize;
-            }
-            else if (key == SystemResources.TextBoxFontStyleKey)
-            {
-                value = UIFont.SystemFontOfSize(UIFont.LabelFontSize).GetFontStyle();
-            }
-            else if (key == SystemResources.ButtonFontSizeKey)
-            {
-                value = (double)UIFont.ButtonFontSize;
-            }
-            else if (key == SystemResources.ButtonFontStyleKey)
-            {
-                value = UIFont.SystemFontOfSize(UIFont.ButtonFontSize).GetFontStyle();
-            }
-            else if (key == SystemResources.ViewHeaderFontSizeKey)
-            {
-                value = (double)UIFont.PreferredHeadline.PointSize;
-            }
-            else if (key == SystemResources.ViewHeaderFontStyleKey)
-            {
-                value = UIFont.PreferredHeadline.GetFontStyle();
-            }
-            else if (key == SystemResources.SearchBoxFontSizeKey)
-            {
-                value = (double)UIFont.SystemFontSize;
-            }
-            else if (key == SystemResources.SearchBoxFontStyleKey)
-            {
-                value = UIFont.SystemFontOfSize(UIFont.SystemFontSize).GetFontStyle();
-            }
-            else if (key == SystemResources.TabItemFontStyleKey)
-            {
-                value = UIFont.SystemFontOfSize(10.0f).GetFontStyle();
+                switch ((SystemResourceKeyId)resourceKey.Id)
+                {
+                    case SystemResourceKeyId.ActionMenuMaxDisplayItems:
+                        value = 2;
+                        return true;
+                    case SystemResourceKeyId.ButtonBorderWidth:
+                    case SystemResourceKeyId.DateTimePickerBorderWidth:
+                    case SystemResourceKeyId.SelectListBorderWidth:
+                    case SystemResourceKeyId.TextBoxBorderWidth:
+                        value = 0.0;
+                        return true;
+                    case SystemResourceKeyId.SearchBoxBorderWidth:
+                        value = 1.0;
+                        return true;
+                    case SystemResourceKeyId.ButtonPadding:
+                        value = new Thickness(9.5, 3.5);
+                        return true;
+                    case SystemResourceKeyId.ListBoxItemDetailHeight:
+                        value = 52.0;
+                        return true;
+                    case SystemResourceKeyId.ListBoxItemStandardHeight:
+                        value = 44.0;
+                        return true;
+                    case SystemResourceKeyId.ListBoxItemIndicatorSize:
+                        value = new Size(33, 24);
+                        return true;
+                    case SystemResourceKeyId.ListBoxItemInfoButtonSize:
+                        value = new Size(46, 34);
+                        return true;
+                    case SystemResourceKeyId.ListBoxItemInfoIndicatorSize:
+                        value = new Size(67, 34);
+                        return true;
+                    case SystemResourceKeyId.PopupSize:
+                        value = new Size(540, 620);
+                        return true;
+                    case SystemResourceKeyId.SelectListDisplayItemPadding:
+                        value = new Thickness(12, 8, 12, 8);
+                        return true;
+                    case SystemResourceKeyId.SelectListListItemPadding:
+                        value = new Thickness(18, 10, 0, 10);
+                        return true;
+                    case SystemResourceKeyId.ShouldAutomaticallyIndentSeparators:
+                        value = true;
+                        return true;
+                    case SystemResourceKeyId.HorizontalScrollBarHeight:
+                    case SystemResourceKeyId.VerticalScrollBarWidth:
+                        value = 6.0;
+                        return true;
+                    case SystemResourceKeyId.BaseFontFamily:
+                        value = new FontFamily(UIFont.PreferredBody.FamilyName);
+                        return true;
+                    case SystemResourceKeyId.ButtonFontSize:
+                        value = (double)UIFont.ButtonFontSize;
+                        return true;
+                    case SystemResourceKeyId.DateTimePickerFontSize:
+                    case SystemResourceKeyId.LabelFontSize:
+                    case SystemResourceKeyId.LoadIndicatorFontSize:
+                    case SystemResourceKeyId.SelectListFontSize:
+                    case SystemResourceKeyId.ValueLabelFontSize:
+                        value = (double)UIFont.PreferredBody.PointSize;
+                        return true;
+                    case SystemResourceKeyId.DetailLabelFontSize:
+                        value = (double)UIFont.PreferredCaption1.PointSize;
+                        return true;
+                    case SystemResourceKeyId.GroupedSectionHeaderFontSize:
+                        value = (double)UIFont.PreferredFootnote.PointSize;
+                        return true;
+                    case SystemResourceKeyId.SearchBoxFontSize:
+                        value = (double)UIFont.SystemFontSize;
+                        return true;
+                    case SystemResourceKeyId.SectionHeaderFontSize:
+                        value = (double)UIFont.PreferredSubheadline.PointSize;
+                        return true;
+                    case SystemResourceKeyId.ViewHeaderFontSize:
+                        value = (double)UIFont.PreferredHeadline.PointSize;
+                        return true;
+                    case SystemResourceKeyId.TabItemFontSize:
+                        value = 10.0;
+                        return true;
+                    case SystemResourceKeyId.TextBoxFontSize:
+                        value = (double)UIFont.LabelFontSize;
+                        return true;
+                    case SystemResourceKeyId.ButtonFontStyle:
+                        value = UIFont.SystemFontOfSize(UIFont.ButtonFontSize).GetFontStyle();
+                        return true;
+                    case SystemResourceKeyId.DateTimePickerFontStyle:
+                    case SystemResourceKeyId.LabelFontStyle:
+                    case SystemResourceKeyId.LoadIndicatorFontStyle:
+                    case SystemResourceKeyId.SelectListFontStyle:
+                    case SystemResourceKeyId.ValueLabelFontStyle:
+                        value = UIFont.PreferredBody.GetFontStyle();
+                        return true;
+                    case SystemResourceKeyId.DetailLabelFontStyle:
+                        value = UIFont.PreferredCaption1.GetFontStyle();
+                        return true;
+                    case SystemResourceKeyId.GroupedSectionHeaderFontStyle:
+                        value = UIFont.PreferredFootnote.GetFontStyle();
+                        return true;
+                    case SystemResourceKeyId.SearchBoxFontStyle:
+                        value = UIFont.SystemFontOfSize(UIFont.SystemFontSize).GetFontStyle();
+                        return true;
+                    case SystemResourceKeyId.SectionHeaderFontStyle:
+                    case SystemResourceKeyId.ViewHeaderFontStyle:
+                        value = UIFont.PreferredHeadline.GetFontStyle();
+                        return true;
+                    case SystemResourceKeyId.TabItemFontStyle:
+                        value = UIFont.SystemFontOfSize(10.0f).GetFontStyle();
+                        return true;
+                    case SystemResourceKeyId.TextBoxFontStyle:
+                        value = UIFont.SystemFontOfSize(UIFont.LabelFontSize).GetFontStyle();
+                        return true;
+                    case SystemResourceKeyId.AccentBrush:
+                    case SystemResourceKeyId.ActionMenuForegroundBrush:
+                    case SystemResourceKeyId.ButtonForegroundBrush:
+                    case SystemResourceKeyId.SliderForegroundBrush:
+                    case SystemResourceKeyId.TabViewForegroundBrush:
+                        value = new SolidColorBrush(new Prism.UI.Color(0, 128, 255));
+                        return true;
+                    case SystemResourceKeyId.ActionMenuBackgroundBrush:
+                    case SystemResourceKeyId.ButtonBackgroundBrush:
+                    case SystemResourceKeyId.DateTimePickerBackgroundBrush:
+                    case SystemResourceKeyId.ListBoxBackgroundBrush:
+                    case SystemResourceKeyId.ListBoxItemBackgroundBrush:
+                    case SystemResourceKeyId.ListBoxItemSelectedBackgroundBrush:
+                    case SystemResourceKeyId.SelectListBackgroundBrush:
+                    case SystemResourceKeyId.SliderBackgroundBrush: // a bug prevents this from being anything but null
+                    case SystemResourceKeyId.SliderThumbBrush:
+                    case SystemResourceKeyId.TabViewBackgroundBrush:
+                    case SystemResourceKeyId.TextBoxBackgroundBrush:
+                    case SystemResourceKeyId.ToggleSwitchBackgroundBrush:
+                    case SystemResourceKeyId.ToggleSwitchThumbOnBrush:
+                    case SystemResourceKeyId.ToggleSwitchThumbOffBrush:
+                    case SystemResourceKeyId.ViewHeaderBackgroundBrush:
+                        value = null;
+                        return true;
+                    case SystemResourceKeyId.ActivityIndicatorForegroundBrush:
+                    case SystemResourceKeyId.ButtonBorderBrush:
+                    case SystemResourceKeyId.DateTimePickerBorderBrush:
+                    case SystemResourceKeyId.SectionHeaderForegroundBrush:
+                    case SystemResourceKeyId.SelectListBorderBrush:
+                    case SystemResourceKeyId.TextBoxBorderBrush:
+                    case SystemResourceKeyId.ToggleSwitchBorderBrush:
+                        value = new SolidColorBrush(new Prism.UI.Color(0, 0, 0));
+                        return true;
+                    case SystemResourceKeyId.DateTimePickerForegroundBrush:
+                    case SystemResourceKeyId.LabelForegroundBrush:
+                    case SystemResourceKeyId.LoadIndicatorForegroundBrush:
+                    case SystemResourceKeyId.SearchBoxForegroundBrush:
+                    case SystemResourceKeyId.SelectListForegroundBrush:
+                    case SystemResourceKeyId.TextBoxForegroundBrush:
+                    case SystemResourceKeyId.ViewHeaderForegroundBrush:
+                        value = new SolidColorBrush(UIColor.DarkTextColor.CGColor.GetColor());
+                        return true;
+                    case SystemResourceKeyId.DetailLabelForegroundBrush:
+                    case SystemResourceKeyId.GroupedSectionHeaderForegroundBrush:
+                    case SystemResourceKeyId.TabItemForegroundBrush:
+                    case SystemResourceKeyId.ValueLabelForegroundBrush:
+                        value = new SolidColorBrush(new Prism.UI.Color(128, 128, 128));
+                        return true;
+                    case SystemResourceKeyId.GroupedSectionHeaderBackgroundBrush:
+                        value = new SolidColorBrush(UIColor.GroupTableViewBackgroundColor.CGColor.GetColor());
+                        return true;
+                    case SystemResourceKeyId.ListBoxSeparatorBrush:
+                        value = new SolidColorBrush(new Prism.UI.Color(199, 199, 204));
+                        return true;
+                    case SystemResourceKeyId.LoadIndicatorBackgroundBrush:
+                    case SystemResourceKeyId.SearchBoxBackgroundBrush:
+                    case SystemResourceKeyId.ViewBackgroundBrush:
+                        value = new SolidColorBrush(new Prism.UI.Color(255, 255, 255));
+                        return true;
+                    case SystemResourceKeyId.SearchBoxBorderBrush:
+                        value = new SolidColorBrush(new Prism.UI.Color(201, 201, 206));
+                        return true;
+                    case SystemResourceKeyId.SectionHeaderBackgroundBrush:
+                        value = new SolidColorBrush(new Prism.UI.Color(247, 247, 247));
+                        return true;
+                    case SystemResourceKeyId.ToggleSwitchForegroundBrush:
+                        value = new SolidColorBrush(new Prism.UI.Color(75, 216, 99));
+                        return true;
+                }
             }
 
-            return value != null;
+            value = null;
+            return false;
         }
     }
 }
