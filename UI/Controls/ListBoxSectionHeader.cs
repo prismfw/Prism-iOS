@@ -43,12 +43,12 @@ namespace Prism.iOS.UI.Controls
         /// Occurs when this instance has been attached to the visual tree and is ready to be rendered.
         /// </summary>
         public event EventHandler Loaded;
-        
+
         /// <summary>
         /// Occurs when the system loses track of the pointer for some reason.
         /// </summary>
         public event EventHandler<PointerEventArgs> PointerCanceled;
-        
+
         /// <summary>
         /// Occurs when the pointer has moved while over the element.
         /// </summary>
@@ -294,11 +294,10 @@ namespace Prism.iOS.UI.Controls
         /// <summary></summary>
         public override void LayoutSubviews()
         {
-            var oldBounds = Bounds;
             var width = Parent?.Bounds.Width ?? (ObjectRetriever.GetAgnosticObject(this.GetNextResponder<INativeListBox>()) as Visual)?.RenderSize.Width;
 
             var desiredSize = MeasureRequest(width != parentWidth, new Size(width ?? double.PositiveInfinity, double.PositiveInfinity));
-            ArrangeRequest(oldBounds.Width != width || oldBounds.Height != desiredSize.Height, new Rectangle(0, Center.Y - (Bounds.Height / 2), width ?? 0, desiredSize.Height));
+            ArrangeRequest(currentSize.Width != width || currentSize.Height != desiredSize.Height, new Rectangle(0, Center.Y - (Bounds.Height / 2), width ?? 0, desiredSize.Height));
 
             parentWidth = width;
             base.LayoutSubviews();
@@ -349,7 +348,14 @@ namespace Prism.iOS.UI.Controls
                 }
             }
         }
-        
+
+        /// <summary></summary>
+        public override void PrepareForReuse()
+        {
+            base.PrepareForReuse();
+            currentSize = new CGSize();
+        }
+
         /// <summary></summary>
         /// <param name="touches"></param>
         /// <param name="evt"></param>
@@ -360,10 +366,10 @@ namespace Prism.iOS.UI.Controls
             {
                 PointerPressed(this, evt.GetPointerEventArgs(touch, this));
             }
-            
+
             base.TouchesBegan(touches, evt);
         }
-        
+
         /// <summary></summary>
         /// <param name="touches"></param>
         /// <param name="evt"></param>
@@ -374,10 +380,10 @@ namespace Prism.iOS.UI.Controls
             {
                 PointerCanceled(this, evt.GetPointerEventArgs(touch, this));
             }
-        
+
             base.TouchesCancelled(touches, evt);
         }
-        
+
         /// <summary></summary>
         /// <param name="touches"></param>
         /// <param name="evt"></param>
@@ -388,10 +394,10 @@ namespace Prism.iOS.UI.Controls
             {
                 PointerReleased(this, evt.GetPointerEventArgs(touch, this));
             }
-            
+
             base.TouchesEnded(touches, evt);
         }
-        
+
         /// <summary></summary>
         /// <param name="touches"></param>
         /// <param name="evt"></param>
@@ -402,7 +408,7 @@ namespace Prism.iOS.UI.Controls
             {
                 PointerMoved(this, evt.GetPointerEventArgs(touch, this));
             }
-            
+
             base.TouchesMoved(touches, evt);
         }
 
