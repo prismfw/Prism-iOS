@@ -210,16 +210,17 @@ namespace Prism.iOS
                     case SystemResourceKeyId.ValueLabelForegroundBrush:
                         value = new SolidColorBrush(new Prism.UI.Color(128, 128, 128));
                         return true;
+                    case SystemResourceKeyId.GroupedListBoxItemBackgroundBrush:
+                    case SystemResourceKeyId.LoadIndicatorBackgroundBrush:
+                    case SystemResourceKeyId.SearchBoxBackgroundBrush:
+                    case SystemResourceKeyId.ViewBackgroundBrush:
+                        value = new SolidColorBrush(new Prism.UI.Color(255, 255, 255));
+                        return true;
                     case SystemResourceKeyId.GroupedSectionHeaderBackgroundBrush:
                         value = new SolidColorBrush(UIColor.GroupTableViewBackgroundColor.CGColor.GetColor());
                         return true;
                     case SystemResourceKeyId.ListBoxSeparatorBrush:
                         value = new SolidColorBrush(new Prism.UI.Color(199, 199, 204));
-                        return true;
-                    case SystemResourceKeyId.LoadIndicatorBackgroundBrush:
-                    case SystemResourceKeyId.SearchBoxBackgroundBrush:
-                    case SystemResourceKeyId.ViewBackgroundBrush:
-                        value = new SolidColorBrush(new Prism.UI.Color(255, 255, 255));
                         return true;
                     case SystemResourceKeyId.SearchBoxBorderBrush:
                         value = new SolidColorBrush(new Prism.UI.Color(201, 201, 206));
