@@ -1236,13 +1236,11 @@ namespace Prism.iOS.UI.Controls
                     return indexPath;
                 }
                 
-                var retVal = listBox.SelectionMode != SelectionMode.Multiple ? indexPath : null;
-                
-                if (retVal == null)
+                if (listBox.AllowsMultipleSelection)
                 {
                     listBox.OnItemClicked(indexPath);
                 }
-                return retVal;
+                return indexPath;
             }
 
             public override NSIndexPath WillSelectRow(UITableView tableView, NSIndexPath indexPath)
