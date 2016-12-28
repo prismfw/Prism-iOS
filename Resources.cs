@@ -90,7 +90,7 @@ namespace Prism.iOS
                         value = new Thickness(12, 8, 12, 8);
                         return true;
                     case SystemResourceKeyId.SelectListListItemPadding:
-                        value = new Thickness(18, 10, 0, 10);
+                        value = new Thickness(18, 10, 33, 10);
                         return true;
                     case SystemResourceKeyId.ShouldAutomaticallyIndentSeparators:
                         value = true;
@@ -165,6 +165,7 @@ namespace Prism.iOS
                     case SystemResourceKeyId.AccentBrush:
                     case SystemResourceKeyId.ActionMenuForegroundBrush:
                     case SystemResourceKeyId.ButtonForegroundBrush:
+                    case SystemResourceKeyId.ProgressBarForegroundBrush:
                     case SystemResourceKeyId.SliderForegroundBrush:
                     case SystemResourceKeyId.TabViewForegroundBrush:
                         value = new SolidColorBrush(new Prism.UI.Color(0, 128, 255));
@@ -221,6 +222,9 @@ namespace Prism.iOS
                         return true;
                     case SystemResourceKeyId.ListBoxSeparatorBrush:
                         value = new SolidColorBrush(new Prism.UI.Color(199, 199, 204));
+                        return true;
+                    case SystemResourceKeyId.ProgressBarBackgroundBrush:
+                        value = new SolidColorBrush(new Prism.UI.Color(183, 183, 183));
                         return true;
                     case SystemResourceKeyId.SearchBoxBorderBrush:
                         value = new SolidColorBrush(new Prism.UI.Color(201, 201, 206));
