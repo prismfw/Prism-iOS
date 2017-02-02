@@ -438,6 +438,40 @@ namespace Prism.iOS
         }
 
         /// <summary>
+        /// Gets a <see cref="CGLineCap"/> from a <see cref="LineCap"/>.
+        /// </summary>
+        /// <param name="lineCap">The line cap.</param>
+        public static CGLineCap GetCGLineCap(this LineCap lineCap)
+        {
+            switch (lineCap)
+            {
+                case LineCap.Square:
+                    return CGLineCap.Square;
+                case LineCap.Round:
+                    return CGLineCap.Round;
+                default:
+                    return CGLineCap.Butt;
+            }
+        }
+
+        /// <summary>
+        /// Gets a <see cref="CGLineJoin"/> from a <see cref="LineJoin"/>.
+        /// </summary>
+        /// <param name="lineJoin">The line join.</param>
+        public static CGLineJoin GetCGLineJoin(this LineJoin lineJoin)
+        {
+            switch (lineJoin)
+            {
+                case LineJoin.Bevel:
+                    return CGLineJoin.Bevel;
+                case LineJoin.Round:
+                    return CGLineJoin.Round;
+                default:
+                    return CGLineJoin.Miter;
+            }
+        }
+
+        /// <summary>
         /// Gets a <see cref="Matrix"/> from a <see cref="CGAffineTransform"/>.
         /// </summary>
         /// <param name="transform">The transform.</param>
