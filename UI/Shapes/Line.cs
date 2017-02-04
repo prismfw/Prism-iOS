@@ -33,6 +33,7 @@ namespace Prism.iOS.UI.Shapes
     /// <summary>
     /// Represents an iOS implementation for an <see cref="INativeLine"/>.
     /// </summary>
+    [Preserve(AllMembers = true)]
     [Register(typeof(INativeLine))]
     public class Line : UIView, INativeLine
     {
@@ -92,24 +93,6 @@ namespace Prism.iOS.UI.Shapes
         /// Gets or sets the method to invoke when this instance requests an arrangement of its children.
         /// </summary>
         public ArrangeRequestHandler ArrangeRequest { get; set; }
-
-        /// <summary>
-        /// Gets or sets the end point of the line.
-        /// </summary>
-        public Point EndPoint
-        {
-            get { return endPoint; }
-            set
-            {
-                if (value != endPoint)
-                {
-                    endPoint = value;
-                    OnPropertyChanged(Prism.UI.Shapes.Line.EndPointProperty);
-                    SetNeedsDisplay();
-                }
-            }
-        }
-        private Point endPoint;
 
         /// <summary>
         /// Gets or sets the <see cref="Brush"/> to apply to the interior of the shape.
@@ -207,24 +190,6 @@ namespace Prism.iOS.UI.Shapes
         /// Gets or sets the visual theme that should be used by this instance.
         /// </summary>
         public Theme RequestedTheme { get; set; }
-
-        /// <summary>
-        /// Gets or sets the start point of the line.
-        /// </summary>
-        public Point StartPoint
-        {
-            get { return startPoint; }
-            set
-            {
-                if (value != startPoint)
-                {
-                    startPoint  = value;
-                    OnPropertyChanged(Prism.UI.Shapes.Line.StartPointProperty);
-                    SetNeedsDisplay();
-                }
-            }
-        }
-        private Point startPoint;
 
         /// <summary>
         /// Gets or sets the <see cref="Brush"/> to apply to the outline of the shape.
@@ -341,6 +306,78 @@ namespace Prism.iOS.UI.Shapes
         }
         private Visibility visibility;
         
+        /// <summary>
+        /// Gets or sets the X-coordinate of the start point of the line.
+        /// </summary>
+        public double X1
+        {
+            get { return x1; }
+            set
+            {
+                if (value != x1)
+                {
+                    x1 = value;
+                    OnPropertyChanged(Prism.UI.Shapes.Line.X1Property);
+                    SetNeedsDisplay();
+                }
+            }
+        }
+        private double x1;
+
+        /// <summary>
+        /// Gets or sets the X-coordinate of the end point of the line.
+        /// </summary>
+        public double X2
+        {
+            get { return x2; }
+            set
+            {
+                if (value != x2)
+                {
+                    x2 = value;
+                    OnPropertyChanged(Prism.UI.Shapes.Line.X2Property);
+                    SetNeedsDisplay();
+                }
+            }
+        }
+        private double x2;
+
+        /// <summary>
+        /// Gets or sets the Y-coordinate of the start point of the line.
+        /// </summary>
+        public double Y1
+        {
+            get { return y1; }
+            set
+            {
+                if (value != y1)
+                {
+                    y1 = value;
+                    OnPropertyChanged(Prism.UI.Shapes.Line.Y1Property);
+                    SetNeedsDisplay();
+                }
+            }
+        }
+        private double y1;
+
+        /// <summary>
+        /// Gets or sets the Y-coordinate of the end point of the line.
+        /// </summary>
+        public double Y2
+        {
+            get { return y2; }
+            set
+            {
+                if (value != y2)
+                {
+                    y2 = value;
+                    OnPropertyChanged(Prism.UI.Shapes.Line.Y2Property);
+                    SetNeedsDisplay();
+                }
+            }
+        }
+        private double y2;
+        
         private nfloat[] strokeDashArray;
         private nfloat strokeDashOffset;
 
@@ -370,10 +407,10 @@ namespace Prism.iOS.UI.Shapes
                     context.SetLineCap(strokeLineCap.GetCGLineCap());
                     context.SetLineJoin(strokeLineJoin.GetCGLineJoin());
                     context.SetMiterLimit((nfloat)strokeMiterLimit);
-
-                    context.MoveTo((nfloat)startPoint.X, (nfloat)startPoint.Y);
-                    context.AddLineToPoint((nfloat)endPoint.X, (nfloat)endPoint.Y);
                     context.SetLineDash(strokeDashOffset, strokeDashArray);
+
+                    context.MoveTo((nfloat)x1, (nfloat)y1);
+                    context.AddLineToPoint((nfloat)x2, (nfloat)y2);
                     context.StrokePath();
 
                     context.RestoreState();
@@ -415,8 +452,7 @@ namespace Prism.iOS.UI.Shapes
         /// <returns>The desired size as a <see cref="Size"/> instance.</returns>
         public Size Measure(Size constraints)
         {
-            return new Size(Math.Min(Math.Max(startPoint.X, endPoint.X) + strokeThickness * 0.5, constraints.Width),
-                Math.Min(Math.Max(startPoint.Y, endPoint.Y) + strokeThickness * 0.5, constraints.Height));
+            return constraints;
         }
 
         /// <summary>

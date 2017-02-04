@@ -33,6 +33,7 @@ namespace Prism.iOS.UI.Shapes
     /// <summary>
     /// Represents an iOS implementation for an <see cref="INativeEllipse"/>.
     /// </summary>
+    [Preserve(AllMembers = true)]
     [Register(typeof(INativeEllipse))]
     public class Ellipse : UIView, INativeEllipse
     {
@@ -333,21 +334,21 @@ namespace Prism.iOS.UI.Shapes
                 {
                     context.SaveState();
 
-                    context.SetFillColor(fill.GetColor(rect.Width, rect.Height, null).CGColor);
+                    context.SetFillColor(fill.GetColor(rect.Width, rect.Height, null)?.CGColor);
                     context.SetStrokeColor((stroke.GetColor(rect.Width, rect.Height, null) ?? UIColor.Black).CGColor);
                     context.SetLineWidth((nfloat)strokeThickness);
                     context.SetLineCap(strokeLineCap.GetCGLineCap());
                     context.SetLineJoin(strokeLineJoin.GetCGLineJoin());
                     context.SetMiterLimit((nfloat)strokeMiterLimit);
+                    context.SetLineDash(strokeDashOffset, strokeDashArray);
 
                     rect.X += (nfloat)(strokeThickness * 0.5);
                     rect.Y += (nfloat)(strokeThickness * 0.5);
                     rect.Width -= (nfloat)strokeThickness;
                     rect.Height -= (nfloat)strokeThickness;
                     
-                    context.FillEllipseInRect(rect);
-                    context.SetLineDash(strokeDashOffset, strokeDashArray);
-                    context.StrokeEllipseInRect(rect);
+                    context.AddEllipseInRect(rect);
+                    context.DrawPath(CGPathDrawingMode.FillStroke);
 
                     context.RestoreState();
                 }
@@ -388,7 +389,7 @@ namespace Prism.iOS.UI.Shapes
         /// <returns>The desired size as a <see cref="Size"/> instance.</returns>
         public Size Measure(Size constraints)
         {
-            return new Size();
+            return constraints;
         }
 
         /// <summary>
