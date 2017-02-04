@@ -99,6 +99,10 @@
     <Compile Include="UI\VisualTreeObject.cs" />
     <Compile Include="UI\Controls\ProgressBar.cs" />
     <Compile Include="UI\Shapes\Ellipse.cs" />
+    <Compile Include="UI\Shapes\PolyShapeBase.cs" />
+    <Compile Include="UI\Shapes\Polygon.cs" />
+    <Compile Include="UI\Shapes\Polyline.cs" />
+    <Compile Include="UI\Shapes\Quadrangle.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.CSharp.targets" />
   <ItemGroup />
