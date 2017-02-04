@@ -23,6 +23,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using CoreGraphics;
+using Foundation;
 using Prism.Native;
 using Prism.UI.Media.Inking;
 using UIKit;
@@ -32,6 +33,7 @@ namespace Prism.iOS.UI.Media.Inking
     /// <summary>
     /// Represents an iOS implementation for an <see cref="INativeInkStroke"/>.
     /// </summary>
+    [Preserve(AllMembers = true)]
     [Register(typeof(INativeInkStroke))]
     public class InkStroke : UIBezierPath, INativeInkStroke
     {

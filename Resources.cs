@@ -19,6 +19,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 
 
+using Foundation;
 using Prism.Native;
 using Prism.UI.Media;
 using UIKit;
@@ -28,6 +29,7 @@ namespace Prism.iOS
     /// <summary>
     /// Represents an iOS implementation of an <see cref="INativeResources"/>.
     /// </summary>
+    [Preserve(AllMembers = true)]
     [Register(typeof(INativeResources), IsSingleton = true)]
     public class Resources : INativeResources
     {

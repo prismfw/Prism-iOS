@@ -27,7 +27,6 @@ using Foundation;
 using Prism.Input;
 using Prism.Native;
 using Prism.UI;
-using Prism.UI.Controls;
 using Prism.UI.Media.Inking;
 using UIKit;
 
@@ -36,6 +35,7 @@ namespace Prism.iOS.UI.Controls
     /// <summary>
     /// Represents an iOS implementation for an <see cref="INativeInkCanvas"/>.
     /// </summary>
+    [Preserve(AllMembers = true)]
     [Register(typeof(INativeInkCanvas))]
     public class InkCanvas : UIView, INativeInkCanvas
     {
