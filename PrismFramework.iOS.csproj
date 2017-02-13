@@ -103,6 +103,7 @@
     <Compile Include="UI\Shapes\Polygon.cs" />
     <Compile Include="UI\Shapes\Polyline.cs" />
     <Compile Include="UI\Shapes\Quadrangle.cs" />
+    <Compile Include="UI\Shapes\Path.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.CSharp.targets" />
   <ItemGroup />
