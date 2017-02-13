@@ -417,9 +417,53 @@ namespace Prism.iOS.UI.Controls
         private IList items;
 
         /// <summary>
+        /// Gets or sets the background of the selection list.
+        /// </summary>
+        public Brush ListBackground
+        {
+            get { return listBackground; }
+            set
+            {
+                if (value != listBackground)
+                {
+                    listBackground = value;
+                    if (selectListController != null)
+                    {
+                        selectListController.Background = listBackground;
+                    }
+
+                    OnPropertyChanged(Prism.UI.Controls.SelectList.ListBackgroundProperty);
+                }
+            }
+        }
+        private Brush listBackground;
+
+        /// <summary>
         /// Gets or sets the method to invoke when this instance requests a list item for an object in the select list.
         /// </summary>
         public SelectListListItemRequestHandler ListItemRequest { get; set; }
+
+        /// <summary>
+        /// Gets or sets the <see cref="Brush"/> to apply to the separators in the selection list, if applicable.
+        /// </summary>
+        public Brush ListSeparatorBrush
+        {
+            get { return listSeparatorBrush; }
+            set
+            {
+                if (value != listSeparatorBrush)
+                {
+                    listSeparatorBrush = value;
+                    if (selectListController != null)
+                    {
+                        selectListController.SeparatorBrush = listSeparatorBrush;
+                    }
+
+                    OnPropertyChanged(Prism.UI.Controls.SelectList.ListSeparatorBrushProperty);
+                }
+            }
+        }
+        private Brush listSeparatorBrush;
 
         /// <summary>
         /// Gets or sets the method to invoke when this instance requests a measurement of itself and its children.
@@ -813,12 +857,54 @@ namespace Prism.iOS.UI.Controls
 
         private class SelectListViewController : UITableViewController
         {
+            public Brush Background
+            {
+                get { return background; }
+                set
+                {
+                    if (value != background)
+                    {
+                        (background as ImageBrush).ClearImageHandler(OnBackgroundImageLoaded);
+
+                        background = value;
+
+                        if (TableView.BackgroundView == null)
+                        {
+                            TableView.BackgroundView = new UIView();
+                        }
+                        TableView.BackgroundView.BackgroundColor = value.GetColor(TableView.Bounds.Width, TableView.Bounds.Height, OnBackgroundImageLoaded);
+                    }
+                }
+            }
+            private Brush background;
+
+            public Brush SeparatorBrush
+            {
+                get { return separatorBrush; }
+                set
+                {
+                    if (value != separatorBrush)
+                    {
+                        (separatorBrush as ImageBrush).ClearImageHandler(OnSeparatorImageLoaded);
+
+                        separatorBrush = value;
+                        TableView.SeparatorColor = separatorBrush.GetColor(TableView.Bounds.Width, TableView.Bounds.Height, OnSeparatorImageLoaded) ??
+                            new UIColor(0.78f, 0.78f, 0.8f, 1);
+                    }
+                }
+            }
+            private Brush separatorBrush;
+
             private readonly Dictionary<NSIndexPath, nfloat> cellHeights = new Dictionary<NSIndexPath, nfloat>();
             private readonly SelectList selectList;
+            private CGSize currentSize;
             
             public SelectListViewController(SelectList selectList)
             {
                 this.selectList = selectList;
+
+                Background = selectList.ListBackground;
+                SeparatorBrush = selectList.ListSeparatorBrush;
             }
 
             public override nfloat EstimatedHeight(UITableView tableView, NSIndexPath indexPath)
@@ -833,6 +919,7 @@ namespace Prism.iOS.UI.Controls
                 if (cell == null)
                 {
                     cell = new SelectListCell(UITableViewCellStyle.Default, string.Empty);
+                    cell.BackgroundColor = null;
                     cell.SelectionStyle = UITableViewCellSelectionStyle.None;
                 }
 
@@ -901,13 +988,47 @@ namespace Prism.iOS.UI.Controls
             public override void ViewWillAppear(bool animated)
             {
                 var insets = new UIEdgeInsets();
-                if (NavigationController == null || (bool)NavigationController.NavigationBar?.Hidden)
+                if (NavigationController?.NavigationBar?.Hidden ?? true)
                 {
                     insets.Top = UIApplication.SharedApplication.StatusBarFrame.Height;
                 }
 
                 TableView.ContentInset = insets;
                 TableView.ScrollIndicatorInsets = insets;
+            }
+
+            public override void ViewDidLayoutSubviews()
+            {
+                base.ViewDidLayoutSubviews();
+
+                if (currentSize != TableView.Bounds.Size)
+                {
+                    currentSize = TableView.Bounds.Size;
+
+                    if ((background is LinearGradientBrush || background is ImageBrush) && TableView.BackgroundView != null)
+                    {
+                        TableView.BackgroundView.BackgroundColor = background.GetColor(TableView.Bounds.Width, TableView.Bounds.Height, null);
+                    }
+
+                    if (separatorBrush is LinearGradientBrush || separatorBrush is ImageBrush)
+                    {
+                        TableView.SeparatorColor = separatorBrush.GetColor(TableView.Bounds.Width, TableView.Bounds.Height, null);
+                    }
+                }
+            }
+
+            private void OnBackgroundImageLoaded(object sender, EventArgs e)
+            {
+                if (TableView.BackgroundView != null)
+                {
+                    TableView.BackgroundView.BackgroundColor = background.GetColor(TableView.Bounds.Width, TableView.Bounds.Height, null);
+                }
+            }
+
+            private void OnSeparatorImageLoaded(object sender, EventArgs e)
+            {
+                TableView.SeparatorColor = separatorBrush.GetColor(TableView.Bounds.Width, TableView.Bounds.Height, null) ??
+                    new UIColor(0.78f, 0.78f, 0.8f, 1);
             }
         }
 
