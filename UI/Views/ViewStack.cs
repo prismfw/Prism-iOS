@@ -440,7 +440,10 @@ namespace Prism.iOS.UI
 
         private void OnViewChanging(object oldView, object newView)
         {
-            ViewChanging(this, new NativeViewStackViewChangingEventArgs(oldView, newView));
+            if (oldView != newView)
+            {
+                ViewChanging(this, new NativeViewStackViewChangingEventArgs(oldView, newView));
+            }
         }
 
         private class ViewStackDelegate : UINavigationControllerDelegate
@@ -449,13 +452,17 @@ namespace Prism.iOS.UI
 
             public override void DidShowViewController(UINavigationController navigationController, [Transient]UIViewController viewController, bool animated)
             {
+                bool same = currentViewController?.Target == viewController;
                 currentViewController = new WeakReference(viewController);
 
                 var viewStack = navigationController as ViewStack;
                 if (viewStack != null)
                 {
                     (viewStack.Header as ViewStackHeader)?.CheckTitle();
-                    viewStack.OnViewChanged();
+                    if (!same)
+                    {
+                        viewStack.OnViewChanged();
+                    }
                 }
             }
 
