@@ -196,11 +196,13 @@ namespace Prism.iOS.UI.Controls
 
                     foreground = value;
 
-                    var font = GetTitleTextAttributes(UIControlState.Normal).Font;
+                    var attributes = GetTitleTextAttributes(UIControlState.Normal);
                     SetTitleTextAttributes(new UITextAttributes()
                     {
-                        Font = font,
-                        TextColor = foreground.GetColor(1, font.LineHeight, OnForegroundImageLoaded) ?? UIColor.Gray
+                        Font = attributes.Font,
+                        TextColor = foreground.GetColor(View?.Frame.Width ?? 1, attributes.Font.LineHeight, OnForegroundImageLoaded) ?? UIColor.Gray,
+                        TextShadowColor = attributes.TextShadowColor,
+                        TextShadowOffset = attributes.TextShadowOffset
                     }, UIControlState.Normal);
 
                     OnPropertyChanged(Prism.UI.Controls.TabItem.ForegroundProperty);
@@ -217,22 +219,38 @@ namespace Prism.iOS.UI.Controls
         /// <summary>
         /// Gets or sets an <see cref="INativeImageSource"/> for an image to display with the item.
         /// </summary>
-        public INativeImageSource ImageSource
+        public new INativeImageSource Image
         {
-            get { return imageSource; }
+            get { return image; }
             set
             {
-                if (value != imageSource)
+                if (value != image)
                 {
-                    imageSource.ClearImageHandler(OnImageLoaded);
+                    image.ClearImageHandler(OnImageLoaded);
 
-                    imageSource = value;
-                    Image = imageSource.BeginLoadingImage(OnImageLoaded);
-                    OnPropertyChanged(Prism.UI.Controls.TabItem.ImageSourceProperty);
+                    image = value;
+                    base.Image = image.BeginLoadingImage(OnImageLoaded);
+                    OnPropertyChanged(Prism.UI.Controls.TabItem.ImageProperty);
                 }
             }
         }
-        private INativeImageSource imageSource;
+        private INativeImageSource image;
+        
+        /// <summary>
+        /// Gets or sets a value indicating whether the user can interact with the item.
+        /// </summary>
+        public bool IsEnabled
+        {
+            get { return base.Enabled; }
+            set
+            {
+                if (value != base.Enabled)
+                {
+                    base.Enabled = value;
+                    OnPropertyChanged(Prism.UI.Controls.TabItem.IsEnabledProperty);
+                }
+            }
+        }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance can be considered a valid result for hit testing.
@@ -390,13 +408,13 @@ namespace Prism.iOS.UI.Controls
             SetTitleTextAttributes(new UITextAttributes()
             {
                 Font = font,
-                TextColor = foreground.GetColor(1, font.LineHeight, null) ?? UIColor.Gray
+                TextColor = foreground.GetColor(View?.Frame.Width ?? 1, font.LineHeight, null) ?? UIColor.Gray
             }, UIControlState.Normal);
         }
 
         private void OnImageLoaded(object sender, EventArgs e)
         {
-            Image = (sender as INativeImageSource).GetImageSource();
+            base.Image = (sender as INativeImageSource).GetImageSource();
         }
  
         private void OnLoaded()

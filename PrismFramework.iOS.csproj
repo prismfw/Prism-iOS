@@ -51,7 +51,6 @@
     <Compile Include="UI\Views\SplitView.cs" />
     <Compile Include="UI\Views\TabView.cs" />
     <Compile Include="Utilities\Timer.cs" />
-    <Compile Include="UI\Views\TabbedSplitView.cs" />
     <Compile Include="UI\Controls\LoadIndicator.cs" />
     <Compile Include="UI\Popup.cs" />
     <Compile Include="UI\VisualTreeHelper.cs" />

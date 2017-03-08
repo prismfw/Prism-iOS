@@ -124,6 +124,20 @@ namespace Prism.iOS.UI
 
                     foreground = value;
                     TabBar.TintColor = foreground.GetColor(TabBar.Bounds.Width, TabBar.Bounds.Height, OnForegroundImageLoaded);
+                    
+                    if (TabBar.Items != null)
+                    {
+                        foreach (var tabItem in TabBar.Items)
+                        {
+                            var font = tabItem.GetTitleTextAttributes(UIControlState.Normal).Font;
+                            tabItem.SetTitleTextAttributes(new UITextAttributes()
+                            {
+                                Font = font,
+                                TextColor = TabBar.TintColor ?? UIColor.Gray
+                            }, UIControlState.Selected);
+                        }
+                    }
+                    
                     OnPropertyChanged(Prism.UI.TabView.ForegroundProperty);
                 }
             }
@@ -324,6 +338,13 @@ namespace Prism.iOS.UI
                 {
                     foreach (var controller in ViewControllers)
                     {
+                        var font = controller.TabBarItem.GetTitleTextAttributes(UIControlState.Normal).Font;
+                        controller.TabBarItem.SetTitleTextAttributes(new UITextAttributes()
+                        {
+                            Font = font,
+                            TextColor = TabBar.TintColor ?? UIColor.Gray
+                        }, UIControlState.Selected);
+
                         if (controller.TabBarItem is INativeVisual)
                         {
                             try
@@ -455,6 +476,19 @@ namespace Prism.iOS.UI
         private void OnForegroundImageLoaded(object sender, EventArgs e)
         {
             TabBar.TintColor = foreground.GetColor(TabBar.Bounds.Width, TabBar.Bounds.Height, null);
+            
+            if (TabBar.Items != null)
+            {
+                foreach (var tabItem in TabBar.Items)
+                {
+                    var font = tabItem.GetTitleTextAttributes(UIControlState.Normal).Font;
+                    tabItem.SetTitleTextAttributes(new UITextAttributes()
+                    {
+                        Font = font,
+                        TextColor = TabBar.TintColor ?? UIColor.Gray
+                    }, UIControlState.Selected);
+                }
+            }
         }
 
         private void OnTabItemSelected(NativeItemSelectedEventArgs e)
