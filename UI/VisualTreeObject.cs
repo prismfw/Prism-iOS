@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2016  Prism Framework Team
+Copyright (C) 2017  Prism Framework Team
 
 This file is part of the Prism Framework.
 
@@ -19,7 +19,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 
 
-namespace Prism.iOS
+namespace Prism.iOS.UI
 {
     /// <summary>
     /// Defines a visual object with non-standard children and/or a non-standard parent.
