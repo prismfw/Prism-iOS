@@ -595,6 +595,14 @@ namespace Prism.iOS.UI.Controls
         /// <summary></summary>
         public override void LayoutSubviews()
         {
+            if (!(NextResponder is UIViewController || Superview?.NextResponder is UIViewController))
+            {
+                // There are potential view hierarchies where the content inset is inappropriately set.
+                // This results in an undesired shifting of the list's content, which we are preventing here.
+                ContentInset = UIEdgeInsets.Zero;
+                ScrollIndicatorInsets = UIEdgeInsets.Zero;
+            }
+
             MeasureRequest(false, null);
             ArrangeRequest(false, null);
 

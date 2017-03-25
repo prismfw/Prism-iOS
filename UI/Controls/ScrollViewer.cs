@@ -327,7 +327,15 @@ namespace Prism.iOS.UI.Controls
         public override void LayoutSubviews()
         {
             var offset = base.ContentOffset;
-            
+
+            if (!(NextResponder is UIViewController || Superview?.NextResponder is UIViewController))
+            {
+                // There are potential view hierarchies where the content inset is inappropriately set.
+                // This results in an undesired shifting of the list's content, which we are preventing here.
+                ContentInset = UIEdgeInsets.Zero;
+                ScrollIndicatorInsets = UIEdgeInsets.Zero;
+            }
+
             MeasureRequest(false, null);
             ArrangeRequest(false, null);
 
@@ -350,10 +358,7 @@ namespace Prism.iOS.UI.Controls
             contentSize = new CGSize(CanScrollHorizontally ? contentSize.Width : Math.Min(Bounds.Width - (ContentInset.Left + ContentInset.Right), contentSize.Width),
                 CanScrollVertically ? contentSize.Height : Math.Min(Bounds.Height - (ContentInset.Top + ContentInset.Bottom), contentSize.Height));
 
-            if (contentSize != base.ContentSize)
-            {
-                base.ContentSize = contentSize;
-            }
+            base.ContentSize = contentSize;
         }
 
         /// <summary></summary>
