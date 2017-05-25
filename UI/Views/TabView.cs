@@ -53,7 +53,7 @@ namespace Prism.iOS.UI
         /// <summary>
         /// Occurs when a tab item is selected.
         /// </summary>
-        public event EventHandler<NativeItemSelectedEventArgs> TabItemSelected;
+        public event EventHandler<NativeItemChangedEventArgs> TabItemSelected;
 
         /// <summary>
         /// Occurs when this instance has been detached from the visual tree.
@@ -491,7 +491,7 @@ namespace Prism.iOS.UI
             }
         }
 
-        private void OnTabItemSelected(NativeItemSelectedEventArgs e)
+        private void OnTabItemSelected(NativeItemChangedEventArgs e)
         {
             TabItemSelected(this, e);
         }
@@ -521,7 +521,7 @@ namespace Prism.iOS.UI
                         tabView.OnPropertyChanged(Prism.UI.TabView.SelectedIndexProperty);
                     }
  
-                    tabView.OnTabItemSelected(new NativeItemSelectedEventArgs(previousController == null ? null :
+                    tabView.OnTabItemSelected(new NativeItemChangedEventArgs(previousController == null ? null :
                         previousController.TabBarItem, viewController.TabBarItem));
                 }
             }
