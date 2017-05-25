@@ -103,6 +103,9 @@
     <Compile Include="UI\Shapes\Polyline.cs" />
     <Compile Include="UI\Shapes\Quadrangle.cs" />
     <Compile Include="UI\Shapes\Path.cs" />
+    <Compile Include="Media\MediaPlaybackList.cs" />
+    <Compile Include="UI\Controls\MediaElement.cs" />
+    <Compile Include="Media\MediaPlaybackItem.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.CSharp.targets" />
   <ItemGroup />
@@ -112,5 +115,8 @@
       <Project>{BF3EDE00-0B3E-4C83-82E0-3ED08BE0E2E5}</Project>
       <Name>PrismFramework</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Media\" />
   </ItemGroup>
 </Project>

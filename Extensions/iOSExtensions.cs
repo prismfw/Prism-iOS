@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 using System;
 using System.Linq;
+using AVFoundation;
 using CoreAnimation;
 using CoreGraphics;
 using Foundation;
@@ -352,6 +353,23 @@ namespace Prism.iOS
             }
 
             return style;
+        }
+
+        /// <summary>
+        /// Gets a <see cref="AVLayerVideoGravity"/> value from a <see cref="Stretch"/> value.
+        /// </summary>
+        /// <param name="stretch">The Stretch value.</param>
+        public static AVLayerVideoGravity GetLayerVideoGravity(this Stretch stretch)
+        {
+            switch (stretch)
+            {
+                case Stretch.Fill:
+                    return AVLayerVideoGravity.Resize;
+                case Stretch.UniformToFill:
+                    return AVLayerVideoGravity.ResizeAspectFill;
+                default:
+                    return AVLayerVideoGravity.ResizeAspect;
+            }
         }
 
         /// <summary>
