@@ -123,6 +123,14 @@ namespace Prism.iOS.Systems
         }
 
         /// <summary>
+        /// Gets the model of the device.
+        /// </summary>
+        public string Model
+        {
+            get { return UIDevice.CurrentDevice.Model; }
+        }
+
+        /// <summary>
         /// Gets the name of the device.
         /// </summary>
         public string Name
@@ -179,6 +187,14 @@ namespace Prism.iOS.Systems
         public PowerSource PowerSource
         {
             get { return UIDevice.CurrentDevice.BatteryState.GetPowerSource(); }
+        }
+
+        /// <summary>
+        /// Gets the amount of time, in milliseconds, that the system has been awake since it was last restarted.
+        /// </summary>
+        public long SystemUptime
+        {
+            get { return (long)(NSProcessInfo.ProcessInfo.SystemUptime * 1000); }
         }
 
         /// <summary>
