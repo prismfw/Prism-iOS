@@ -24,7 +24,7 @@ using AVFoundation;
 using Foundation;
 using Prism.Native;
 
-namespace Prism.iOS.UI.Media
+namespace Prism.iOS.Media
 {
     /// <summary>
     /// Represents an iOS implementation of an <see cref="INativeAudioPlayer"/>.
@@ -41,7 +41,7 @@ namespace Prism.iOS.UI.Media
         /// <summary>
         /// Occurs when buffering of the audio track has finished.
         /// </summary>
-        public event EventHandler BufferingCompleted;
+        public event EventHandler BufferingEnded;
 
         /// <summary>
         /// Occurs when buffering of the audio track has begun.
@@ -51,7 +51,7 @@ namespace Prism.iOS.UI.Media
         /// <summary>
         /// Occurs when playback of the audio track has finished.
         /// </summary>
-        public event EventHandler PlaybackCompleted;
+        public event EventHandler PlaybackEnded;
 
         /// <summary>
         /// Occurs when playback of the audio track has begun.
@@ -146,7 +146,7 @@ namespace Prism.iOS.UI.Media
             }
         }
         private double volume;
-        
+
         private AVAudioPlayer audioPlayer;
 
         /// <summary>
@@ -167,10 +167,19 @@ namespace Prism.iOS.UI.Media
                 audioPlayer.Delegate = null;
                 audioPlayer.Stop();
             }
-            
+
             try
             {
-                audioPlayer = AVAudioPlayer.FromUrl(NSUrl.FromFilename(source.OriginalString));
+                NSError error;
+                audioPlayer = AVAudioPlayer.FromUrl(!source.IsAbsoluteUri || source.IsFile ?
+                    NSUrl.FromFilename(source.OriginalString) : (NSUrl)source, out error);
+
+                if (error != null)
+                {
+                    OnAudioFailed(new Exception(error.LocalizedDescription));
+                    return;
+                }
+
                 audioPlayer.Delegate = new AudioPlayerDelegate(this);
                 audioPlayer.EnableRate = true;
                 audioPlayer.CurrentTime = position.TotalSeconds;
@@ -178,11 +187,11 @@ namespace Prism.iOS.UI.Media
                 audioPlayer.Rate = (float)playbackRate;
                 audioPlayer.Volume = (float)volume;
                 position = TimeSpan.Zero;
-                
+
                 BufferingStarted(this, EventArgs.Empty);
                 if (audioPlayer.PrepareToPlay())
                 {
-                    BufferingCompleted(this, EventArgs.Empty);
+                    BufferingEnded(this, EventArgs.Empty);
                 }
             }
             catch (Exception e)
@@ -190,7 +199,7 @@ namespace Prism.iOS.UI.Media
                 OnAudioFailed(e);
                 return;
             }
-            
+
             if (AutoPlay)
             {
                 Play();
@@ -215,32 +224,33 @@ namespace Prism.iOS.UI.Media
                 PlaybackStarted(this, EventArgs.Empty);
             }
         }
-        
+
         private void OnAudioFailed(Exception e)
         {
             AudioFailed(this, new ErrorEventArgs(e));
         }
-        
+
         private void OnPlaybackCompleted()
         {
-            PlaybackCompleted(this, EventArgs.Empty);
+            PlaybackEnded(this, EventArgs.Empty);
+            audioPlayer?.PrepareToPlay();
         }
-        
+
         private class AudioPlayerDelegate : AVAudioPlayerDelegate
         {
             private readonly WeakReference audioPlayer;
-            
+
             public AudioPlayerDelegate(AudioPlayer player)
             {
                 audioPlayer = new WeakReference(player);
             }
-            
-            public override void DecoderError (AVAudioPlayer player, NSError error)
+
+            public override void DecoderError(AVAudioPlayer player, NSError error)
             {
                 (audioPlayer.Target as AudioPlayer)?.OnAudioFailed(new NSErrorException(error));
             }
-            
-            public override void FinishedPlaying (AVAudioPlayer player, bool flag)
+
+            public override void FinishedPlaying(AVAudioPlayer player, bool flag)
             {
                 if (flag)
                 {
