@@ -489,16 +489,16 @@ namespace Prism.iOS.UI.Controls
             TitleLabel.SizeToFit();
             var size = TitleLabel.Bounds.Size.GetSize();
 
-            ImageView.SizeToFit();
+            var imageSize = ImageView.Image == null ? CGSize.Empty : ImageView.Image.Size;
             if (contentDirection == ContentDirection.Up || contentDirection == ContentDirection.Down)
             {
-                size.Width = Math.Max(size.Width, ImageView.Bounds.Width);
-                size.Height += ImageView.Bounds.Height;
+                size.Width = Math.Max(size.Width, imageSize.Width);
+                size.Height += imageSize.Height;
             }
             else
             {
-                size.Width += ImageView.Bounds.Width;
-                size.Height = Math.Max(size.Height, ImageView.Bounds.Height);
+                size.Width += imageSize.Width;
+                size.Height = Math.Max(size.Height, imageSize.Height);
             }
 
             size.Width += padding.Right + padding.Left + (BorderWidth * 2);
@@ -537,9 +537,10 @@ namespace Prism.iOS.UI.Controls
         
             MeasureRequest(false, null);
             ArrangeRequest(false, null);
-
-            var imageSize = ImageView.Bounds.Size;
+            
+            TitleLabel.SizeToFit();
             var labelSize = TitleLabel.Bounds.Size;
+            var imageSize = ImageView.Image?.Size ?? CGSize.Empty;
             var width = Bounds.Width - padding.Left - padding.Right;
             var height = Bounds.Height - padding.Top - padding.Bottom;
 
@@ -550,13 +551,8 @@ namespace Prism.iOS.UI.Controls
                     TitleLabel.Frame = new CGRect(new CGPoint((width - labelSize.Width) / 2 + (nfloat)padding.Left, topOffset), labelSize);
                     ImageView.Frame = new CGRect(new CGPoint((width - imageSize.Width) / 2 + (nfloat)padding.Left, TitleLabel.Frame.Bottom), imageSize);
                     break;
-                case ContentDirection.Left:
-                    var leftOffset = ((width - (labelSize.Width + imageSize.Width)) / 2) + padding.Left;
-                    ImageView.Frame = new CGRect(new CGPoint(leftOffset, (height - imageSize.Height) / 2 + (nfloat)padding.Top), imageSize);
-                    TitleLabel.Frame = new CGRect(new CGPoint(ImageView.Frame.Right, (height - labelSize.Height) / 2 + (nfloat)padding.Top), labelSize);
-                    break;
                 case ContentDirection.Right:
-                    leftOffset = ((width - (labelSize.Width + imageSize.Width)) / 2) + padding.Left;
+                    var leftOffset = ((width - (labelSize.Width + imageSize.Width)) / 2) + padding.Left;
                     TitleLabel.Frame = new CGRect(new CGPoint(leftOffset, (height - labelSize.Height) / 2 + (nfloat)padding.Top), labelSize);
                     ImageView.Frame = new CGRect(new CGPoint(TitleLabel.Frame.Right, (height - imageSize.Height) / 2 + (nfloat)padding.Top), imageSize);
                     break;
@@ -564,6 +560,11 @@ namespace Prism.iOS.UI.Controls
                     topOffset = ((height - (labelSize.Height + imageSize.Height)) / 2) + padding.Top;
                     ImageView.Frame = new CGRect(new CGPoint((width - imageSize.Width) / 2 + (nfloat)padding.Left, topOffset), imageSize);
                     TitleLabel.Frame = new CGRect(new CGPoint((width - labelSize.Width) / 2 + (nfloat)padding.Left, ImageView.Frame.Bottom), labelSize);
+                    break;
+                default:
+                    leftOffset = ((width - (labelSize.Width + imageSize.Width)) / 2) + padding.Left;
+                    ImageView.Frame = new CGRect(new CGPoint(leftOffset, (height - imageSize.Height) / 2 + (nfloat)padding.Top), imageSize);
+                    TitleLabel.Frame = new CGRect(new CGPoint(ImageView.Frame.Right, (height - labelSize.Height) / 2 + (nfloat)padding.Top), labelSize);
                     break;
             }
 
