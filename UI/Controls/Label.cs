@@ -119,14 +119,7 @@ namespace Prism.iOS.UI.Controls
         public double FontSize
         {
             get { return Font?.PointSize ?? 0; }
-            set
-            {
-                if (value != (Font?.PointSize ?? 0))
-                {
-                    Font = fontFamily.GetUIFont(value, FontStyle);
-                    OnPropertyChanged(Prism.UI.Controls.Label.FontSizeProperty);
-                }
-            }
+            set { Font = fontFamily.GetUIFont(value, FontStyle); }
         }
 
         /// <summary>
@@ -218,23 +211,6 @@ namespace Prism.iOS.UI.Controls
         /// Gets a value indicating whether this instance has been loaded and is ready for rendering.
         /// </summary>
         public bool IsLoaded { get; private set; }
-
-        /// <summary>
-        /// Gets or sets the maximum number of lines of text that the label can show.
-        /// A value of 0 means there is no limit.
-        /// </summary>
-        public new int Lines
-        {
-            get { return (int)base.Lines; }
-            set
-            {
-                if (value != Lines)
-                {
-                    base.Lines = value;
-                    OnPropertyChanged(Prism.UI.Controls.Label.LinesProperty);
-                }
-            }
-        }
 
         /// <summary>
         /// Gets or sets the method to invoke when this instance requests a measurement of itself and its children.
@@ -432,7 +408,16 @@ namespace Prism.iOS.UI.Controls
                 }
             }
         }
-        
+
+        /// <summary>
+        /// Sets the maximum number of lines of text that the label can show.  A value of 0 means there is no limit.
+        /// </summary>
+        /// <param name="maxLines"></param>
+        public void SetMaxLines(int maxLines)
+        {
+            Lines = maxLines;
+        }
+
         /// <summary></summary>
         /// <param name="touches"></param>
         /// <param name="evt"></param>
