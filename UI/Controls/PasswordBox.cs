@@ -317,6 +317,31 @@ namespace Prism.iOS.UI.Controls
         public bool IsLoaded { get; private set; }
 
         /// <summary>
+        /// Gets or sets the maximum number of characters that are allowed to be entered into the control.
+        /// A value of 0 means there is no limit.
+        /// </summary>
+        public int MaxLength
+        {
+            get { return maxLength; }
+            set
+            {
+                if (value != maxLength)
+                {
+                    maxLength = value;
+                    OnPropertyChanged(Prism.UI.Controls.PasswordBox.MaxLengthProperty);
+
+                    if (maxLength > 0 && base.Text != null && base.Text.Length > maxLength)
+                    {
+                        base.Text = base.Text.Substring(0, maxLength);
+                        OnPropertyChanged(Prism.UI.Controls.PasswordBox.PasswordProperty);
+                        PasswordChanged(this, EventArgs.Empty);
+                    }
+                }
+            }
+        }
+        private int maxLength;
+
+        /// <summary>
         /// Gets or sets the method to invoke when this instance requests a measurement of itself and its children.
         /// </summary>
         public MeasureRequestHandler MeasureRequest { get; set; }
@@ -345,6 +370,11 @@ namespace Prism.iOS.UI.Controls
             get { return base.Text; }
             set
             {
+                if (maxLength > 0 && value != null && value.Length > maxLength)
+                {
+                    value = value.Substring(0, maxLength);
+                }
+
                 if (value != base.Text)
                 {
                     base.Text = value;
@@ -440,6 +470,36 @@ namespace Prism.iOS.UI.Controls
             {
                 OnPropertyChanged(Control.IsFocusedProperty);
                 LostFocus(this, EventArgs.Empty);
+            };
+
+            ShouldChangeCharacters = (textField, range, replacementString) =>
+            {
+                if (maxLength == 0 || string.IsNullOrEmpty(replacementString))
+                {
+                    return true;
+                }
+
+                int rangeLength = (int)range.Length;
+                int length = (base.Text?.Length ?? 0) - rangeLength + replacementString.Length;
+                if (length <= maxLength || replacementString == "\n")
+                {
+                    return true;
+                }
+
+                int rangeLocation = (int)range.Location;
+                if (rangeLocation < maxLength && (base.Text?.Length ?? 0) - rangeLength < maxLength)
+                {
+                    string newText = base.Text.Remove(rangeLocation, rangeLength).Insert(
+                        rangeLocation, replacementString.Substring(0, maxLength - (base.Text.Length - rangeLength)));
+
+                    if (newText != base.Text)
+                    {
+                        base.Text = newText;
+                        OnPropertyChanged(Prism.UI.Controls.PasswordBox.PasswordProperty);
+                        PasswordChanged(this, EventArgs.Empty);
+                    }
+                }
+                return false;
             };
 
             ShouldReturn = (sender) =>

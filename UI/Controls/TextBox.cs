@@ -317,6 +317,30 @@ namespace Prism.iOS.UI.Controls
         public bool IsLoaded { get; private set; }
 
         /// <summary>
+        /// Gets or sets the maximum number of characters that are allowed to be entered into the control.
+        /// A value of 0 means there is no limit.
+        /// </summary>
+        public int MaxLength
+        {
+            get { return maxLength; }
+            set
+            {
+                if (value != maxLength)
+                {
+                    maxLength = value;
+                    OnPropertyChanged(Prism.UI.Controls.TextBox.MaxLengthProperty);
+
+                    if (maxLength > 0 && base.Text != null && base.Text.Length > maxLength)
+                    {
+                        base.Text = base.Text.Substring(0, maxLength);
+                        OnTextChanged();
+                    }
+                }
+            }
+        }
+        private int maxLength;
+
+        /// <summary>
         /// Gets or sets the method to invoke when this instance requests a measurement of itself and its children.
         /// </summary>
         public MeasureRequestHandler MeasureRequest { get; set; }
@@ -386,12 +410,15 @@ namespace Prism.iOS.UI.Controls
             get { return base.Text; }
             set
             {
+                if (maxLength > 0 && value != null && value.Length > maxLength)
+                {
+                    value = value.Substring(0, maxLength);
+                }
+
                 if (value != base.Text)
                 {
                     base.Text = value;
-                    OnPropertyChanged(Prism.UI.Controls.TextBox.TextProperty);
-                    TextChanged(this, new TextChangedEventArgs(currentValue, base.Text));
-                    currentValue = base.Text;
+                    OnTextChanged();
                 }
             }
         }
@@ -440,9 +467,7 @@ namespace Prism.iOS.UI.Controls
         {
             EditingChanged += (sender, e) =>
             {
-                OnPropertyChanged(Prism.UI.Controls.TextBox.TextProperty);
-                TextChanged(this, new TextChangedEventArgs(currentValue, Text));
-                currentValue = Text;
+                OnTextChanged();
             };
 
             EditingDidBegin += (sender, e) =>
@@ -455,6 +480,35 @@ namespace Prism.iOS.UI.Controls
             {
                 OnPropertyChanged(Control.IsFocusedProperty);
                 LostFocus(this, EventArgs.Empty);
+            };
+
+            ShouldChangeCharacters = (textField, range, replacementString) =>
+            {
+                if (maxLength == 0 || string.IsNullOrEmpty(replacementString))
+                {
+                    return true;
+                }
+
+                int rangeLength = (int)range.Length;
+                int length = (base.Text?.Length ?? 0) - rangeLength + replacementString.Length;
+                if (length <= maxLength || replacementString == "\n")
+                {
+                    return true;
+                }
+
+                int rangeLocation = (int)range.Location;
+                if (rangeLocation < maxLength && (base.Text?.Length ?? 0) - rangeLength < maxLength)
+                {
+                    string newText = base.Text.Remove(rangeLocation, rangeLength).Insert(
+                        rangeLocation, replacementString.Substring(0, maxLength - (base.Text.Length - rangeLength)));
+
+                    if (newText != base.Text)
+                    {
+                        base.Text = newText;
+                        OnTextChanged();
+                    }
+                }
+                return false;
             };
 
             ShouldReturn = (sender) =>
@@ -693,6 +747,13 @@ namespace Prism.iOS.UI.Controls
                 OnPropertyChanged(Visual.IsLoadedProperty);
                 Loaded(this, EventArgs.Empty);
             }
+        }
+
+        private void OnTextChanged()
+        {
+            OnPropertyChanged(Prism.UI.Controls.TextBox.TextProperty);
+            TextChanged(this, new TextChangedEventArgs(currentValue, base.Text));
+            currentValue = base.Text;
         }
 
         private void OnUnloaded()

@@ -318,6 +318,30 @@ namespace Prism.iOS.UI.Controls
         public bool IsLoaded { get; private set; }
 
         /// <summary>
+        /// Gets or sets the maximum number of characters that are allowed to be entered into the control.
+        /// A value of 0 means there is no limit.
+        /// </summary>
+        public int MaxLength
+        {
+            get { return maxLength; }
+            set
+            {
+                if (value != maxLength)
+                {
+                    maxLength = value;
+                    OnPropertyChanged(Prism.UI.Controls.TextArea.MaxLengthProperty);
+
+                    if (maxLength > 0 && base.Text != null && base.Text.Length > maxLength)
+                    {
+                        base.Text = base.Text.Substring(0, maxLength);
+                        OnTextChanged();
+                    }
+                }
+            }
+        }
+        private int maxLength;
+
+        /// <summary>
         /// Gets or sets the minimum number of lines of text that should be shown.
         /// </summary>
         public int MaxLines
@@ -436,12 +460,15 @@ namespace Prism.iOS.UI.Controls
             get { return base.Text; }
             set
             {
+                if (maxLength > 0 && value != null && value.Length > maxLength)
+                {
+                    value = value.Substring(0, maxLength);
+                }
+
                 if (value != base.Text)
                 {
                     base.Text = value;
-                    OnPropertyChanged(Prism.UI.Controls.TextArea.TextProperty);
-                    TextChanged(this, new TextChangedEventArgs(currentValue, base.Text));
-                    currentValue = base.Text;
+                    OnTextChanged();
                 }
             }
         }
@@ -496,10 +523,7 @@ namespace Prism.iOS.UI.Controls
                     placeholderLabel.Alpha = string.IsNullOrEmpty(base.Text) ? 1 : 0;
                 }
 
-                OnPropertyChanged(Prism.UI.Controls.TextArea.TextProperty);
-                TextChanged(this, new TextChangedEventArgs(currentValue, Text));
-
-                currentValue = Text;
+                OnTextChanged();
             };
             
             base.Started += (sender, e) =>
@@ -525,10 +549,37 @@ namespace Prism.iOS.UI.Controls
                 {
                     var e = new HandledEventArgs();
                     ActionKeyPressed(this, e);
-                    return !e.IsHandled;
+                    if (e.IsHandled)
+                    {
+                        return false;
+                    }
                 }
-                 
-                return true;
+
+                if (maxLength == 0 || string.IsNullOrEmpty(text))
+                {
+                    return true;
+                }
+
+                int rangeLength = (int)range.Length;
+                int length = (base.Text?.Length ?? 0) - rangeLength + text.Length;
+                if (length <= maxLength)
+                {
+                    return true;
+                }
+
+                int rangeLocation = (int)range.Location;
+                if (rangeLocation < maxLength && (base.Text?.Length ?? 0) - rangeLength < maxLength)
+                {
+                    string newText = base.Text.Remove(rangeLocation, rangeLength).Insert(
+                        rangeLocation, text.Substring(0, maxLength - (base.Text.Length - rangeLength)));
+
+                    if (newText != base.Text)
+                    {
+                        base.Text = newText;
+                        OnTextChanged();
+                    }
+                }
+                return false;
             };
         }
 
@@ -734,6 +785,13 @@ namespace Prism.iOS.UI.Controls
                 OnPropertyChanged(Visual.IsLoadedProperty);
                 Loaded(this, EventArgs.Empty);
             }
+        }
+
+        private void OnTextChanged()
+        {
+            OnPropertyChanged(Prism.UI.Controls.TextArea.TextProperty);
+            TextChanged(this, new TextChangedEventArgs(currentValue, base.Text));
+            currentValue = base.Text;
         }
 
         private void OnUnloaded()
