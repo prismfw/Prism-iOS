@@ -273,6 +273,22 @@ namespace Prism.iOS.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the type of text that the user is expected to input.
+        /// </summary>
+        public InputType InputType
+        {
+            get { return KeyboardType.GetInputType(); }
+            set
+            {
+                if (value != KeyboardType.GetInputType())
+                {
+                    KeyboardType = value.GetKeyboardType();
+                    OnPropertyChanged(Prism.UI.Controls.TextArea.InputTypeProperty);
+                }
+            }
+        }
+
+        /// <summary>
         /// Gets or sets a value indicating whether the user can interact with the control.
         /// </summary>
         public bool IsEnabled

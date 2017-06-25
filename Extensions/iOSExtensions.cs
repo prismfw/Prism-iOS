@@ -422,6 +422,56 @@ namespace Prism.iOS
         }
 
         /// <summary>
+        /// Gets a <see cref="UIKeyboardType"/> from an <see cref="InputType"/>.
+        /// </summary>
+        /// <param name="inputType">The input type.</param>
+        public static UIKeyboardType GetKeyboardType(this InputType inputType)
+        {
+            switch (inputType)
+            {
+                case InputType.Alphanumeric:
+                    return UIKeyboardType.Default;
+                case InputType.Number:
+                    return UIKeyboardType.DecimalPad;
+                case InputType.NumberAndSymbol:
+                    return UIKeyboardType.NumbersAndPunctuation;
+                case InputType.Phone:
+                    return UIKeyboardType.PhonePad;
+                case InputType.Url:
+                    return UIKeyboardType.Url;
+                case InputType.EmailAddress:
+                    return UIKeyboardType.EmailAddress;
+                default:
+                    return (UIKeyboardType)((int)inputType - 6);
+            }
+        }
+
+        /// <summary>
+        /// Gets an <see cref="InputType"/> from a <see cref="UIKeyboardType"/>.
+        /// </summary>
+        /// <param name="keyboardType">The keyboard type.</param>
+        public static InputType GetInputType(this UIKeyboardType keyboardType)
+        {
+            switch (keyboardType)
+            {
+                case UIKeyboardType.Default:
+                    return InputType.Alphanumeric;
+                case UIKeyboardType.DecimalPad:
+                    return InputType.Number;
+                case UIKeyboardType.NumbersAndPunctuation:
+                    return InputType.NumberAndSymbol;
+                case UIKeyboardType.PhonePad:
+                    return InputType.Phone;
+                case UIKeyboardType.Url:
+                    return InputType.Url;
+                case UIKeyboardType.EmailAddress:
+                    return InputType.EmailAddress;
+                default:
+                    return (InputType)((int)keyboardType + 6);
+            }
+        }
+
+        /// <summary>
         /// Gets a <see cref="UIEdgeInsets"/> from a <see cref="Thickness"/>.
         /// </summary>
         /// <param name="thickness">The thickness.</param>
