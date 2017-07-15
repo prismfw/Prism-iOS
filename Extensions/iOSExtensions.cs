@@ -22,7 +22,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 using System;
 using System.Linq;
 using AVFoundation;
-using CoreAnimation;
 using CoreGraphics;
 using Foundation;
 using Prism.Input;
@@ -594,6 +593,29 @@ namespace Prism.iOS
                     return PointerType.Stylus;
                 default:
                     return PointerType.Unknown;
+            }
+        }
+
+        /// <summary>
+        /// Gets a <see cref="UIPopoverArrowDirection"/> from a <see cref="FlyoutPlacement"/>.
+        /// </summary>
+        /// <param name="placement">The flyout placement.</param>
+        public static UIPopoverArrowDirection GetPopoverArrowDirection(this FlyoutPlacement placement)
+        {
+            switch (placement)
+            {
+                case FlyoutPlacement.Auto:
+                    return UIPopoverArrowDirection.Any;
+                case FlyoutPlacement.Bottom:
+                    return UIPopoverArrowDirection.Up;
+                case FlyoutPlacement.Left:
+                    return UIPopoverArrowDirection.Right;
+                case FlyoutPlacement.Right:
+                    return UIPopoverArrowDirection.Left;
+                case FlyoutPlacement.Top:
+                    return UIPopoverArrowDirection.Down;
+                default:
+                    return (UIPopoverArrowDirection)placement;
             }
         }
 

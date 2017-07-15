@@ -40,6 +40,8 @@
     <Compile Include="IO\Directory.cs" />
     <Compile Include="Resources.cs" />
     <Compile Include="UI\Controls\ActivityIndicator.cs" />
+    <Compile Include="UI\Controls\MenuFlyout.cs" />
+    <Compile Include="UI\Controls\Flyout.cs" />
     <Compile Include="UI\Media\Transform.cs" />
     <Compile Include="UI\Shapes\Line.cs" />
     <Compile Include="UI\Views\ViewStack.cs" />
@@ -116,7 +118,5 @@
       <Name>PrismFramework</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Media\" />
-  </ItemGroup>
+  <ItemGroup />
 </Project>

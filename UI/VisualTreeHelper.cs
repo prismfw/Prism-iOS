@@ -101,7 +101,7 @@ namespace Prism.iOS.UI
             
             if (view == null)
             {
-                return (reference as IVisualTreeObject)?.Children.ElementAtOrDefault(childIndex);
+                return (reference as IVisualTreeObject)?.Children?.ElementAtOrDefault(childIndex);
             }
 
             if (childIndex < view.Subviews.Length)
@@ -120,7 +120,7 @@ namespace Prism.iOS.UI
         /// <returns>The parent.</returns>
         public object GetParent(object reference)
         {
-            if (reference is INativePopup || reference is INativeLoadIndicator)
+            if (reference is INativePopup || reference is INativeFlyoutBase || reference is INativeLoadIndicator)
             {
                 // Popups and load indicators should not have visual parents.  This keeps things consistent across platforms.
                 return null;

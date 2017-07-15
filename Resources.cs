@@ -167,6 +167,7 @@ namespace Prism.iOS
                     case SystemResourceKeyId.AccentBrush:
                     case SystemResourceKeyId.ActionMenuForegroundBrush:
                     case SystemResourceKeyId.ButtonForegroundBrush:
+                    case SystemResourceKeyId.MenuFlyoutForegroundBrush:
                     case SystemResourceKeyId.ProgressBarForegroundBrush:
                     case SystemResourceKeyId.SliderForegroundBrush:
                     case SystemResourceKeyId.TabViewForegroundBrush:
@@ -175,6 +176,7 @@ namespace Prism.iOS
                     case SystemResourceKeyId.ActionMenuBackgroundBrush:
                     case SystemResourceKeyId.ButtonBackgroundBrush:
                     case SystemResourceKeyId.DateTimePickerBackgroundBrush:
+                    case SystemResourceKeyId.FlyoutBackgroundBrush:
                     case SystemResourceKeyId.ListBoxBackgroundBrush:
                     case SystemResourceKeyId.ListBoxItemBackgroundBrush:
                     case SystemResourceKeyId.ListBoxItemSelectedBackgroundBrush:
