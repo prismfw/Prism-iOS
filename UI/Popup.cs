@@ -134,8 +134,16 @@ namespace Prism.iOS.UI
                     var sBounds = subview?.Bounds;
 
                     var center = View.Superview.Center;
-                    View.Superview.Bounds = new CGRect(View.Superview.Bounds.Location, value.Size.GetCGSize());
-                    View.Superview.Center = center;
+                    if (View.Superview.Subviews.Length > 1)
+                    {
+                        View.Bounds = new CGRect(View.Bounds.Location, value.Size.GetCGSize());
+                        View.Center = center;
+                    }
+                    else
+                    {
+                        View.Superview.Bounds = new CGRect(View.Superview.Bounds.Location, value.Size.GetCGSize());
+                        View.Superview.Center = center;
+                    }
 
                     if (subview != null)
                     {
@@ -143,6 +151,7 @@ namespace Prism.iOS.UI
                         subview.Center = sCenter.Value;
                     }
                 }
+
                 PreferredContentSize = value.Size.GetCGSize();
             }
         }
@@ -178,7 +187,7 @@ namespace Prism.iOS.UI
                 }
             }
         }
-        
+
         /// <summary>
         /// Gets a value indicating whether this instance has been loaded and is ready for rendering.
         /// </summary>
@@ -229,13 +238,13 @@ namespace Prism.iOS.UI
                     Close();
                 }
             });
-            
+
             dismissalGesture.CancelsTouchesInView = false;
             dismissalGesture.Delegate = new DismissalGestureDelegate();
             dismissalGesture.Enabled = false;
             dismissalGesture.NumberOfTapsRequired = 1;
         }
-        
+
         /// <summary>
         /// Closes the popup.
         /// </summary>
@@ -246,7 +255,7 @@ namespace Prism.iOS.UI
                 PresentingViewController.DismissViewController(areAnimationsEnabled, () => Closed(this, EventArgs.Empty));
             }
         }
-        
+
         /// <summary>
         /// Invalidates the arrangement of this instance's children.
         /// </summary>
@@ -281,20 +290,36 @@ namespace Prism.iOS.UI
         {
             ModalPresentationStyle = style == PopupPresentationStyle.FullScreen ?
                 UIModalPresentationStyle.FullScreen : UIModalPresentationStyle.FormSheet;
-            
+
             var viewController = (presenter as UIViewController) ?? (presenter as Window)?.Content as UIViewController;
             viewController?.PresentViewController(this, areAnimationsEnabled, () => Opened(this, EventArgs.Empty));
+
+            // Phones may revert this value to FullScreen after presenting.
+            // Setting it again won't affect anything, but it allows the value to be read correctly.
+            if (ModalPresentationStyle == UIModalPresentationStyle.FullScreen && style != PopupPresentationStyle.FullScreen)
+            {
+                ModalPresentationStyle = UIModalPresentationStyle.FormSheet;
+            }
         }
-        
+
         /// <summary></summary>
         /// <param name="animated"></param>
         public override void ViewWillAppear(bool animated)
         {
+            // Adds a dimming view for phones that are using custom popup sizes.
+            // The view *should* block input and be automatically removed upon dismissal.
+            if (View.Superview == null && ModalPresentationStyle == UIModalPresentationStyle.FormSheet)
+            {
+                var dimmingView = new DimmingView();
+                PresentingViewController.View.Superview.Add(dimmingView);
+                dimmingView.PrepareForPresentation(areAnimationsEnabled);
+            }
+
             NSNotificationCenter.DefaultCenter.AddObserver(this, new ObjCRuntime.Selector("onKeyboardWillChange:"), UIKeyboard.WillShowNotification, null);
             NSNotificationCenter.DefaultCenter.AddObserver(this, new ObjCRuntime.Selector("onKeyboardWillChange:"), UIKeyboard.WillHideNotification, null);
             NSNotificationCenter.DefaultCenter.AddObserver(this, new ObjCRuntime.Selector("onKeyboardDidChange:"), UIKeyboard.DidShowNotification, null);
             NSNotificationCenter.DefaultCenter.AddObserver(this, new ObjCRuntime.Selector("onKeyboardDidChange:"), UIKeyboard.DidHideNotification, null);
-            
+
             if (!IsLoaded)
             {
                 IsLoaded = true;
@@ -304,19 +329,29 @@ namespace Prism.iOS.UI
 
             base.ViewWillAppear(animated);
         }
-        
+
         /// <summary></summary>
         /// <param name="animated"></param>
         public override void ViewDidAppear(bool animated)
         {
             base.ViewDidAppear(animated);
             View.Window.AddGestureRecognizer(dismissalGesture);
+
+            if (PresentingViewController?.View != null)
+            {
+                if (PresentingViewController.View.Superview == null)
+                {
+                    View.Superview.InsertSubviewBelow(PresentingViewController.View,
+                        View.Superview.Subviews.FirstOrDefault((v) => v is DimmingView) ?? View);
+                }
+            }
         }
-        
+
         /// <summary></summary>
         /// <param name="animated"></param>
         public override void ViewWillDisappear(bool animated)
         {
+            View.Superview?.Subviews.OfType<DimmingView>().FirstOrDefault()?.PrepareForDismissal(areAnimationsEnabled);
             View.Window.RemoveGestureRecognizer(dismissalGesture);
             base.ViewWillDisappear(animated);
         }
@@ -326,9 +361,9 @@ namespace Prism.iOS.UI
         public override void ViewDidDisappear(bool animated)
         {
             base.ViewDidDisappear(animated);
-            
+
             NSNotificationCenter.DefaultCenter.RemoveObserver(this);
-            
+
             if (IsLoaded)
             {
                 IsLoaded = false;
@@ -345,7 +380,7 @@ namespace Prism.iOS.UI
 
             base.ViewWillLayoutSubviews();
         }
-        
+
         /// <summary></summary>
         /// <param name="fromInterfaceOrientation"></param>
         public override void DidRotate(UIInterfaceOrientation fromInterfaceOrientation)
@@ -371,31 +406,68 @@ namespace Prism.iOS.UI
         {
             PropertyChanged(this, new FrameworkPropertyChangedEventArgs(pd));
         }
-        
+
         [Export("onKeyboardDidChange:")]
         private void OnKeyboardDidChange(NSNotification notification)
         {
             isKeyboardChanging = false;
         }
-        
+
         [Export("onKeyboardWillChange:")]
         private void OnKeyboardWillChange(NSNotification notification)
         {
             isKeyboardChanging = true;
         }
-        
+
+        private class DimmingView : UIView
+        {
+            public DimmingView()
+            {
+                Alpha = 0;
+                BackgroundColor = UIColor.FromRGBA(7, 11, 17, 127);
+                Opaque = false;
+
+                nfloat size = NMath.Max(UIScreen.MainScreen.Bounds.Width, UIScreen.MainScreen.Bounds.Height);
+                Frame = new CGRect(0, 0, size, size);
+            }
+
+            public void PrepareForDismissal(bool animated)
+            {
+                if (animated)
+                {
+                    Animate(0.4, 0, UIViewAnimationOptions.CurveEaseOut, () => Alpha = 0, null);
+                }
+                else
+                {
+                    Alpha = 0;
+                }
+            }
+
+            public void PrepareForPresentation(bool animated)
+            {
+                if (animated)
+                {
+                    Animate(0.4, 0, UIViewAnimationOptions.CurveEaseOut, () => Alpha = 1, null);
+                }
+                else
+                {
+                    Alpha = 1;
+                }
+            }
+        }
+
         private class DismissalGestureDelegate : UIGestureRecognizerDelegate
         {
             public override bool ShouldBegin(UIGestureRecognizer recognizer)
             {
                 return true;
             }
-            
+
             public override bool ShouldReceiveTouch(UIGestureRecognizer recognizer, UITouch touch)
             {
                 return true;
             }
-            
+
             public override bool ShouldRecognizeSimultaneously(UIGestureRecognizer gestureRecognizer, UIGestureRecognizer otherGestureRecognizer)
             {
                 return true;
