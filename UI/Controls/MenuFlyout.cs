@@ -103,12 +103,12 @@ namespace Prism.iOS.UI.Controls
 
                     if (Controller != null)
                     {
-                        var size = Controller.PopoverPresentationController.PresentedView?.Frame.Size ?? CGSize.Empty;
+                        var size = Controller.PopoverPresentationController?.PresentedView?.Frame.Size ?? CGSize.Empty;
                         if (size.Width == 0 && size.Height == 0)
                         {
                             size = Controller.PreferredContentSize;
                         }
-                        Controller.PopoverPresentationController.BackgroundColor = background.GetColor(size.Width, size.Height, OnBackgroundImageLoaded);
+                        SetBackground(background.GetColor(size.Width, size.Height, OnBackgroundImageLoaded));
                     }
 
                     OnPropertyChanged(FlyoutBase.BackgroundProperty);
@@ -137,7 +137,7 @@ namespace Prism.iOS.UI.Controls
                         var image = imageBrush.BeginLoadingImage(OnForegroundImageLoaded);
                         if (Controller != null)
                         {
-                            var size = Controller.PopoverPresentationController.PresentedView?.Frame.Size ?? CGSize.Empty;
+                            var size = Controller.PopoverPresentationController?.PresentedView?.Frame.Size ?? CGSize.Empty;
                             if (size.Width == 0 && size.Height == 0)
                             {
                                 size = Controller.PreferredContentSize;
@@ -150,7 +150,7 @@ namespace Prism.iOS.UI.Controls
                     {
                         if (Controller != null)
                         {
-                            var size = Controller.PopoverPresentationController.PresentedView?.Frame.Size ?? CGSize.Empty;
+                            var size = Controller.PopoverPresentationController?.PresentedView?.Frame.Size ?? CGSize.Empty;
                             if (size.Width == 0 && size.Height == 0)
                             {
                                 size = Controller.PreferredContentSize;
@@ -334,7 +334,7 @@ namespace Prism.iOS.UI.Controls
                 }
             }
 
-            if (!(Controller.PopoverPresentationController.Delegate is FlyoutDelegate))
+            if (Controller.PopoverPresentationController != null && !(Controller.PopoverPresentationController.Delegate is FlyoutDelegate))
             {
                 Controller.PopoverPresentationController.Delegate = new FlyoutDelegate(this);
             }
@@ -344,8 +344,12 @@ namespace Prism.iOS.UI.Controls
             var view = placementTarget as UIView;
             if (view != null)
             {
-                Controller.PopoverPresentationController.SourceView = view;
-                Controller.PopoverPresentationController.SourceRect = new CGRect(CGPoint.Empty, view.Frame.Size);
+                if (Controller.PopoverPresentationController != null)
+                {
+                    Controller.PopoverPresentationController.SourceView = view;
+                    Controller.PopoverPresentationController.SourceRect = new CGRect(CGPoint.Empty, view.Frame.Size);
+                }
+
                 view.GetNextResponder<UIViewController>()?.PresentViewController(Controller, areAnimationsEnabled, () =>
                 {
                     OnLoaded();
@@ -357,7 +361,11 @@ namespace Prism.iOS.UI.Controls
                 var button = placementTarget as UIBarButtonItem;
                 if (button != null)
                 {
-                    Controller.PopoverPresentationController.BarButtonItem = button;
+                    if (Controller.PopoverPresentationController != null)
+                    {
+                        Controller.PopoverPresentationController.BarButtonItem = button;
+                    }
+
                     UIApplication.SharedApplication.KeyWindow.RootViewController?.PresentViewController(Controller, areAnimationsEnabled, () =>
                     {
                         OnLoaded();
@@ -367,17 +375,26 @@ namespace Prism.iOS.UI.Controls
             }
         }
 
+        /// <summary>
+        /// Called when a property value is changed.
+        /// </summary>
+        /// <param name="pd">A property descriptor describing the property whose value has been changed.</param>
+        protected virtual void OnPropertyChanged(PropertyDescriptor pd)
+        {
+            PropertyChanged(this, new FrameworkPropertyChangedEventArgs(pd));
+        }
+
         private void OnBackgroundImageLoaded(object sender, EventArgs e)
         {
             if (Controller != null)
             {
-                var size = Controller.PopoverPresentationController.PresentedView?.Frame.Size ?? CGSize.Empty;
+                var size = Controller.PopoverPresentationController?.PresentedView?.Frame.Size ?? CGSize.Empty;
                 if (size.Width == 0 && size.Height == 0)
                 {
                     size = Controller.View.Frame.Size;
                 }
 
-                Controller.PopoverPresentationController.BackgroundColor = background.GetColor(size.Width, size.Height, null);
+                SetBackground(background.GetColor(size.Width, size.Height, null));
             }
         }
 
@@ -391,7 +408,7 @@ namespace Prism.iOS.UI.Controls
         {
             if (Controller != null)
             {
-                var size = Controller.PopoverPresentationController.PresentedView?.Frame.Size ?? CGSize.Empty;
+                var size = Controller.PopoverPresentationController?.PresentedView?.Frame.Size ?? CGSize.Empty;
                 if (size.Width == 0 && size.Height == 0)
                 {
                     size = Controller.View.Frame.Size;
@@ -410,13 +427,13 @@ namespace Prism.iOS.UI.Controls
                 Loaded(this, EventArgs.Empty);
             }
 
-            var size = Controller.PopoverPresentationController.PresentedView?.Frame.Size ?? CGSize.Empty;
+            var size = Controller.PopoverPresentationController?.PresentedView?.Frame.Size ?? CGSize.Empty;
             if (size.Width == 0 && size.Height == 0)
             {
                 size = Controller.View.Frame.Size;
             }
 
-            Controller.PopoverPresentationController.BackgroundColor = background.GetColor(size.Width, size.Height, null);
+            SetBackground(background.GetColor(size.Width, size.Height, null));
             Controller.View.TintColor = foreground.GetColor(size.Width, size.Height, null);
 
             MeasureRequest(false, null);
@@ -433,13 +450,16 @@ namespace Prism.iOS.UI.Controls
             }
         }
 
-        /// <summary>
-        /// Called when a property value is changed.
-        /// </summary>
-        /// <param name="pd">A property descriptor describing the property whose value has been changed.</param>
-        protected virtual void OnPropertyChanged(PropertyDescriptor pd)
+        private void SetBackground(UIColor color)
         {
-            PropertyChanged(this, new FrameworkPropertyChangedEventArgs(pd));
+            if (Controller.PopoverPresentationController != null)
+            {
+                Controller.PopoverPresentationController.BackgroundColor = color;
+            }
+            else
+            {
+                Controller.View.BackgroundColor = color;
+            }
         }
 
         private class FlyoutDelegate : UIPopoverPresentationControllerDelegate
