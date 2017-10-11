@@ -20,6 +20,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
 using System;
+using System.Linq;
 using CoreGraphics;
 using Foundation;
 using Prism.Native;
@@ -124,9 +125,9 @@ namespace Prism.iOS.UI.Controls
                     {
                         View.Subviews[i].RemoveFromSuperview();
                     }
-    
+
                     content = value;
-    
+
                     var view = value as UIView;
                     if (view != null)
                     {
@@ -312,6 +313,16 @@ namespace Prism.iOS.UI.Controls
                 IsLoaded = true;
                 OnPropertyChanged(Visual.IsLoadedProperty);
                 Loaded(this, EventArgs.Empty);
+
+                foreach (var subview in View.Subviews.Where(sv => sv is INativeVisual))
+                {
+                    try
+                    {
+                        subview.ObserveValue(new NSString(Visual.IsLoadedProperty.Name), this,
+                            NSDictionary.FromObjectAndKey(new NSNumber(true), NSObject.ChangeNewKey), IntPtr.Zero);
+                    }
+                    catch { }
+                }
             }
 
             var size = PopoverPresentationController.PresentedView?.Frame.Size ?? CGSize.Empty;
@@ -335,6 +346,16 @@ namespace Prism.iOS.UI.Controls
                 IsLoaded = false;
                 OnPropertyChanged(Visual.IsLoadedProperty);
                 Unloaded(this, EventArgs.Empty);
+
+                foreach (var subview in View.Subviews.Where(sv => sv is INativeVisual))
+                {
+                    try
+                    {
+                        subview.ObserveValue(new NSString(Visual.IsLoadedProperty.Name), this,
+                            NSDictionary.FromObjectAndKey(new NSNumber(false), NSObject.ChangeNewKey), IntPtr.Zero);
+                    }
+                    catch { }
+                }
             }
         }
 
