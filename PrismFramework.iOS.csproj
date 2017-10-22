@@ -108,6 +108,8 @@
     <Compile Include="Media\MediaPlaybackList.cs" />
     <Compile Include="UI\Controls\MediaElement.cs" />
     <Compile Include="Media\MediaPlaybackItem.cs" />
+    <Compile Include="Input\TapGestureRecognizer.cs" />
+    <Compile Include="Input\HoldingGestureRecognizer.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.CSharp.targets" />
   <ItemGroup />
