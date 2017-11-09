@@ -969,7 +969,7 @@ namespace Prism.iOS.UI.Controls
                 selectList.OnSelected(indexPath.Row);
             }
 
-            public override nint RowsInSection(UITableView tableview, nint section)
+            public override nint RowsInSection(UITableView tableView, nint section)
             {
                 return selectList.Items == null ? 0 : selectList.Items.Count;
             }
@@ -1050,7 +1050,7 @@ namespace Prism.iOS.UI.Controls
                 if (visual != null)
                 {
                     visual.MeasureRequest(true, null);
-                    visual.ArrangeRequest(true, new Rectangle(0, 0, frame.Width, int.MaxValue));
+                    visual.ArrangeRequest(frame.Width != Math.Ceiling(visual.Frame.Width), new Rectangle(0, 0, frame.Width, int.MaxValue));
                     frame.Height = NMath.Max((nfloat)visual.Frame.Height, 44);
                 }
                 else
