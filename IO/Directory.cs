@@ -23,7 +23,9 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 using Foundation;
+using Prism.IO;
 using Prism.Native;
+using Prism.Utilities;
 
 namespace Prism.iOS.IO
 {
@@ -35,19 +37,19 @@ namespace Prism.iOS.IO
     public class Directory : INativeDirectory
     {
         /// <summary>
-        /// Gets the directory path to a folder with read-only access that contains the application's bundled assets.
+        /// Gets the directory path to the folder that contains the application's bundled assets.
         /// </summary>
-        public string AssetDirectory
+        public string AssetDirectoryPath
         {
             get { return "Assets/"; }
         }
 
         /// <summary>
-        /// Gets the directory path to a folder with read/write access for storing persisted application data.
+        /// Gets the directory path to a folder for storing persisted application data that is specific to the user.
         /// </summary>
-        public string DataDirectory
+        public string DataDirectoryPath
         {
-            get { return Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "/"; }
+            get { return Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) + "/"; }
         }
 
         /// <summary>
@@ -56,14 +58,6 @@ namespace Prism.iOS.IO
         public char SeparatorChar
         {
             get { return Path.DirectorySeparatorChar; }
-        }
-
-        /// <summary>
-        /// Gets the directory path to a folder with read/write access for storing temporary application data.
-        /// </summary>
-        public string TempDirectory
-        {
-            get { return Path.GetTempPath(); }
         }
 
         /// <summary>
@@ -94,11 +88,11 @@ namespace Prism.iOS.IO
                     System.IO.Directory.CreateDirectory(destinationDirectoryPath);
                 }
 
-                var dirInfo = new DirectoryInfo(sourceDirectoryPath);
+                var dirInfo = new System.IO.DirectoryInfo(sourceDirectoryPath);
 
                 // Get the files in the directory and copy them to the new location.
-                FileInfo[] files = dirInfo.GetFiles();
-                foreach (FileInfo file in files)
+                System.IO.FileInfo[] files = dirInfo.GetFiles();
+                foreach (System.IO.FileInfo file in files)
                 {
                     string tempPath = Path.Combine(destinationDirectoryPath, file.Name);
                     file.CopyTo(tempPath, overwrite);
@@ -128,37 +122,12 @@ namespace Prism.iOS.IO
         /// Deletes the directory at the specified path.
         /// </summary>
         /// <param name="directoryPath">The path of the directory to delete.</param>
-        public Task DeleteAsync(string directoryPath)
-        {
-            return Task.Run(() =>
-            {
-                System.IO.Directory.Delete(directoryPath, false);
-            });
-        }
-
-        /// <summary>
-        /// Deletes the directory at the specified path.
-        /// </summary>
-        /// <param name="directoryPath">The path of the directory to delete.</param>
         /// <param name="recursive">Whether to delete all subdirectories and files within the directory.</param>
         public Task DeleteAsync(string directoryPath, bool recursive)
         {
             return Task.Run(() =>
             {
                 System.IO.Directory.Delete(directoryPath, recursive);
-            });
-        }
-
-        /// <summary>
-        /// Gets the names of the subdirectories in the directory at the specified path.
-        /// </summary>
-        /// <param name="directoryPath">The path of the directory whose subdirectories are to be retrieved.</param>
-        /// <returns>The directories.</returns>
-        public Task<string[]> GetDirectoriesAsync(string directoryPath)
-        {
-            return Task.Run(() =>
-            {
-                return System.IO.Directory.GetDirectories(directoryPath);
             });
         }
 
@@ -174,20 +143,7 @@ namespace Prism.iOS.IO
             return Task.Run(() =>
             {
                 return System.IO.Directory.GetDirectories(directoryPath, "*", searchOption == Prism.IO.SearchOption.AllDirectories ?
-                    SearchOption.AllDirectories : SearchOption.TopDirectoryOnly);
-            });
-        }
-
-        /// <summary>
-        /// Gets the names of the files in the directory at the specified path.
-        /// </summary>
-        /// <param name="directoryPath">The path of the directory whose files are to be retrieved.</param>
-        /// <returns>The files.</returns>
-        public Task<string[]> GetFilesAsync(string directoryPath)
-        {
-            return Task.Run(() =>
-            {
-                return System.IO.Directory.GetFiles(directoryPath);
+                    System.IO.SearchOption.AllDirectories : System.IO.SearchOption.TopDirectoryOnly);
             });
         }
 
@@ -203,19 +159,93 @@ namespace Prism.iOS.IO
             return Task.Run(() =>
             {
                 return System.IO.Directory.GetFiles(directoryPath, "*", searchOption == Prism.IO.SearchOption.AllDirectories ?
-                    SearchOption.AllDirectories : SearchOption.TopDirectoryOnly);
+                    System.IO.SearchOption.AllDirectories : System.IO.SearchOption.TopDirectoryOnly);
             });
         }
 
         /// <summary>
-        /// Moves the directory at the source path to the destination path.
-        /// Any subdirectories or files at the source path with identical names to subdirectories or files at the destination path will not be moved.
+        /// Gets the number of free bytes that are available on the drive that contains the directory at the specified path.
         /// </summary>
-        /// <param name="sourceDirectoryPath">The path of the directory to be moved.</param>
-        /// <param name="destinationDirectoryPath">The path to where the directory should be moved.</param>
-        public async Task MoveAsync(string sourceDirectoryPath, string destinationDirectoryPath)
+        /// <param name="directoryPath">The path of a directory on the drive.  If <c>null</c>, the current drive is used.</param>
+        /// <returns>The free bytes.</returns>
+        public Task<long> GetFreeBytesAsync(string directoryPath)
         {
-            await MoveAsync(sourceDirectoryPath, destinationDirectoryPath, false);
+            return Task.Run(() =>
+            {
+                NSError error;
+                var atts = NSFileManager.DefaultManager.GetFileSystemAttributes(directoryPath ?? DataDirectoryPath, out error);
+                if (error != null)
+                {
+                    Logger.Error("Disk space query resulted in error {0}", error.LocalizedDescription);
+                }
+
+                if (atts == null)
+                {
+                    throw new ArgumentException(nameof(directoryPath));
+                }
+
+                return (long)atts.FreeSize;
+            });
+        }
+
+        /// <summary>
+        /// Gets information about the specified system directory.
+        /// </summary>
+        /// <param name="directory">The system directory whose information is to be retrieved.</param>
+        /// <returns>Information about the system directory.</returns>
+        public async Task<INativeDirectoryInfo> GetSystemDirectoryInfoAsync(SystemDirectory directory)
+        {
+            return await Task.Run<INativeDirectoryInfo>(() =>
+            {
+                switch (directory)
+                {
+                    case SystemDirectory.Assets:
+                        return new DirectoryInfo(AssetDirectoryPath);
+                    case SystemDirectory.Local:
+                        return new DirectoryInfo(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData));
+                    case SystemDirectory.Shared:
+                    case SystemDirectory.External:
+                        return null;
+                    case SystemDirectory.Temp:
+                        return new DirectoryInfo(Path.GetTempPath());
+                    case SystemDirectory.Music:
+                        return new LibraryDirectoryInfo(LibraryType.Music);
+                    case SystemDirectory.Photos:
+                        return new LibraryDirectoryInfo(LibraryType.Photos);
+                    case SystemDirectory.Videos:
+                        return new LibraryDirectoryInfo(LibraryType.Videos);
+                    default:
+                        // Extras that are not explicitly identified by the core framework library.
+                        var folder = (Environment.SpecialFolder)(directory - Enum.GetValues(typeof(SystemDirectory)).Length);
+                        return Enum.IsDefined(typeof(Environment.SpecialFolder), folder) ?
+                            new DirectoryInfo(Environment.GetFolderPath(folder)) : null;
+                }
+            });
+        }
+
+        /// <summary>
+        /// Gets the total number of bytes on the drive that contains the directory at the specified path.
+        /// </summary>
+        /// <param name="directoryPath">The path of a directory on the drive.  If <c>null</c>, the current drive is used.</param>
+        /// <returns>The total bytes.</returns>
+        public Task<long> GetTotalBytesAsync(string directoryPath)
+        {
+            return Task.Run(() =>
+            {
+                NSError error;
+                var atts = NSFileManager.DefaultManager.GetFileSystemAttributes(directoryPath ?? DataDirectoryPath, out error);
+                if (error != null)
+                {
+                    Logger.Error("Disk space query resulted in error {0}", error.LocalizedDescription);
+                }
+
+                if (atts == null)
+                {
+                    throw new ArgumentException(nameof(directoryPath));
+                }
+
+                return (long)atts.Size;
+            });
         }
 
         /// <summary>
@@ -234,11 +264,11 @@ namespace Prism.iOS.IO
                     System.IO.Directory.CreateDirectory(destinationDirectoryPath);
                 }
 
-                var dirInfo = new DirectoryInfo(sourceDirectoryPath);
+                var dirInfo = new System.IO.DirectoryInfo(sourceDirectoryPath);
 
                 // Get the files in the directory and copy them to the new location.
-                FileInfo[] files = dirInfo.GetFiles();
-                foreach (FileInfo file in files)
+                System.IO.FileInfo[] files = dirInfo.GetFiles();
+                foreach (System.IO.FileInfo file in files)
                 {
                     string tempPath = Path.Combine(destinationDirectoryPath, file.Name);
                     if (overwrite || !System.IO.File.Exists(tempPath))

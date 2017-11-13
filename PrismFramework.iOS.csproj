@@ -36,6 +36,9 @@
     <Reference Include="Xamarin.iOS" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="IO\LibraryDirectoryInfo.cs" />
+    <Compile Include="IO\DirectoryInfo.cs" />
+    <Compile Include="IO\FileInfo.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="IO\Directory.cs" />
     <Compile Include="Resources.cs" />
@@ -110,6 +113,7 @@
     <Compile Include="Media\MediaPlaybackItem.cs" />
     <Compile Include="Input\TapGestureRecognizer.cs" />
     <Compile Include="Input\HoldingGestureRecognizer.cs" />
+    <Compile Include="IO\LibraryFileInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.CSharp.targets" />
   <ItemGroup />
