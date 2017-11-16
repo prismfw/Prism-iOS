@@ -120,7 +120,7 @@ namespace Prism.iOS.UI.Controls
                 if (value != inputMode)
                 {
                     inputMode = value;
-                    
+
                     if (inputMode == InkInputMode.Erasing)
                     {
                         currentStroke = null;
@@ -136,7 +136,7 @@ namespace Prism.iOS.UI.Controls
                     {
                         hitPaths = null;
                     }
-                    
+
                     OnPropertyChanged(Prism.UI.Controls.InkCanvas.InputModeProperty);
                 }
             }
@@ -236,7 +236,7 @@ namespace Prism.iOS.UI.Controls
             }
         }
         private Visibility visibility;
-        
+
         private UIImage canvasImage;
         private Media.Inking.InkStroke currentStroke;
         private InkDrawingAttributes defaultAttributes;
@@ -256,11 +256,11 @@ namespace Prism.iOS.UI.Controls
                 Color = Colors.Black,
                 PenTip = PenTipShape.Circle
             };
-            
+
             points = new CGPoint[5];
-            
+
             BackgroundColor = UIColor.Clear;
-            MultipleTouchEnabled = false;
+            MultipleTouchEnabled = true;
         }
 
         /// <summary>
@@ -276,7 +276,7 @@ namespace Prism.iOS.UI.Controls
                 inkStroke.NeedsDrawing = true;
                 inkStroke.Parent = this;
                 SetNeedsDisplay();
-                
+
                 if (inputMode == InkInputMode.Erasing)
                 {
                     hitPaths.Add(inkStroke.CGPath.CopyByStrokingPath(inkStroke.LineWidth,
@@ -299,7 +299,7 @@ namespace Prism.iOS.UI.Controls
                     this.strokes.Add(inkStroke);
                     inkStroke.NeedsDrawing = true;
                     inkStroke.Parent = this;
-                    
+
                     if (inputMode == InkInputMode.Erasing)
                     {
                         hitPaths.Add(inkStroke.CGPath.CopyByStrokingPath(inkStroke.LineWidth,
@@ -307,7 +307,7 @@ namespace Prism.iOS.UI.Controls
                     }
                 }
             }
-            
+
             SetNeedsDisplay();
         }
 
@@ -325,11 +325,11 @@ namespace Prism.iOS.UI.Controls
             }
             strokes.Clear();
             hitPaths?.Clear();
-            
+
             canvasImage = null;
             SetNeedsDisplay();
         }
-        
+
         /// <summary></summary>
         /// <param name="rect"></param>
         public override void Draw(CGRect rect)
@@ -338,9 +338,9 @@ namespace Prism.iOS.UI.Controls
             {
                 UIGraphics.BeginImageContextWithOptions(rect.Size, false, 0);
             }
-        
+
             canvasImage?.Draw(rect);
-        
+
             for (int i = 0; i < strokes.Count; i++)
             {
                 var stroke = strokes[i];
@@ -350,24 +350,24 @@ namespace Prism.iOS.UI.Controls
                     stroke.Stroke();
                 }
             }
-            
+
             if (dryInk || forceDraw)
             {
                 canvasImage = UIGraphics.GetImageFromCurrentImageContext();
                 UIGraphics.EndImageContext();
-                
+
                 for (int i = 0; i < strokes.Count; i++)
                 {
                     strokes[i].NeedsDrawing = false;
                 }
-                
+
                 dryInk = false;
                 forceDraw = false;
-                
+
                 canvasImage.Draw(rect);
             }
         }
-        
+
         /// <summary>
         /// Invalidates the arrangement of this instance's children.
         /// </summary>
@@ -402,7 +402,7 @@ namespace Prism.iOS.UI.Controls
         {
             return constraints;
         }
-        
+
         /// <summary></summary>
         public override void MovedToSuperview()
         {
@@ -442,27 +442,33 @@ namespace Prism.iOS.UI.Controls
                 }
             }
         }
-        
+
         /// <summary></summary>
         /// <param name="touches"></param>
         /// <param name="evt"></param>
         public override void TouchesBegan(NSSet touches, UIEvent evt)
         {
-            var touch = touches.AnyObject as UITouch;
-            if (touch != null && touch.View == this)
+            foreach (UITouch touch in touches)
             {
-                PointerPressed(this, evt.GetPointerEventArgs(touch, this));
-                
+                if (touch.View == this)
+                {
+                    PointerPressed(this, evt.GetPointerEventArgs(touch, this));
+                }
+            }
+
+            var primaryTouch = touches.AnyObject as UITouch;
+            if (primaryTouch != null && primaryTouch.View == this)
+            {
                 if (inputMode == InkInputMode.Erasing)
                 {
-                    var point = touch.LocationInView(this);
+                    var point = primaryTouch.LocationInView(this);
                     for (int i = hitPaths.Count - 1; i >= 0; i--)
                     {
                         if (hitPaths[i].ContainsPoint(point, false))
                         {
                             hitPaths.RemoveAt(i);
                             strokes.RemoveAt(i);
-                            
+
                             canvasImage = null;
                             forceDraw = true;
                             SetNeedsDisplay();
@@ -472,8 +478,8 @@ namespace Prism.iOS.UI.Controls
                 else
                 {
                     pointIndex = 0;
-                    points[0] = touch.LocationInView(this);
-                    
+                    points[0] = primaryTouch.LocationInView(this);
+
                     currentStroke = new Media.Inking.InkStroke();
                     currentStroke.Parent = this;
                     currentStroke.UpdateDrawingAttributes(defaultAttributes);
@@ -481,95 +487,105 @@ namespace Prism.iOS.UI.Controls
                     SetNeedsDisplay();
                 }
             }
-            
+
             base.TouchesBegan(touches, evt);
         }
-        
+
         /// <summary></summary>
         /// <param name="touches"></param>
         /// <param name="evt"></param>
         public override void TouchesCancelled(NSSet touches, UIEvent evt)
         {
-            var touch = touches.AnyObject as UITouch;
-            if (touch != null && touch.View == this)
+            foreach (UITouch touch in touches)
             {
-                PointerCanceled(this, evt.GetPointerEventArgs(touch, this));
+                if (touch.View == this)
+                {
+                    PointerCanceled(this, evt.GetPointerEventArgs(touch, this));
+                }
             }
-            
+
             pointIndex = 0;
             currentStroke = null;
             base.TouchesCancelled(touches, evt);
         }
-        
+
         /// <summary></summary>
         /// <param name="touches"></param>
         /// <param name="evt"></param>
         public override void TouchesEnded(NSSet touches, UIEvent evt)
         {
-            var touch = touches.AnyObject as UITouch;
-            if (touch != null && touch.View == this)
+            foreach (UITouch touch in touches)
             {
-                PointerReleased(this, evt.GetPointerEventArgs(touch, this));
+                if (touch.View == this)
+                {
+                    PointerReleased(this, evt.GetPointerEventArgs(touch, this));
+                }
             }
-            
+
             dryInk = true;
             pointIndex = 0;
             currentStroke = null;
-            
+
             SetNeedsDisplay();
             base.TouchesEnded(touches, evt);
         }
-        
+
         /// <summary></summary>
         /// <param name="touches"></param>
         /// <param name="evt"></param>
         public override void TouchesMoved(NSSet touches, UIEvent evt)
         {
-            var touch = touches.AnyObject as UITouch;
-            if (touch != null && touch.View == this)
+            foreach (UITouch touch in touches)
             {
-                PointerMoved(this, evt.GetPointerEventArgs(touch, this));
-                
+                if (touch.View == this)
+                {
+                    PointerMoved(this, evt.GetPointerEventArgs(touch, this));
+                }
+            }
+
+            var primaryTouch = touches.AnyObject as UITouch;
+            if (primaryTouch != null && primaryTouch.View == this)
+            {
                 if (inputMode == InkInputMode.Erasing)
                 {
-                    var point = touch.LocationInView(this);
+                    var point = primaryTouch.LocationInView(this);
                     for (int i = hitPaths.Count - 1; i >= 0; i--)
                     {
                         if (hitPaths[i].ContainsPoint(point, false))
                         {
                             hitPaths.RemoveAt(i);
                             strokes.RemoveAt(i);
-                            
+
                             canvasImage = null;
                             forceDraw = true;
                             SetNeedsDisplay();
                         }
                     }
                 }
-                else
+                else if (currentStroke != null)
                 {
-                    points[++pointIndex] = touch.LocationInView(this);
+                    points[++pointIndex] = primaryTouch.LocationInView(this);
                     if (pointIndex == 4)
                     {
                         var point1 = points[2];
                         var point2 = points[4];
                         var endPoint = new CGPoint((point1.X + point2.X) / 2, (point1.Y + point2.Y) / 2);
-                        
+
                         currentStroke.MoveTo(points[0]);
                         currentStroke.AddCurveToPoint(endPoint, points[1], point1);
-                        
+
                         points[0] = endPoint;
                         points[1] = point2;
                         pointIndex = 1;
-                        
+
                         SetNeedsDisplay();
                     }
                 }
             }
-            
+
             base.TouchesMoved(touches, evt);
         }
-        
+
         /// <summary>
         /// Updates the drawing attributes to apply to new ink strokes on the canvas.
         /// </summary>
@@ -587,7 +603,7 @@ namespace Prism.iOS.UI.Controls
         {
             PropertyChanged(this, new FrameworkPropertyChangedEventArgs(pd));
         }
-        
+
         private void OnLoaded()
         {
             if (!IsLoaded)

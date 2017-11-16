@@ -22,12 +22,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 using System;
 using CoreGraphics;
 using Foundation;
-using UIKit;
 using Prism.Input;
 using Prism.Native;
 using Prism.UI;
 using Prism.UI.Controls;
 using Prism.UI.Media;
+using UIKit;
 
 namespace Prism.iOS.UI.Controls
 {
@@ -57,12 +57,12 @@ namespace Prism.iOS.UI.Controls
         /// Occurs when the control loses focus.
         /// </summary>
         public event EventHandler LostFocus;
-        
+
         /// <summary>
         /// Occurs when the system loses track of the pointer for some reason.
         /// </summary>
         public event EventHandler<PointerEventArgs> PointerCanceled;
-        
+
         /// <summary>
         /// Occurs when the pointer has moved while over the element.
         /// </summary>
@@ -526,12 +526,14 @@ namespace Prism.iOS.UI.Controls
         private CGSize currentSize;
         private string currentValue;
         private UILabel placeholderLabel;
-        
+
         /// <summary>
         /// Initializes a new instance of the <see cref="TextArea"/> class.
         /// </summary>
         public TextArea()
         {
+            MultipleTouchEnabled = true;
+
             base.Changed += (sender, e) =>
             {
                 if (placeholderLabel != null)
@@ -541,14 +543,14 @@ namespace Prism.iOS.UI.Controls
 
                 OnTextChanged();
             };
-            
+
             base.Started += (sender, e) =>
             {
                 if (SelectedTextRange != null)
                 {
                     ScrollRectToVisible(GetCaretRectForPosition(SelectedTextRange.Start), true);
                 }
-                
+
                 OnPropertyChanged(Control.IsFocusedProperty);
                 GotFocus(this, EventArgs.Empty);
             };
@@ -712,60 +714,68 @@ namespace Prism.iOS.UI.Controls
                 }
             }
         }
-        
+
         /// <summary></summary>
         /// <param name="touches"></param>
         /// <param name="evt"></param>
         public override void TouchesBegan(NSSet touches, UIEvent evt)
         {
-            var touch = touches.AnyObject as UITouch;
-            if (touch != null && touch.View == this)
+            foreach (UITouch touch in touches)
             {
-                PointerPressed(this, evt.GetPointerEventArgs(touch, this));
+                if (touch.View == this)
+                {
+                    PointerPressed(this, evt.GetPointerEventArgs(touch, this));
+                }
             }
-            
+
             base.TouchesBegan(touches, evt);
         }
-        
+
         /// <summary></summary>
         /// <param name="touches"></param>
         /// <param name="evt"></param>
         public override void TouchesCancelled(NSSet touches, UIEvent evt)
         {
-            var touch = touches.AnyObject as UITouch;
-            if (touch != null && touch.View == this)
+            foreach (UITouch touch in touches)
             {
-                PointerCanceled(this, evt.GetPointerEventArgs(touch, this));
+                if (touch.View == this)
+                {
+                    PointerCanceled(this, evt.GetPointerEventArgs(touch, this));
+                }
             }
-        
+
             base.TouchesCancelled(touches, evt);
         }
-        
+
         /// <summary></summary>
         /// <param name="touches"></param>
         /// <param name="evt"></param>
         public override void TouchesEnded(NSSet touches, UIEvent evt)
         {
-            var touch = touches.AnyObject as UITouch;
-            if (touch != null && touch.View == this)
+            foreach (UITouch touch in touches)
             {
-                PointerReleased(this, evt.GetPointerEventArgs(touch, this));
+                if (touch.View == this)
+                {
+                    PointerReleased(this, evt.GetPointerEventArgs(touch, this));
+                }
             }
-            
+
             base.TouchesEnded(touches, evt);
         }
-        
+
         /// <summary></summary>
         /// <param name="touches"></param>
         /// <param name="evt"></param>
         public override void TouchesMoved(NSSet touches, UIEvent evt)
         {
-            var touch = touches.AnyObject as UITouch;
-            if (touch != null && touch.View == this)
+            foreach (UITouch touch in touches)
             {
-                PointerMoved(this, evt.GetPointerEventArgs(touch, this));
+                if (touch.View == this)
+                {
+                    PointerMoved(this, evt.GetPointerEventArgs(touch, this));
+                }
             }
-            
+
             base.TouchesMoved(touches, evt);
         }
 

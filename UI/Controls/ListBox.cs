@@ -25,13 +25,13 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
+using CoreGraphics;
+using Foundation;
 using Prism.Input;
 using Prism.Native;
 using Prism.UI;
 using Prism.UI.Controls;
 using Prism.UI.Media;
-using Foundation;
-using CoreGraphics;
 using UIKit;
 
 namespace Prism.iOS.UI.Controls
@@ -57,7 +57,7 @@ namespace Prism.iOS.UI.Controls
         /// Occurs when an accessory in a list box item is clicked or tapped.
         /// </summary>
         public event EventHandler<AccessoryClickedEventArgs> AccessoryClicked;
-        
+
         /// <summary>
         /// Occurs when an item in the list box is clicked or tapped.
         /// </summary>
@@ -67,12 +67,12 @@ namespace Prism.iOS.UI.Controls
         /// Occurs when this instance has been attached to the visual tree and is ready to be rendered.
         /// </summary>
         public event EventHandler Loaded;
-        
+
         /// <summary>
         /// Occurs when the system loses track of the pointer for some reason.
         /// </summary>
         public event EventHandler<PointerEventArgs> PointerCanceled;
-        
+
         /// <summary>
         /// Occurs when the pointer has moved while over the element.
         /// </summary>
@@ -468,6 +468,7 @@ namespace Prism.iOS.UI.Controls
             RowHeight = UITableView.AutomaticDimension;
             SectionHeaderHeight = UITableView.AutomaticDimension;
             SectionFooterHeight = UITableView.AutomaticDimension;
+            MultipleTouchEnabled = true;
 
             if (UIDevice.CurrentDevice.CheckSystemVersion(9, 0))
             {
@@ -560,7 +561,7 @@ namespace Prism.iOS.UI.Controls
 
                     ReloadRows(reloads.ToArray(), UITableViewRowAnimation.None);
                 }
-                
+
                 ScrollToRow(indexPath, UITableViewScrollPosition.None, areAnimationsEnabled && animate != Prism.UI.Animate.Off);
             }
         }
@@ -672,60 +673,68 @@ namespace Prism.iOS.UI.Controls
                 }
             }
         }
-        
+
         /// <summary></summary>
         /// <param name="touches"></param>
         /// <param name="evt"></param>
         public override void TouchesBegan(NSSet touches, UIEvent evt)
         {
-            var touch = touches.AnyObject as UITouch;
-            if (touch != null && touch.View == this)
+            foreach (UITouch touch in touches)
             {
-                PointerPressed(this, evt.GetPointerEventArgs(touch, this));
+                if (touch.View == this)
+                {
+                    PointerPressed(this, evt.GetPointerEventArgs(touch, this));
+                }
             }
-            
+
             base.TouchesBegan(touches, evt);
         }
-        
+
         /// <summary></summary>
         /// <param name="touches"></param>
         /// <param name="evt"></param>
         public override void TouchesCancelled(NSSet touches, UIEvent evt)
         {
-            var touch = touches.AnyObject as UITouch;
-            if (touch != null && touch.View == this)
+            foreach (UITouch touch in touches)
             {
-                PointerCanceled(this, evt.GetPointerEventArgs(touch, this));
+                if (touch.View == this)
+                {
+                    PointerCanceled(this, evt.GetPointerEventArgs(touch, this));
+                }
             }
-        
+
             base.TouchesCancelled(touches, evt);
         }
-        
+
         /// <summary></summary>
         /// <param name="touches"></param>
         /// <param name="evt"></param>
         public override void TouchesEnded(NSSet touches, UIEvent evt)
         {
-            var touch = touches.AnyObject as UITouch;
-            if (touch != null && touch.View == this)
+            foreach (UITouch touch in touches)
             {
-                PointerReleased(this, evt.GetPointerEventArgs(touch, this));
+                if (touch.View == this)
+                {
+                    PointerReleased(this, evt.GetPointerEventArgs(touch, this));
+                }
             }
-            
+
             base.TouchesEnded(touches, evt);
         }
-        
+
         /// <summary></summary>
         /// <param name="touches"></param>
         /// <param name="evt"></param>
         public override void TouchesMoved(NSSet touches, UIEvent evt)
         {
-            var touch = touches.AnyObject as UITouch;
-            if (touch != null && touch.View == this)
+            foreach (UITouch touch in touches)
             {
-                PointerMoved(this, evt.GetPointerEventArgs(touch, this));
+                if (touch.View == this)
+                {
+                    PointerMoved(this, evt.GetPointerEventArgs(touch, this));
+                }
             }
-            
+
             base.TouchesMoved(touches, evt);
         }
 
@@ -813,7 +822,7 @@ namespace Prism.iOS.UI.Controls
             }
             else
             {
-                
+
                 for (int i = 0; i < this.items.Count; i++)
                 {
                     var list = this.items[i] as IList;
@@ -867,7 +876,7 @@ namespace Prism.iOS.UI.Controls
             OnPropertyChanged(Prism.UI.Controls.ListBox.SelectedItemsProperty);
             SelectionChanged(this, new SelectionChangedEventArgs(null, GetItemAtIndexPath(indexPath)));
         }
-        
+
         private void OnItemClicked(NSIndexPath indexPath)
         {
             ItemClicked(this, new ItemClickedEventArgs(GetItemAtIndexPath(indexPath)));
@@ -1091,7 +1100,7 @@ namespace Prism.iOS.UI.Controls
                 header.LayoutIfNeeded();
                 return header.Bounds.Height;
             }
-            
+
             public override UITableViewCell GetCell(UITableView tableView, NSIndexPath indexPath)
             {
                 var listBox = tableView as ListBox;
@@ -1200,7 +1209,7 @@ namespace Prism.iOS.UI.Controls
                 {
                     return;
                 }
-                
+
                 var listBox = tableView as ListBox;
                 if (listBox != null)
                 {
@@ -1235,7 +1244,7 @@ namespace Prism.iOS.UI.Controls
 
                 return section == 0 && listBox.items != null ? listBox.items.Count : 0;
             }
-            
+
             public override NSIndexPath WillDeselectRow(UITableView tableView, NSIndexPath indexPath)
             {
                 var listBox = tableView as ListBox;
@@ -1243,7 +1252,7 @@ namespace Prism.iOS.UI.Controls
                 {
                     return indexPath;
                 }
-                
+
                 if (listBox.AllowsMultipleSelection)
                 {
                     listBox.OnItemClicked(indexPath);
@@ -1258,7 +1267,7 @@ namespace Prism.iOS.UI.Controls
                 {
                     listBox.OnItemClicked(indexPath);
                 }
-                
+
                 if (!tableView.AllowsMultipleSelection)
                 {
                     previouslySelectedCellIndex = tableView.IndexPathForSelectedRow;

@@ -22,12 +22,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 using System;
 using CoreGraphics;
 using Foundation;
-using UIKit;
 using Prism.Input;
 using Prism.Native;
 using Prism.UI;
 using Prism.UI.Controls;
 using Prism.UI.Media;
+using UIKit;
 
 namespace Prism.iOS.UI.Controls
 {
@@ -57,12 +57,12 @@ namespace Prism.iOS.UI.Controls
         /// Occurs when the control loses focus.
         /// </summary>
         public event EventHandler LostFocus;
-        
+
         /// <summary>
         /// Occurs when the system loses track of the pointer for some reason.
         /// </summary>
         public event EventHandler<PointerEventArgs> PointerCanceled;
-        
+
         /// <summary>
         /// Occurs when the pointer has moved while over the element.
         /// </summary>
@@ -253,7 +253,7 @@ namespace Prism.iOS.UI.Controls
                 if (value != foreground)
                 {
                     (foreground as ImageBrush).ClearImageHandler(OnForegroundImageLoaded);
-                    
+
                     foreground = value;
                     SetTitleColor(foreground.GetColor(Bounds.Width, Bounds.Height, OnForegroundImageLoaded) ?? new UIColor(0, 0.5f, 1, 1), UIControlState.Normal);
                     OnPropertyChanged(Control.ForegroundProperty);
@@ -443,6 +443,7 @@ namespace Prism.iOS.UI.Controls
         public Button()
         {
             ClipsToBounds = true;
+            MultipleTouchEnabled = true;
             HorizontalAlignment = UIControlContentHorizontalAlignment.Fill;
             VerticalAlignment = UIControlContentVerticalAlignment.Fill;
             SetTitleColor(new UIColor(0, 0.5f, 1, 1), UIControlState.Normal);
@@ -503,7 +504,7 @@ namespace Prism.iOS.UI.Controls
 
             size.Width += padding.Right + padding.Left + (BorderWidth * 2);
             size.Height += padding.Bottom + padding.Top + (BorderWidth * 2);
-            return new Size(Math.Min(constraints.Width, size.Width), Math.Min(constraints.Height, size.Height));;
+            return new Size(Math.Min(constraints.Width, size.Width), Math.Min(constraints.Height, size.Height));
         }
 
         /// <summary>
@@ -534,10 +535,10 @@ namespace Prism.iOS.UI.Controls
         public override void LayoutSubviews()
         {
             base.LayoutSubviews();
-        
+
             MeasureRequest(false, null);
             ArrangeRequest(false, null);
-            
+
             TitleLabel.SizeToFit();
             var labelSize = TitleLabel.Bounds.Size;
             var imageSize = ImageView.Image?.Size ?? CGSize.Empty;
@@ -621,7 +622,7 @@ namespace Prism.iOS.UI.Controls
         public override bool ResignFirstResponder()
         {
             base.ResignFirstResponder();
-            
+
             if (IsFocused)
             {
                 IsFocused = false;
@@ -630,60 +631,68 @@ namespace Prism.iOS.UI.Controls
             }
             return true;
         }
-        
+
         /// <summary></summary>
         /// <param name="touches"></param>
         /// <param name="evt"></param>
         public override void TouchesBegan(NSSet touches, UIEvent evt)
         {
-            var touch = touches.AnyObject as UITouch;
-            if (touch != null && touch.View == this)
+            foreach (UITouch touch in touches)
             {
-                PointerPressed(this, evt.GetPointerEventArgs(touch, this));
+                if (touch.View == this)
+                {
+                    PointerPressed(this, evt.GetPointerEventArgs(touch, this));
+                }
             }
-            
+
             base.TouchesBegan(touches, evt);
         }
-        
+
         /// <summary></summary>
         /// <param name="touches"></param>
         /// <param name="evt"></param>
         public override void TouchesCancelled(NSSet touches, UIEvent evt)
         {
-            var touch = touches.AnyObject as UITouch;
-            if (touch != null && touch.View == this)
+            foreach (UITouch touch in touches)
             {
-                PointerCanceled(this, evt.GetPointerEventArgs(touch, this));
+                if (touch.View == this)
+                {
+                    PointerCanceled(this, evt.GetPointerEventArgs(touch, this));
+                }
             }
-        
+
             base.TouchesCancelled(touches, evt);
         }
-        
+
         /// <summary></summary>
         /// <param name="touches"></param>
         /// <param name="evt"></param>
         public override void TouchesEnded(NSSet touches, UIEvent evt)
         {
-            var touch = touches.AnyObject as UITouch;
-            if (touch != null && touch.View == this)
+            foreach (UITouch touch in touches)
             {
-                PointerReleased(this, evt.GetPointerEventArgs(touch, this));
+                if (touch.View == this)
+                {
+                    PointerReleased(this, evt.GetPointerEventArgs(touch, this));
+                }
             }
-            
+
             base.TouchesEnded(touches, evt);
         }
-        
+
         /// <summary></summary>
         /// <param name="touches"></param>
         /// <param name="evt"></param>
         public override void TouchesMoved(NSSet touches, UIEvent evt)
         {
-            var touch = touches.AnyObject as UITouch;
-            if (touch != null && touch.View == this)
+            foreach (UITouch touch in touches)
             {
-                PointerMoved(this, evt.GetPointerEventArgs(touch, this));
+                if (touch.View == this)
+                {
+                    PointerMoved(this, evt.GetPointerEventArgs(touch, this));
+                }
             }
-            
+
             base.TouchesMoved(touches, evt);
         }
 

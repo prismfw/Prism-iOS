@@ -107,7 +107,7 @@ namespace Prism.iOS.UI.Shapes
                     (fill as ImageBrush).ClearImageHandler(OnImageLoaded);
                     fill = value;
                     (fill as ImageBrush).BeginLoadingImage(OnImageLoaded);
-                    
+
                     OnPropertyChanged(Prism.UI.Shapes.Shape.FillProperty);
                     SetNeedsDisplay();
                 }
@@ -170,7 +170,7 @@ namespace Prism.iOS.UI.Shapes
                 }
             }
         }
-        
+
         /// <summary>
         /// Gets or sets the X-axis radius of the ellipse that is used to round the corners of the quadrangle.
         /// </summary>
@@ -247,7 +247,7 @@ namespace Prism.iOS.UI.Shapes
                     (stroke as ImageBrush).ClearImageHandler(OnImageLoaded);
                     stroke = value;
                     (stroke as ImageBrush).BeginLoadingImage(OnImageLoaded);
-                    
+
                     OnPropertyChanged(Prism.UI.Shapes.Shape.StrokeProperty);
                     SetNeedsDisplay();
                 }
@@ -348,7 +348,7 @@ namespace Prism.iOS.UI.Shapes
             }
         }
         private Visibility visibility;
-        
+
         private bool isDirty;
         private CGPath path;
         private nfloat[] strokeDashArray;
@@ -360,6 +360,7 @@ namespace Prism.iOS.UI.Shapes
         public Quadrangle()
         {
             ContentMode = UIViewContentMode.Redraw;
+            MultipleTouchEnabled = true;
             Opaque = false;
         }
 
@@ -368,7 +369,7 @@ namespace Prism.iOS.UI.Shapes
         public override void Draw(CGRect rect)
         {
             base.Draw(rect);
-            
+
             using (var context = UIGraphics.GetCurrentContext())
             {
                 if (context != null)
@@ -387,14 +388,14 @@ namespace Prism.iOS.UI.Shapes
                     rect.Y += (nfloat)(strokeThickness * 0.5);
                     rect.Width -= (nfloat)strokeThickness;
                     rect.Height -= (nfloat)strokeThickness;
-                    
+
                     if (isDirty || path == null)
                     {
                         path = new CGPath();
                         path.AddRoundedRect(rect, (nfloat)radiusX, (nfloat)radiusY);
                         isDirty = false;
                     }
-                    
+
                     context.AddPath(path);
                     context.DrawPath(CGPathDrawingMode.FillStroke);
 
@@ -501,7 +502,7 @@ namespace Prism.iOS.UI.Shapes
                     strokeDashArray[i] = (nfloat)pattern[i];
                 }
             }
-            
+
             strokeDashOffset = (nfloat)offset;
             SetNeedsDisplay();
         }
@@ -511,10 +512,12 @@ namespace Prism.iOS.UI.Shapes
         /// <param name="evt"></param>
         public override void TouchesBegan(NSSet touches, UIEvent evt)
         {
-            var touch = touches.AnyObject as UITouch;
-            if (touch != null && touch.View == this)
+            foreach (UITouch touch in touches)
             {
-                PointerPressed(this, evt.GetPointerEventArgs(touch, this));
+                if (touch.View == this)
+                {
+                    PointerPressed(this, evt.GetPointerEventArgs(touch, this));
+                }
             }
 
             base.TouchesBegan(touches, evt);
@@ -525,10 +528,12 @@ namespace Prism.iOS.UI.Shapes
         /// <param name="evt"></param>
         public override void TouchesCancelled(NSSet touches, UIEvent evt)
         {
-            var touch = touches.AnyObject as UITouch;
-            if (touch != null && touch.View == this)
+            foreach (UITouch touch in touches)
             {
-                PointerCanceled(this, evt.GetPointerEventArgs(touch, this));
+                if (touch.View == this)
+                {
+                    PointerCanceled(this, evt.GetPointerEventArgs(touch, this));
+                }
             }
 
             base.TouchesCancelled(touches, evt);
@@ -539,10 +544,12 @@ namespace Prism.iOS.UI.Shapes
         /// <param name="evt"></param>
         public override void TouchesEnded(NSSet touches, UIEvent evt)
         {
-            var touch = touches.AnyObject as UITouch;
-            if (touch != null && touch.View == this)
+            foreach (UITouch touch in touches)
             {
-                PointerReleased(this, evt.GetPointerEventArgs(touch, this));
+                if (touch.View == this)
+                {
+                    PointerReleased(this, evt.GetPointerEventArgs(touch, this));
+                }
             }
 
             base.TouchesEnded(touches, evt);
@@ -553,10 +560,12 @@ namespace Prism.iOS.UI.Shapes
         /// <param name="evt"></param>
         public override void TouchesMoved(NSSet touches, UIEvent evt)
         {
-            var touch = touches.AnyObject as UITouch;
-            if (touch != null && touch.View == this)
+            foreach (UITouch touch in touches)
             {
-                PointerMoved(this, evt.GetPointerEventArgs(touch, this));
+                if (touch.View == this)
+                {
+                    PointerMoved(this, evt.GetPointerEventArgs(touch, this));
+                }
             }
 
             base.TouchesMoved(touches, evt);
@@ -570,7 +579,7 @@ namespace Prism.iOS.UI.Shapes
         {
             PropertyChanged(this, new FrameworkPropertyChangedEventArgs(pd));
         }
-        
+
         private void OnImageLoaded(object sender, EventArgs e)
         {
             SetNeedsDisplay();

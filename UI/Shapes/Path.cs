@@ -107,14 +107,14 @@ namespace Prism.iOS.UI.Shapes
                     (fill as ImageBrush).ClearImageHandler(OnImageLoaded);
                     fill = value;
                     (fill as ImageBrush).BeginLoadingImage(OnImageLoaded);
-                    
+
                     OnPropertyChanged(Prism.UI.Shapes.Shape.FillProperty);
                     SetNeedsDisplay();
                 }
             }
         }
         private Brush fill;
-        
+
         /// <summary>
         /// Gets or sets the rule to use for determining the interior fill of the shape.
         /// </summary>
@@ -187,7 +187,7 @@ namespace Prism.iOS.UI.Shapes
                 }
             }
         }
-        
+
         /// <summary>
         /// Gets or sets the method to invoke when this instance requests information for the path being drawn.
         /// </summary>
@@ -231,7 +231,7 @@ namespace Prism.iOS.UI.Shapes
                     (stroke as ImageBrush).ClearImageHandler(OnImageLoaded);
                     stroke = value;
                     (stroke as ImageBrush).BeginLoadingImage(OnImageLoaded);
-                    
+
                     OnPropertyChanged(Prism.UI.Shapes.Shape.StrokeProperty);
                     SetNeedsDisplay();
                 }
@@ -332,7 +332,7 @@ namespace Prism.iOS.UI.Shapes
             }
         }
         private Visibility visibility;
-        
+
         private CGPath path;
         private nfloat[] strokeDashArray;
         private nfloat strokeDashOffset;
@@ -343,6 +343,7 @@ namespace Prism.iOS.UI.Shapes
         public Path()
         {
             ContentMode = UIViewContentMode.Redraw;
+            MultipleTouchEnabled = true;
             Opaque = false;
         }
 
@@ -351,12 +352,12 @@ namespace Prism.iOS.UI.Shapes
         public override void Draw(CGRect rect)
         {
             base.Draw(rect);
-            
+
             if (path == null)
             {
                 BuildPath();
             }
-            
+
             using (var context = UIGraphics.GetCurrentContext())
             {
                 if (context != null)
@@ -370,7 +371,7 @@ namespace Prism.iOS.UI.Shapes
                     context.SetLineJoin(strokeLineJoin.GetCGLineJoin());
                     context.SetMiterLimit((nfloat)strokeMiterLimit);
                     context.SetLineDash(strokeDashOffset, strokeDashArray);
-                    
+
                     context.AddPath(path);
                     context.DrawPath(CGPathDrawingMode.FillStroke);
 
@@ -394,7 +395,7 @@ namespace Prism.iOS.UI.Shapes
         {
             SetNeedsLayout();
         }
-        
+
         /// <summary>
         /// Signals that the path needs to be rebuilt before it is drawn again.
         /// </summary>
@@ -486,7 +487,7 @@ namespace Prism.iOS.UI.Shapes
                     strokeDashArray[i] = (nfloat)pattern[i];
                 }
             }
-            
+
             strokeDashOffset = (nfloat)offset;
             SetNeedsDisplay();
         }
@@ -496,10 +497,12 @@ namespace Prism.iOS.UI.Shapes
         /// <param name="evt"></param>
         public override void TouchesBegan(NSSet touches, UIEvent evt)
         {
-            var touch = touches.AnyObject as UITouch;
-            if (touch != null && touch.View == this)
+            foreach (UITouch touch in touches)
             {
-                PointerPressed(this, evt.GetPointerEventArgs(touch, this));
+                if (touch.View == this)
+                {
+                    PointerPressed(this, evt.GetPointerEventArgs(touch, this));
+                }
             }
 
             base.TouchesBegan(touches, evt);
@@ -510,10 +513,12 @@ namespace Prism.iOS.UI.Shapes
         /// <param name="evt"></param>
         public override void TouchesCancelled(NSSet touches, UIEvent evt)
         {
-            var touch = touches.AnyObject as UITouch;
-            if (touch != null && touch.View == this)
+            foreach (UITouch touch in touches)
             {
-                PointerCanceled(this, evt.GetPointerEventArgs(touch, this));
+                if (touch.View == this)
+                {
+                    PointerCanceled(this, evt.GetPointerEventArgs(touch, this));
+                }
             }
 
             base.TouchesCancelled(touches, evt);
@@ -524,10 +529,12 @@ namespace Prism.iOS.UI.Shapes
         /// <param name="evt"></param>
         public override void TouchesEnded(NSSet touches, UIEvent evt)
         {
-            var touch = touches.AnyObject as UITouch;
-            if (touch != null && touch.View == this)
+            foreach (UITouch touch in touches)
             {
-                PointerReleased(this, evt.GetPointerEventArgs(touch, this));
+                if (touch.View == this)
+                {
+                    PointerReleased(this, evt.GetPointerEventArgs(touch, this));
+                }
             }
 
             base.TouchesEnded(touches, evt);
@@ -538,10 +545,12 @@ namespace Prism.iOS.UI.Shapes
         /// <param name="evt"></param>
         public override void TouchesMoved(NSSet touches, UIEvent evt)
         {
-            var touch = touches.AnyObject as UITouch;
-            if (touch != null && touch.View == this)
+            foreach (UITouch touch in touches)
             {
-                PointerMoved(this, evt.GetPointerEventArgs(touch, this));
+                if (touch.View == this)
+                {
+                    PointerMoved(this, evt.GetPointerEventArgs(touch, this));
+                }
             }
 
             base.TouchesMoved(touches, evt);
@@ -555,7 +564,7 @@ namespace Prism.iOS.UI.Shapes
         {
             PropertyChanged(this, new FrameworkPropertyChangedEventArgs(pd));
         }
-        
+
         private void BuildPath()
         {
             path = new CGPath();
@@ -578,7 +587,7 @@ namespace Prism.iOS.UI.Shapes
                         subpath.AddLineToPoint(line.EndPoint.GetCGPoint());
                         continue;
                     }
-                    
+
                     var arc = segment as ArcSegment;
                     if (arc != null)
                     {
@@ -591,7 +600,7 @@ namespace Prism.iOS.UI.Shapes
                             subpath.AddLineToPoint(endPoint);
                             continue;
                         }
-            
+
                         nfloat rise = NMath.Round(NMath.Abs(endPoint.Y - startPoint.Y), 1);
                         nfloat run = NMath.Round(NMath.Abs(endPoint.X - startPoint.X), 1);
                         if (rise == 0 && run == 0)
@@ -600,20 +609,20 @@ namespace Prism.iOS.UI.Shapes
                         }
 
                         CGPoint center = new CGPoint(nfloat.NaN, nfloat.NaN);
-                        
+
                         nfloat scale = NMath.Max(run / (trueSize.Width * 2), rise / (trueSize.Height * 2));
                         if (scale > 1)
                         {
                             center.X = (startPoint.X + endPoint.X) / 2;
                             center.Y = (startPoint.Y + endPoint.Y) / 2;
-            
+
                             nfloat diffX = run / 2;
                             nfloat diffY = rise / 2;
-            
+
                             var angle = NMath.Atan2(diffY / trueSize.Height, diffX / trueSize.Width);
                             var cos = NMath.Cos(angle) * trueSize.Width;
                             var sin = NMath.Sin(angle) * trueSize.Height;
-            
+
                             scale = NMath.Sqrt(diffX * diffX + diffY * diffY) / NMath.Sqrt(cos * cos + sin * sin);
                             trueSize.Width *= scale;
                             trueSize.Height *= scale;
@@ -630,13 +639,13 @@ namespace Prism.iOS.UI.Shapes
                         {
                             var midPoint = new CGPoint((startPoint.X + endPoint.X) / 2, (startPoint.Y + endPoint.Y) / 2);
                             var perpAngle = NMath.Atan2(startPoint.Y - endPoint.Y, endPoint.X - startPoint.X);
-                            
+
                             nfloat diffX = startPoint.X - midPoint.X;
                             nfloat diffY = startPoint.Y - midPoint.Y;
                             nfloat distance = NMath.Sqrt(diffX * diffX + diffY * diffY);
-    
+
                             distance = NMath.Sqrt(1 - distance * distance);
-    
+
                             if ((arc.IsLargeArc && arc.SweepDirection == SweepDirection.Counterclockwise) ||
                                 (!arc.IsLargeArc && arc.SweepDirection == SweepDirection.Clockwise))
                             {
@@ -647,13 +656,13 @@ namespace Prism.iOS.UI.Shapes
                                 center = new CGPoint(midPoint.X - NMath.Sin(perpAngle) * distance, midPoint.Y - NMath.Cos(perpAngle) * distance);
                             }
                         }
-                        
+
                         nfloat startAngle = NMath.Atan2(startPoint.Y - center.Y, startPoint.X - center.X);
                         nfloat endAngle = NMath.Atan2(endPoint.Y - center.Y, endPoint.X - center.X);
-                        
+
                         center.X *= trueSize.Width;
                         center.Y *= trueSize.Height;
-                        
+
                         if (NMath.Abs(trueSize.Width - trueSize.Height) < 0.1f)
                         {
                             subpath.AddArc(center.X, center.Y, trueSize.Width, startAngle, endAngle, arc.SweepDirection != SweepDirection.Clockwise);
@@ -664,7 +673,7 @@ namespace Prism.iOS.UI.Shapes
                             transform = CGAffineTransform.MakeScale(1, trueSize.Height / trueSize.Width) * transform;
                             subpath.AddArc(transform, 0, 0, trueSize.Width, startAngle, endAngle, arc.SweepDirection != SweepDirection.Clockwise);
                         }
-                        
+
                         continue;
                     }
 
@@ -692,11 +701,11 @@ namespace Prism.iOS.UI.Shapes
                 {
                     subpath.CloseSubpath();
                 }
-                
+
                 path.AddPath(subpath);
             }
         }
-        
+
         private void OnImageLoaded(object sender, EventArgs e)
         {
             SetNeedsDisplay();

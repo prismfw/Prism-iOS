@@ -41,7 +41,7 @@ namespace Prism.iOS
     public static class iOSExtensions
     {
         private static readonly WeakEventManager imageLoadedEventManager = new WeakEventManager("ImageLoaded", typeof(INativeBitmapImage));
-        
+
         /// <summary>
         /// Checks the state of the image brush's image.  If the image is not loaded, the specified handler
         /// is attached to the image's load event and loading is initiated.
@@ -67,7 +67,7 @@ namespace Prism.iOS
             {
                 return null;
             }
-            
+
             var bitmapImage = source as INativeBitmapImage;
             if (bitmapImage == null)
             {
@@ -564,7 +564,7 @@ namespace Prism.iOS
         {
             return new Point(point.X, point.Y);
         }
-        
+
         /// <summary>
         /// Generates a <see cref="PointerEventArgs"/> from a <see cref="UIEvent"/>.
         /// </summary>
@@ -574,10 +574,10 @@ namespace Prism.iOS
         public static PointerEventArgs GetPointerEventArgs(this UIEvent evt, UITouch touch, UIView source)
         {
             bool v9 = UIDevice.CurrentDevice.CheckSystemVersion(9, 0);
-            return new PointerEventArgs(source, v9 ? touch.Type.GetPointerType() : PointerType.Unknown,
+            return new PointerEventArgs(source, (uint)touch.Handle, v9 ? touch.Type.GetPointerType() : PointerType.Unknown,
                 touch.LocationInView(source).GetPoint(), v9 ? touch.Force : 1, (long)(evt.Timestamp * 1000));
         }
-        
+
         /// <summary>
         /// Gets a <see cref="PointerType"/> from a <see cref="UITouchType"/>.
         /// </summary>

@@ -23,13 +23,13 @@ using System;
 using System.Linq;
 using CoreGraphics;
 using Foundation;
-using UIKit;
 using Prism.Input;
 using Prism.Native;
 using Prism.UI;
 using Prism.UI.Controls;
 using Prism.UI.Media;
 using Prism.Utilities;
+using UIKit;
 
 namespace Prism.iOS.UI.Controls
 {
@@ -59,12 +59,12 @@ namespace Prism.iOS.UI.Controls
         /// Occurs when the control loses focus.
         /// </summary>
         public event EventHandler LostFocus;
-        
+
         /// <summary>
         /// Occurs when the system loses track of the pointer for some reason.
         /// </summary>
         public event EventHandler<PointerEventArgs> PointerCanceled;
-        
+
         /// <summary>
         /// Occurs when the pointer has moved while over the element.
         /// </summary>
@@ -256,7 +256,7 @@ namespace Prism.iOS.UI.Controls
                 if (value != foreground)
                 {
                     (foreground as ImageBrush).ClearImageHandler(OnForegroundImageLoaded);
-                    
+
                     foreground = value;
                     SetTitleColor(foreground.GetColor(Bounds.Width, Bounds.Height, OnForegroundImageLoaded) ?? UIColor.Black, UIControlState.Normal);
                     OnPropertyChanged(Control.ForegroundProperty);
@@ -472,6 +472,8 @@ namespace Prism.iOS.UI.Controls
         /// </summary>
         public DatePicker()
         {
+            MultipleTouchEnabled = true;
+
             SetTitle();
             SetTitleColor(UIColor.Black, UIControlState.Normal);
 
@@ -599,7 +601,7 @@ namespace Prism.iOS.UI.Controls
         public override bool ResignFirstResponder()
         {
             base.ResignFirstResponder();
-            
+
             if (IsFocused)
             {
                 IsFocused = false;
@@ -608,7 +610,7 @@ namespace Prism.iOS.UI.Controls
             }
             return true;
         }
-        
+
         /// <summary></summary>
         /// <returns></returns>
         /// <param name="color"></param>
@@ -616,67 +618,75 @@ namespace Prism.iOS.UI.Controls
         public override void SetTitleColor(UIColor color, UIControlState forState)
         {
             base.SetTitleColor(color, forState);
-            
+
             // gets around an odd issue with the foreground not being honored
             if (TitleLabel != null)
             {
                 TitleLabel.TextColor = color;
             }
         }
-        
+
         /// <summary></summary>
         /// <param name="touches"></param>
         /// <param name="evt"></param>
         public override void TouchesBegan(NSSet touches, UIEvent evt)
         {
-            var touch = touches.AnyObject as UITouch;
-            if (touch != null && touch.View == this)
+            foreach (UITouch touch in touches)
             {
-                PointerPressed(this, evt.GetPointerEventArgs(touch, this));
+                if (touch.View == this)
+                {
+                    PointerPressed(this, evt.GetPointerEventArgs(touch, this));
+                }
             }
-            
+
             base.TouchesBegan(touches, evt);
         }
-        
+
         /// <summary></summary>
         /// <param name="touches"></param>
         /// <param name="evt"></param>
         public override void TouchesCancelled(NSSet touches, UIEvent evt)
         {
-            var touch = touches.AnyObject as UITouch;
-            if (touch != null && touch.View == this)
+            foreach (UITouch touch in touches)
             {
-                PointerCanceled(this, evt.GetPointerEventArgs(touch, this));
+                if (touch.View == this)
+                {
+                    PointerCanceled(this, evt.GetPointerEventArgs(touch, this));
+                }
             }
-        
+
             base.TouchesCancelled(touches, evt);
         }
-        
+
         /// <summary></summary>
         /// <param name="touches"></param>
         /// <param name="evt"></param>
         public override void TouchesEnded(NSSet touches, UIEvent evt)
         {
-            var touch = touches.AnyObject as UITouch;
-            if (touch != null && touch.View == this)
+            foreach (UITouch touch in touches)
             {
-                PointerReleased(this, evt.GetPointerEventArgs(touch, this));
+                if (touch.View == this)
+                {
+                    PointerReleased(this, evt.GetPointerEventArgs(touch, this));
+                }
             }
-            
+
             base.TouchesEnded(touches, evt);
         }
-        
+
         /// <summary></summary>
         /// <param name="touches"></param>
         /// <param name="evt"></param>
         public override void TouchesMoved(NSSet touches, UIEvent evt)
         {
-            var touch = touches.AnyObject as UITouch;
-            if (touch != null && touch.View == this)
+            foreach (UITouch touch in touches)
             {
-                PointerMoved(this, evt.GetPointerEventArgs(touch, this));
+                if (touch.View == this)
+                {
+                    PointerMoved(this, evt.GetPointerEventArgs(touch, this));
+                }
             }
-            
+
             base.TouchesMoved(touches, evt);
         }
 
@@ -760,8 +770,8 @@ namespace Prism.iOS.UI.Controls
                 if (picker != null)
                 {
                     var date = (datePicker.selectedDate.HasValue && datePicker.selectedDate.Value.Kind == DateTimeKind.Unspecified) ?
-                        new DateTime(datePicker.selectedDate.Value.Ticks, DateTimeKind.Utc) : datePicker.selectedDate ;
-                        
+                        new DateTime(datePicker.selectedDate.Value.Ticks, DateTimeKind.Utc) : datePicker.selectedDate;
+
                     picker.SetDate((NSDate)(date.HasValue ? date.Value : DateTime.Now), animated);
                 }
             }

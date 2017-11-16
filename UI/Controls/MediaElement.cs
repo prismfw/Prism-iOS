@@ -20,16 +20,16 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
 using System;
+using System.Timers;
 using AVFoundation;
 using AVKit;
 using CoreGraphics;
 using CoreMedia;
 using Foundation;
-using UIKit;
 using Prism.Input;
 using Prism.Native;
 using Prism.UI;
-using System.Timers;
+using UIKit;
 
 namespace Prism.iOS.UI.Controls
 {
@@ -485,6 +485,8 @@ namespace Prism.iOS.UI.Controls
         /// </summary>
         public MediaElement()
         {
+            MultipleTouchEnabled = true;
+
             Controller = new AVPlayerViewController();
             Controller.Player = player = new AVQueuePlayer() { ActionAtItemEnd = AVPlayerActionAtItemEnd.Advance };
             Controller.Player.AddObserver(this, "currentItem", NSKeyValueObservingOptions.OldNew, IntPtr.Zero);
@@ -725,10 +727,12 @@ namespace Prism.iOS.UI.Controls
         /// <param name="evt"></param>
         public override void TouchesBegan(NSSet touches, UIEvent evt)
         {
-            var touch = touches.AnyObject as UITouch;
-            if (touch != null && touch.View == this)
+            foreach (UITouch touch in touches)
             {
-                PointerPressed(this, evt.GetPointerEventArgs(touch, this));
+                if (touch.View == this)
+                {
+                    PointerPressed(this, evt.GetPointerEventArgs(touch, this));
+                }
             }
 
             base.TouchesBegan(touches, evt);
@@ -739,10 +743,12 @@ namespace Prism.iOS.UI.Controls
         /// <param name="evt"></param>
         public override void TouchesCancelled(NSSet touches, UIEvent evt)
         {
-            var touch = touches.AnyObject as UITouch;
-            if (touch != null && touch.View == this)
+            foreach (UITouch touch in touches)
             {
-                PointerCanceled(this, evt.GetPointerEventArgs(touch, this));
+                if (touch.View == this)
+                {
+                    PointerCanceled(this, evt.GetPointerEventArgs(touch, this));
+                }
             }
 
             base.TouchesCancelled(touches, evt);
@@ -753,10 +759,12 @@ namespace Prism.iOS.UI.Controls
         /// <param name="evt"></param>
         public override void TouchesEnded(NSSet touches, UIEvent evt)
         {
-            var touch = touches.AnyObject as UITouch;
-            if (touch != null && touch.View == this)
+            foreach (UITouch touch in touches)
             {
-                PointerReleased(this, evt.GetPointerEventArgs(touch, this));
+                if (touch.View == this)
+                {
+                    PointerReleased(this, evt.GetPointerEventArgs(touch, this));
+                }
             }
 
             base.TouchesEnded(touches, evt);
@@ -767,10 +775,12 @@ namespace Prism.iOS.UI.Controls
         /// <param name="evt"></param>
         public override void TouchesMoved(NSSet touches, UIEvent evt)
         {
-            var touch = touches.AnyObject as UITouch;
-            if (touch != null && touch.View == this)
+            foreach (UITouch touch in touches)
             {
-                PointerMoved(this, evt.GetPointerEventArgs(touch, this));
+                if (touch.View == this)
+                {
+                    PointerMoved(this, evt.GetPointerEventArgs(touch, this));
+                }
             }
 
             base.TouchesMoved(touches, evt);
