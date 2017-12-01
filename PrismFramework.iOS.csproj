@@ -42,6 +42,8 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="IO\Directory.cs" />
     <Compile Include="Resources.cs" />
+    <Compile Include="Systems\Sensors\Sensor.cs" />
+    <Compile Include="Systems\Sensors\Accelerometer.cs" />
     <Compile Include="UI\Controls\ActivityIndicator.cs" />
     <Compile Include="UI\Controls\MenuFlyout.cs" />
     <Compile Include="UI\Controls\Flyout.cs" />
