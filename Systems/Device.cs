@@ -127,7 +127,7 @@ namespace Prism.iOS.Systems
         /// </summary>
         public string Model
         {
-            get { return UIDevice.CurrentDevice.Model; }
+            get { return NSProcessInfo.ProcessInfo.Environment["SIMULATOR_DEVICE_NAME"]?.ToString() ?? UIDevice.CurrentDevice.Model; }
         }
 
         /// <summary>
