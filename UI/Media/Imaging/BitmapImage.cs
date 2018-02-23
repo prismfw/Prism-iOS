@@ -1,5 +1,5 @@
 ﻿/*
-Copyright (C) 2017  Prism Framework Team
+Copyright (C) 2018  Prism Framework Team
 
 This file is part of the Prism Framework.
 
@@ -171,7 +171,7 @@ namespace Prism.iOS.UI.Media.Imaging
         /// Saves the image data to a file at the specified path using the specified file format.
         /// </summary>
         /// <param name="filePath">The path to the file in which to save the image data.</param>
-        /// <param name="fileFormat">The file format to with which to save the image data.</param>
+        /// <param name="fileFormat">The file format in which to save the image data.</param>
         public Task SaveAsync(string filePath, ImageFileFormat fileFormat)
         {
             return Task.Run(() =>
