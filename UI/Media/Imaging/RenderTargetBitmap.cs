@@ -24,7 +24,6 @@ using System.Threading.Tasks;
 using CoreGraphics;
 using Foundation;
 using Prism.Native;
-using Prism.UI.Media.Imaging;
 using UIKit;
 
 namespace Prism.iOS.UI.Media.Imaging
@@ -34,49 +33,15 @@ namespace Prism.iOS.UI.Media.Imaging
     /// </summary>
     [Preserve(AllMembers = true)]
     [Register(typeof(INativeRenderTargetBitmap))]
-    public class RenderTargetBitmap : INativeRenderTargetBitmap, IImageSource
+    public class RenderTargetBitmap : ImageSource, INativeRenderTargetBitmap
     {
-        /// <summary>
-        /// Occurs when the underlying image data has changed.
-        /// </summary>
-        public event EventHandler SourceChanged;
-
-        /// <summary>
-        /// Gets the number of pixels along the image's Y-axis.
-        /// </summary>
-        public int PixelHeight
-        {
-            get { return Source == null ? 0 : (int)(Source.Size.Height * Source.CurrentScale); }
-        }
-
-        /// <summary>
-        /// Gets the number of pixels along the image's X-axis.
-        /// </summary>
-        public int PixelWidth
-        {
-            get { return Source == null ? 0 : (int)(Source.Size.Width * Source.CurrentScale); }
-        }
-        
-        /// <summary>
-        /// Gets the scaling factor of the image.
-        /// </summary>
-        public double Scale
-        {
-            get { return Source == null ? 1 : Source.CurrentScale; }
-        }
-        
-        /// <summary>
-        /// Gets the image source instance.
-        /// </summary>
-        public UIImage Source { get; private set; }
-
         /// <summary>
         /// Initializes a new instance of the <see cref="RenderTargetBitmap"/> class.
         /// </summary>
         public RenderTargetBitmap()
         {
         }
-        
+
         /// <summary>
         /// Gets the data for the captured image as a byte array.
         /// </summary>
@@ -90,21 +55,7 @@ namespace Prism.iOS.UI.Media.Imaging
                     return new byte[0];
                 }
 
-                // If the image is not in ARGB format, it needs to be converted before returning the pixel values.
-                if (Source.CGImage.ColorSpace.Name != CGColorSpaceNames.GenericRgb)
-                {
-                    var pixels = new byte[PixelWidth * PixelHeight * 4];
-                    using (var colorSpace = CGColorSpace.CreateGenericRgb())
-                    {
-                        using (var context = new CGBitmapContext(pixels, PixelWidth, PixelHeight, 8, PixelWidth * 4,
-                            colorSpace, CGBitmapFlags.ByteOrderDefault | CGBitmapFlags.PremultipliedFirst))
-                        {
-                            context.DrawImage(new CGRect(0, 0, PixelWidth, PixelHeight), Source.CGImage);
-                            Source = UIImage.FromImage(context.ToImage());
-                        }
-                    }
-                }
-
+                ConvertToARGB();
                 return Source.CGImage.DataProvider.CopyData().ToArray();
             });
         }
@@ -119,35 +70,15 @@ namespace Prism.iOS.UI.Media.Imaging
         {
             var view = target as UIView ?? (target as UIViewController)?.View ??
                 UIApplication.SharedApplication.KeyWindow.RootViewController.View;
-            
+
             UIGraphics.BeginImageContextWithOptions(view.Frame.Size, false, 0);
             view.DrawViewHierarchy(view.Bounds, true);
 
-            Source = UIGraphics.GetImageFromCurrentImageContext().Scale(new CGSize(width, height), 0);
+            SetSource(UIGraphics.GetImageFromCurrentImageContext().Scale(new CGSize(width, height), 0), false);
             UIGraphics.EndImageContext();
-            SourceChanged?.Invoke(this, EventArgs.Empty);
+            OnSourceChanged();
 
             return Task.CompletedTask;
-        }
-
-        /// <summary>
-        /// Saves the image data to a file at the specified path using the specified file format.
-        /// </summary>
-        /// <param name="filePath">The path to the file in which to save the image data.</param>
-        /// <param name="fileFormat">The file format in which to save the image data.</param>
-        public Task SaveAsync(string filePath, ImageFileFormat fileFormat)
-        {
-            return Task.Run(() =>
-            {
-                if (fileFormat == ImageFileFormat.Jpeg)
-                {
-                    Source?.AsJPEG().Save(filePath, true);
-                }
-                else
-                {
-                    Source?.AsPNG().Save(filePath, true);
-                }
-            });
         }
     }
 }

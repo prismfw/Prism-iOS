@@ -41,7 +41,7 @@ namespace Prism.iOS
     /// </summary>
     public static class iOSExtensions
     {
-        private static readonly WeakEventManager imageChangedEventManager = new WeakEventManager("SourceChanged", typeof(IImageSource));
+        private static readonly WeakEventManager imageChangedEventManager = new WeakEventManager("SourceChanged", typeof(ImageSource));
 
         /// <summary>
         /// Checks the state of the image brush's image.  If the image is not loaded, loading is initiated.
@@ -67,7 +67,7 @@ namespace Prism.iOS
                 return null;
             }
 
-            if (handler != null && source is IImageSource)
+            if (handler != null && source is ImageSource)
             {
                 imageChangedEventManager.RemoveHandler(source, handler);
                 imageChangedEventManager.AddHandler(source, handler);
@@ -84,7 +84,7 @@ namespace Prism.iOS
             }
             else
             {
-                (bitmapImage as ILazyLoader)?.LoadInBackground();
+                (bitmapImage as IAsyncLoader)?.LoadAsync();
             }
 
             return null;
@@ -97,7 +97,7 @@ namespace Prism.iOS
         /// <param name="handler">The handler to be removed.</param>
         public static void ClearImageHandler(this ImageBrush brush, EventHandler handler)
         {
-            var image = ObjectRetriever.GetNativeObject(brush?.Image) as IImageSource;
+            var image = ObjectRetriever.GetNativeObject(brush?.Image) as ImageSource;
             if (image != null)
             {
                 imageChangedEventManager.RemoveHandler(image, handler);
@@ -111,7 +111,7 @@ namespace Prism.iOS
         /// <param name="handler">The handler to be removed.</param>
         public static void ClearImageHandler(this INativeImageSource source, EventHandler handler)
         {
-            if (source is IImageSource)
+            if (source is ImageSource)
             {
                 imageChangedEventManager.RemoveHandler(source, handler);
             }
@@ -409,7 +409,7 @@ namespace Prism.iOS
         /// <param name="source">The image.</param>
         public static UIImage GetImageSource(this INativeImageSource source)
         {
-            var image = source as UI.Media.Imaging.IImageSource;
+            var image = source as ImageSource;
             return image == null ? source as UIImage : image.Source;
         }
 

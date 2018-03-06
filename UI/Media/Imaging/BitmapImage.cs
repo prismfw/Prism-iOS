@@ -24,7 +24,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Foundation;
 using Prism.Native;
-using Prism.UI.Media.Imaging;
 using UIKit;
 
 namespace Prism.iOS.UI.Media.Imaging
@@ -34,7 +33,7 @@ namespace Prism.iOS.UI.Media.Imaging
     /// </summary>
     [Preserve(AllMembers = true)]
     [Register(typeof(INativeBitmapImage))]
-    public class BitmapImage : INativeBitmapImage, IImageSource, ILazyLoader
+    public class BitmapImage : ImageSource, INativeBitmapImage, IAsyncLoader
     {
         /// <summary>
         /// Occurs when the image fails to load.
@@ -47,11 +46,6 @@ namespace Prism.iOS.UI.Media.Imaging
         public event EventHandler ImageLoaded;
 
         /// <summary>
-        /// Occurs when the underlying image data has changed.
-        /// </summary>
-        public event EventHandler SourceChanged;
-
-        /// <summary>
         /// Gets a value indicating whether the image has encountered an error during loading.
         /// </summary>
         public bool IsFaulted { get; private set; }
@@ -60,35 +54,6 @@ namespace Prism.iOS.UI.Media.Imaging
         /// Gets a value indicating whether the image has been loaded into memory.
         /// </summary>
         public bool IsLoaded { get; private set; }
-
-        /// <summary>
-        /// Gets the number of pixels along the image's Y-axis.
-        /// </summary>
-        public int PixelHeight
-        {
-            get { return Source == null ? 0 : (int)(Source.Size.Height * Source.CurrentScale); }
-        }
-
-        /// <summary>
-        /// Gets the number of pixels along the image's X-axis.
-        /// </summary>
-        public int PixelWidth
-        {
-            get { return Source == null ? 0 : (int)(Source.Size.Width * Source.CurrentScale); }
-        }
-        
-        /// <summary>
-        /// Gets the scaling factor of the image.
-        /// </summary>
-        public double Scale
-        {
-            get { return Source == null ? 1 : Source.CurrentScale; }
-        }
-        
-        /// <summary>
-        /// Gets the image source instance.
-        /// </summary>
-        public UIImage Source { get; private set; }
 
         /// <summary>
         /// Gets the URI of the source file containing the image data.
@@ -109,7 +74,7 @@ namespace Prism.iOS.UI.Media.Imaging
             var cached = cachedImage as BitmapImage;
             if (cached != null)
             {
-                Source = cached.Source;
+                SetSource(cached.Source, false);
                 IsLoaded = cached.IsLoaded;
             }
         }
@@ -124,12 +89,35 @@ namespace Prism.iOS.UI.Media.Imaging
         }
 
         /// <summary>
-        /// Loads the contents of the object in a background thread.
+        /// Creates a writable bitmap instance with a copy of the image data.
         /// </summary>
-        public void LoadInBackground()
+        /// <returns>The newly created <see cref="INativeWritableBitmap"/> instance.</returns>
+        public async Task<INativeWritableBitmap> CreateWritableCopyAsync()
+        {
+            if (!IsLoaded)
+            {
+                await LoadAsync();
+            }
+
+            if (Source != null)
+            {
+                ConvertToARGB();
+
+                var bitmap = new WritableBitmap(PixelWidth, PixelHeight);
+                await bitmap.SetPixelsAsync(Source.CGImage.DataProvider.CopyData().ToArray());
+                return bitmap;
+            }
+
+            throw new InvalidOperationException();
+        }
+
+        /// <summary>
+        /// Asynchronously loads the contents of the object.
+        /// </summary>
+        public Task LoadAsync()
         {
             var context = SynchronizationContext.Current ?? new SynchronizationContext();
-            ThreadPool.QueueUserWorkItem((o) =>
+            return Task.Run(() =>
             {
                 lock (this)
                 {
@@ -139,16 +127,16 @@ namespace Prism.iOS.UI.Media.Imaging
                         {
                             if (imageBytes != null)
                             {
-                                Source = UIImage.LoadFromData(NSData.FromArray(imageBytes));
+                                SetSource(UIImage.LoadFromData(NSData.FromArray(imageBytes)), false);
                                 imageBytes = null;
                             }
                             else if (!SourceUri.IsAbsoluteUri || SourceUri.IsFile)
                             {
-                                Source = UIImage.FromFile(SourceUri.OriginalString);
+                                SetSource(UIImage.FromFile(SourceUri.OriginalString), false);
                             }
                             else
                             {
-                                Source = UIImage.LoadFromData(NSData.FromUrl(NSUrl.FromString(SourceUri.OriginalString)));
+                                SetSource(UIImage.LoadFromData(NSData.FromUrl(NSUrl.FromString(SourceUri.OriginalString))), false);
                             }
                         }
                         catch (Exception e)
@@ -163,33 +151,13 @@ namespace Prism.iOS.UI.Media.Imaging
                             return;
                         }
 
-                        context.Post((obj) => SourceChanged?.Invoke(this, EventArgs.Empty), null);
+                        context.Post((obj) => OnSourceChanged(), null);
                     }
 
                     if (!IsLoaded)
                     {
                         context.Post((obj) => OnImageLoaded(), null);
                     }
-                }
-            }, this);
-        }
-
-        /// <summary>
-        /// Saves the image data to a file at the specified path using the specified file format.
-        /// </summary>
-        /// <param name="filePath">The path to the file in which to save the image data.</param>
-        /// <param name="fileFormat">The file format in which to save the image data.</param>
-        public Task SaveAsync(string filePath, ImageFileFormat fileFormat)
-        {
-            return Task.Run(() =>
-            {
-                if (fileFormat == ImageFileFormat.Jpeg)
-                {
-                    Source?.AsJPEG().Save(filePath, true);
-                }
-                else
-                {
-                    Source?.AsPNG().Save(filePath, true);
                 }
             });
         }

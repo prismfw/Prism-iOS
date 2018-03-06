@@ -81,7 +81,7 @@
     <Compile Include="UI\Controls\TimePicker.cs" />
     <Compile Include="UI\Controls\ListBoxSectionHeader.cs" />
     <Compile Include="UI\Controls\SearchBox.cs" />
-    <Compile Include="LazyLoader.cs" />
+    <Compile Include="AsyncLoader.cs" />
     <Compile Include="Application.cs" />
     <Compile Include="iOSInitializer.cs" />
     <Compile Include="UI\Controls\Border.cs" />

@@ -24,7 +24,6 @@ using System.Threading.Tasks;
 using CoreGraphics;
 using Foundation;
 using Prism.Native;
-using Prism.UI.Media.Imaging;
 using UIKit;
 
 namespace Prism.iOS.UI.Media.Imaging
@@ -34,35 +33,25 @@ namespace Prism.iOS.UI.Media.Imaging
     /// </summary>
     [Preserve(AllMembers = true)]
     [Register(typeof(INativeWritableBitmap))]
-    public class WritableBitmap : INativeWritableBitmap, IImageSource
+    public sealed class WritableBitmap : ImageSource, INativeWritableBitmap
     {
-        /// <summary>
-        /// Occurs when the underlying image data has changed.
-        /// </summary>
-        public event EventHandler SourceChanged;
-
         /// <summary>
         /// Gets the number of pixels along the image's Y-axis.
         /// </summary>
-        public int PixelHeight { get; }
+        public override int PixelHeight { get; }
 
         /// <summary>
         /// Gets the number of pixels along the image's X-axis.
         /// </summary>
-        public int PixelWidth { get; }
+        public override int PixelWidth { get; }
         
         /// <summary>
         /// Gets the scaling factor of the image.
         /// </summary>
-        public double Scale
+        public override double Scale
         {
             get { return 1; }
         }
-        
-        /// <summary>
-        /// Gets the image source instance.
-        /// </summary>
-        public UIImage Source { get; private set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="WritableBitmap"/> class.
@@ -85,26 +74,6 @@ namespace Prism.iOS.UI.Media.Imaging
         }
 
         /// <summary>
-        /// Saves the image data to a file at the specified path using the specified file format.
-        /// </summary>
-        /// <param name="filePath">The path to the file in which to save the image data.</param>
-        /// <param name="fileFormat">The file format in which to save the image data.</param>
-        public Task SaveAsync(string filePath, ImageFileFormat fileFormat)
-        {
-            return Task.Run(() =>
-            {
-                if (fileFormat == ImageFileFormat.Jpeg)
-                {
-                    Source?.AsJPEG().Save(filePath, true);
-                }
-                else
-                {
-                    Source?.AsPNG().Save(filePath, true);
-                }
-            });
-        }
-
-        /// <summary>
         /// Sets the pixel data of the bitmap to the specified byte array.
         /// </summary>
         /// <param name="pixelData">The byte array containing the pixel data.</param>
@@ -118,12 +87,12 @@ namespace Prism.iOS.UI.Media.Imaging
                     using (var context = new CGBitmapContext(pixelData, PixelWidth, PixelHeight, 8, PixelWidth * 4,
                         colorSpace, CGBitmapFlags.ByteOrderDefault | CGBitmapFlags.PremultipliedFirst))
                     {
-                        Source = UIImage.FromImage(context.ToImage(), 1, UIImageOrientation.Up);
+                        SetSource(UIImage.FromImage(context.ToImage(), 1, UIImageOrientation.Up), false);
                     }
                 }
             });
 
-            SourceChanged?.Invoke(this, EventArgs.Empty);
+            OnSourceChanged();
             oldSource?.Dispose();
         }
     }
