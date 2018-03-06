@@ -135,7 +135,7 @@ namespace Prism.iOS.UI.Controls
             {
                 if (value != background)
                 {
-                    (background as ImageBrush).ClearImageHandler(OnBackgroundImageLoaded);
+                    (background as ImageBrush).ClearImageHandler(OnBackgroundImageChanged);
 
                     background = value;
 
@@ -143,7 +143,7 @@ namespace Prism.iOS.UI.Controls
                     {
                         BackgroundView = new UIView();
                     }
-                    BackgroundView.BackgroundColor = value.GetColor(Bounds.Width, Bounds.Height, OnBackgroundImageLoaded);
+                    BackgroundView.BackgroundColor = value.GetColor(Bounds.Width, Bounds.Height, OnBackgroundImageChanged);
 
                     OnPropertyChanged(Prism.UI.Controls.ListBox.BackgroundProperty);
                 }
@@ -423,10 +423,10 @@ namespace Prism.iOS.UI.Controls
             {
                 if (value != separatorBrush)
                 {
-                    (separatorBrush as ImageBrush).ClearImageHandler(OnSeparatorImageLoaded);
+                    (separatorBrush as ImageBrush).ClearImageHandler(OnSeparatorImageChanged);
 
                     separatorBrush = value;
-                    SeparatorColor = separatorBrush.GetColor(Bounds.Width, Bounds.Height, OnSeparatorImageLoaded) ?? new UIColor(0.78f, 0.78f, 0.8f, 1);
+                    SeparatorColor = separatorBrush.GetColor(Bounds.Width, Bounds.Height, OnSeparatorImageChanged) ?? new UIColor(0.78f, 0.78f, 0.8f, 1);
                     OnPropertyChanged(Prism.UI.Controls.ListBox.SeparatorBrushProperty);
                 }
             }
@@ -863,7 +863,7 @@ namespace Prism.iOS.UI.Controls
             AccessoryClicked(this, new AccessoryClickedEventArgs(GetItemAtIndexPath(indexPath)));
         }
 
-        private void OnBackgroundImageLoaded(object sender, EventArgs e)
+        private void OnBackgroundImageChanged(object sender, EventArgs e)
         {
             if (BackgroundView != null)
             {
@@ -1031,7 +1031,7 @@ namespace Prism.iOS.UI.Controls
             }
         }
 
-        private void OnSeparatorImageLoaded(object sender, EventArgs e)
+        private void OnSeparatorImageChanged(object sender, EventArgs e)
         {
             SeparatorColor = separatorBrush.GetColor(Bounds.Width, Bounds.Height, null) ?? new UIColor(0.78f, 0.78f, 0.8f, 1);
         }

@@ -84,10 +84,10 @@ namespace Prism.iOS.UI
             {
                 if (value != background)
                 {
-                    (background as ImageBrush).ClearImageHandler(OnBackgroundImageLoaded);
+                    (background as ImageBrush).ClearImageHandler(OnBackgroundImageChanged);
 
                     background = value;
-                    View.BackgroundColor = background.GetColor(View.Bounds.Width, View.Bounds.Height, OnBackgroundImageLoaded) ?? UIColor.White;
+                    View.BackgroundColor = background.GetColor(View.Bounds.Width, View.Bounds.Height, OnBackgroundImageChanged) ?? UIColor.White;
                     OnPropertyChanged(Prism.UI.ContentView.BackgroundProperty);
                 }
             }
@@ -405,7 +405,7 @@ namespace Prism.iOS.UI
             PropertyChanged(this, new FrameworkPropertyChangedEventArgs(pd));
         }
 
-        private void OnBackgroundImageLoaded(object sender, EventArgs e)
+        private void OnBackgroundImageChanged(object sender, EventArgs e)
         {
             View.BackgroundColor = background.GetColor(View.Bounds.Width, View.Bounds.Height, null) ?? UIColor.White;
         }

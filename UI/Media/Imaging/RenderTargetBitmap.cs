@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 using System;
 using System.Threading.Tasks;
+using CoreGraphics;
 using Foundation;
 using Prism.Native;
 using Prism.UI.Media.Imaging;
@@ -35,6 +36,11 @@ namespace Prism.iOS.UI.Media.Imaging
     [Register(typeof(INativeRenderTargetBitmap))]
     public class RenderTargetBitmap : INativeRenderTargetBitmap, IImageSource
     {
+        /// <summary>
+        /// Occurs when the underlying image data has changed.
+        /// </summary>
+        public event EventHandler SourceChanged;
+
         /// <summary>
         /// Gets the number of pixels along the image's Y-axis.
         /// </summary>
@@ -77,7 +83,30 @@ namespace Prism.iOS.UI.Media.Imaging
         /// <returns>The image data as an <see cref="Array"/> of bytes.</returns>
         public Task<byte[]> GetPixelsAsync()
         {
-            return Task.Run(() => Source?.AsPNG().ToArray() ?? new byte[0]);
+            return Task.Run(() =>
+            {
+                if (Source == null)
+                {
+                    return new byte[0];
+                }
+
+                // If the image is not in ARGB format, it needs to be converted before returning the pixel values.
+                if (Source.CGImage.ColorSpace.Name != CGColorSpaceNames.GenericRgb)
+                {
+                    var pixels = new byte[PixelWidth * PixelHeight * 4];
+                    using (var colorSpace = CGColorSpace.CreateGenericRgb())
+                    {
+                        using (var context = new CGBitmapContext(pixels, PixelWidth, PixelHeight, 8, PixelWidth * 4,
+                            colorSpace, CGBitmapFlags.ByteOrderDefault | CGBitmapFlags.PremultipliedFirst))
+                        {
+                            context.DrawImage(new CGRect(0, 0, PixelWidth, PixelHeight), Source.CGImage);
+                            Source = UIImage.FromImage(context.ToImage());
+                        }
+                    }
+                }
+
+                return Source.CGImage.DataProvider.CopyData().ToArray();
+            });
         }
 
         /// <summary>
@@ -88,13 +117,16 @@ namespace Prism.iOS.UI.Media.Imaging
         /// <param name="height">The height of the snapshot.</param>
         public Task RenderAsync(INativeVisual target, int width, int height)
         {
-            var view = target as UIView ?? (target as UIViewController)?.View ?? UIApplication.SharedApplication.KeyWindow.RootViewController.View;
+            var view = target as UIView ?? (target as UIViewController)?.View ??
+                UIApplication.SharedApplication.KeyWindow.RootViewController.View;
             
-            UIGraphics.BeginImageContext(view.Frame.Size);
-            view.DrawViewHierarchy(view.Frame, true);
-            
-            Source = UIGraphics.GetImageFromCurrentImageContext().Scale(new CoreGraphics.CGSize(width, height));
+            UIGraphics.BeginImageContextWithOptions(view.Frame.Size, false, 0);
+            view.DrawViewHierarchy(view.Bounds, true);
+
+            Source = UIGraphics.GetImageFromCurrentImageContext().Scale(new CGSize(width, height), 0);
             UIGraphics.EndImageContext();
+            SourceChanged?.Invoke(this, EventArgs.Empty);
+
             return Task.CompletedTask;
         }
 

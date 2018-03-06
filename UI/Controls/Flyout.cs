@@ -95,7 +95,7 @@ namespace Prism.iOS.UI.Controls
             {
                 if (value != background)
                 {
-                    (background as ImageBrush).ClearImageHandler(OnBackgroundImageLoaded);
+                    (background as ImageBrush).ClearImageHandler(OnBackgroundImageChanged);
 
                     background = value;
 
@@ -104,7 +104,7 @@ namespace Prism.iOS.UI.Controls
                     {
                         size = PreferredContentSize;
                     }
-                    PopoverPresentationController.BackgroundColor = background.GetColor(size.Width, size.Height, OnBackgroundImageLoaded);
+                    PopoverPresentationController.BackgroundColor = background.GetColor(size.Width, size.Height, OnBackgroundImageChanged);
                     OnPropertyChanged(FlyoutBase.BackgroundProperty);
                 }
             }
@@ -385,7 +385,7 @@ namespace Prism.iOS.UI.Controls
             base.WillRotate(toInterfaceOrientation, duration);
         }
 
-        private void OnBackgroundImageLoaded(object sender, EventArgs e)
+        private void OnBackgroundImageChanged(object sender, EventArgs e)
         {
             var size = PopoverPresentationController.PresentedView?.Frame.Size ?? CGSize.Empty;
             if (size.Width == 0 && size.Height == 0)

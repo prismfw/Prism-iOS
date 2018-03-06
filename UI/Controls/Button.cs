@@ -120,10 +120,10 @@ namespace Prism.iOS.UI.Controls
             {
                 if (value != background)
                 {
-                    (background as ImageBrush).ClearImageHandler(OnBackgroundImageLoaded);
+                    (background as ImageBrush).ClearImageHandler(OnBackgroundImageChanged);
 
                     background = value;
-                    BackgroundColor = background.GetColor(Bounds.Width, Bounds.Height, OnBackgroundImageLoaded);
+                    BackgroundColor = background.GetColor(Bounds.Width, Bounds.Height, OnBackgroundImageChanged);
                     OnPropertyChanged(Prism.UI.Controls.Control.BackgroundProperty);
                 }
             }
@@ -140,10 +140,10 @@ namespace Prism.iOS.UI.Controls
             {
                 if (value != borderBrush)
                 {
-                    (borderBrush as ImageBrush).ClearImageHandler(OnBorderImageLoaded);
+                    (borderBrush as ImageBrush).ClearImageHandler(OnBorderImageChanged);
 
                     borderBrush = value;
-                    Layer.BorderColor = borderBrush.GetColor(Bounds.Width, Bounds.Height, OnBorderImageLoaded)?.CGColor ?? UIColor.Black.CGColor;
+                    Layer.BorderColor = borderBrush.GetColor(Bounds.Width, Bounds.Height, OnBorderImageChanged)?.CGColor ?? UIColor.Black.CGColor;
                     OnPropertyChanged(Prism.UI.Controls.Control.BorderBrushProperty);
                 }
             }
@@ -252,10 +252,10 @@ namespace Prism.iOS.UI.Controls
             {
                 if (value != foreground)
                 {
-                    (foreground as ImageBrush).ClearImageHandler(OnForegroundImageLoaded);
+                    (foreground as ImageBrush).ClearImageHandler(OnForegroundImageChanged);
 
                     foreground = value;
-                    SetTitleColor(foreground.GetColor(Bounds.Width, Bounds.Height, OnForegroundImageLoaded) ?? new UIColor(0, 0.5f, 1, 1), UIControlState.Normal);
+                    SetTitleColor(foreground.GetColor(Bounds.Width, Bounds.Height, OnForegroundImageChanged) ?? new UIColor(0, 0.5f, 1, 1), UIControlState.Normal);
                     OnPropertyChanged(Control.ForegroundProperty);
                 }
             }
@@ -285,10 +285,10 @@ namespace Prism.iOS.UI.Controls
             {
                 if (value != image)
                 {
-                    image.ClearImageHandler(OnImageLoaded);
+                    image.ClearImageHandler(OnImageChanged);
 
                     image = value;
-                    SetImage(image.BeginLoadingImage(OnImageLoaded), UIControlState.Normal);
+                    SetImage(image.BeginLoadingImage(OnImageChanged), UIControlState.Normal);
                     OnPropertyChanged(Prism.UI.Controls.Button.ImageProperty);
                 }
             }
@@ -705,22 +705,22 @@ namespace Prism.iOS.UI.Controls
             PropertyChanged(this, new FrameworkPropertyChangedEventArgs(pd));
         }
 
-        private void OnBackgroundImageLoaded(object sender, EventArgs e)
+        private void OnBackgroundImageChanged(object sender, EventArgs e)
         {
             BackgroundColor = background.GetColor(Bounds.Width, Bounds.Height, null);
         }
 
-        private void OnBorderImageLoaded(object sender, EventArgs e)
+        private void OnBorderImageChanged(object sender, EventArgs e)
         {
             Layer.BorderColor = borderBrush.GetColor(Bounds.Width, Bounds.Height, null)?.CGColor ?? UIColor.Black.CGColor;
         }
 
-        private void OnForegroundImageLoaded(object sender, EventArgs e)
+        private void OnForegroundImageChanged(object sender, EventArgs e)
         {
             SetTitleColor(foreground.GetColor(Bounds.Width, Bounds.Height, null) ?? new UIColor(0, 0.5f, 1, 1), UIControlState.Normal);
         }
 
-        private void OnImageLoaded(object sender, EventArgs e)
+        private void OnImageChanged(object sender, EventArgs e)
         {
             SetImage((sender as INativeImageSource).GetImageSource(), UIControlState.Normal);
         }

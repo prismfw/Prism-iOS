@@ -24,6 +24,7 @@ using System.Collections;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
+using CoreGraphics;
 using Foundation;
 using UIKit;
 using Prism.Native;
@@ -86,14 +87,14 @@ namespace Prism.iOS.UI.Controls
             {
                 if (value != background)
                 {
-                    (background as ImageBrush).ClearImageHandler(OnBackgroundImageLoaded);
+                    (background as ImageBrush).ClearImageHandler(OnBackgroundImageChanged);
                 
                     background = value;
                     
                     var imageBrush = background as ImageBrush;
                     if (imageBrush != null)
                     {
-                        var image = imageBrush.BeginLoadingImage(OnBackgroundImageLoaded);
+                        var image = imageBrush.BeginLoadingImage(OnBackgroundImageChanged);
                         var controller = AttachedController?.PresentedViewController as UIAlertController;
                         if (controller != null)
                         {
@@ -159,14 +160,14 @@ namespace Prism.iOS.UI.Controls
             {
                 if (value != foreground)
                 {
-                    (foreground as ImageBrush).ClearImageHandler(OnForegroundImageLoaded);
+                    (foreground as ImageBrush).ClearImageHandler(OnForegroundImageChanged);
                 
                     foreground = value;
                     
                     var imageBrush = foreground as ImageBrush;
                     if (imageBrush != null)
                     {
-                        var image = imageBrush.BeginLoadingImage(OnForegroundImageLoaded);
+                        var image = imageBrush.BeginLoadingImage(OnForegroundImageChanged);
                         var controller = AttachedController?.PresentedViewController as UIAlertController;
                         if (controller != null)
                         {
@@ -566,7 +567,7 @@ namespace Prism.iOS.UI.Controls
             }
             
             controller.AddAction(UIAlertAction.Create(cancelButtonTitle, UIAlertActionStyle.Cancel, null));
-            controller.View.BackgroundColor = background.GetColor(controller.View.Bounds.Width, controller.View.Bounds.Height, null);
+            controller.PopoverPresentationController.BackgroundColor = background.GetColor(controller.View.Bounds.Width, controller.View.Bounds.Height, null);
             controller.View.TintColor = foreground.GetColor(controller.View.Bounds.Width, controller.View.Bounds.Height, null);
             controller.View.UserInteractionEnabled = isHitTestVisible;
 
@@ -632,16 +633,22 @@ namespace Prism.iOS.UI.Controls
             return item?.ValueForKey(new NSString("view")) as UIView;
         }
 
-        private void OnBackgroundImageLoaded(object sender, EventArgs e)
+        private void OnBackgroundImageChanged(object sender, EventArgs e)
         {
             var controller = AttachedController?.PresentedViewController as UIAlertController;
             if (controller != null)
             {
-                controller.View.BackgroundColor = background.GetColor(controller.View.Bounds.Width, controller.View.Bounds.Height, null);
+                var size = controller.PopoverPresentationController.PresentedView?.Frame.Size ?? CGSize.Empty;
+                if (size.Width == 0 && size.Height == 0)
+                {
+                    size = controller.View.Frame.Size;
+                }
+
+                controller.PopoverPresentationController.BackgroundColor = background.GetColor(size.Width, size.Height, null);
             }
         }
 
-        private void OnForegroundImageLoaded(object sender, EventArgs e)
+        private void OnForegroundImageChanged(object sender, EventArgs e)
         {
             var controller = AttachedController?.PresentedViewController as UIAlertController;
             if (controller != null)
@@ -664,7 +671,7 @@ namespace Prism.iOS.UI.Controls
             }
         }
 
-        private void OnOverflowImageLoaded(object sender, EventArgs e)
+        private void OnOverflowImageChanged(object sender, EventArgs e)
         {
             if (AttachedController?.NavigationItem?.RightBarButtonItem != null && !(AttachedController.NavigationItem.RightBarButtonItem is INativeMenuItem))
             {

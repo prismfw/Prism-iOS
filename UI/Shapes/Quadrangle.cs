@@ -104,9 +104,9 @@ namespace Prism.iOS.UI.Shapes
             {
                 if (value != fill)
                 {
-                    (fill as ImageBrush).ClearImageHandler(OnImageLoaded);
+                    (fill as ImageBrush).ClearImageHandler(OnImageChanged);
                     fill = value;
-                    (fill as ImageBrush).BeginLoadingImage(OnImageLoaded);
+                    (fill as ImageBrush).BeginLoadingImage(OnImageChanged);
 
                     OnPropertyChanged(Prism.UI.Shapes.Shape.FillProperty);
                     SetNeedsDisplay();
@@ -244,9 +244,9 @@ namespace Prism.iOS.UI.Shapes
             {
                 if (value != stroke)
                 {
-                    (stroke as ImageBrush).ClearImageHandler(OnImageLoaded);
+                    (stroke as ImageBrush).ClearImageHandler(OnImageChanged);
                     stroke = value;
-                    (stroke as ImageBrush).BeginLoadingImage(OnImageLoaded);
+                    (stroke as ImageBrush).BeginLoadingImage(OnImageChanged);
 
                     OnPropertyChanged(Prism.UI.Shapes.Shape.StrokeProperty);
                     SetNeedsDisplay();
@@ -580,7 +580,7 @@ namespace Prism.iOS.UI.Shapes
             PropertyChanged(this, new FrameworkPropertyChangedEventArgs(pd));
         }
 
-        private void OnImageLoaded(object sender, EventArgs e)
+        private void OnImageChanged(object sender, EventArgs e)
         {
             SetNeedsDisplay();
         }

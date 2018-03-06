@@ -101,7 +101,7 @@ namespace Prism.iOS.UI.Controls
             get { return new Rectangle(Center.X - (Bounds.Width / 2), Center.Y - (Bounds.Height / 2), Bounds.Width, Bounds.Height); }
             set
             {
-                Bounds = new CGRect(Bounds.Location, value.Size.GetCGSize()); ;
+                Bounds = new CGRect(Bounds.Location, value.Size.GetCGSize());
                 Center = new CGPoint(value.X + (value.Width / 2), value.Y + (value.Height / 2));
             }
         }
@@ -183,10 +183,15 @@ namespace Prism.iOS.UI.Controls
             {
                 if (value != source)
                 {
-                    source.ClearImageHandler(OnImageLoaded);
+                    source.ClearImageHandler(OnImageChanged);
 
                     source = value;
-                    Image = source.BeginLoadingImage(OnImageLoaded);
+                    Image = source.BeginLoadingImage(OnImageChanged);
+                    if (Image != null)
+                    {
+                        SizeToFit();
+                    }
+
                     OnPropertyChanged(Prism.UI.Controls.Image.SourceProperty);
                 }
             }
@@ -259,7 +264,7 @@ namespace Prism.iOS.UI.Controls
         /// <param name="constraints">The width and height that the element is not allowed to exceed.</param>
         public Size Measure(Size constraints)
         {
-            if (source == null || !((source as INativeBitmapImage)?.IsLoaded ?? true))
+            if (Image == null || !((source as INativeBitmapImage)?.IsLoaded ?? true))
             {
                 return Size.Empty;
             }
@@ -399,7 +404,7 @@ namespace Prism.iOS.UI.Controls
             PropertyChanged(this, new FrameworkPropertyChangedEventArgs(pd));
         }
 
-        private void OnImageLoaded(object sender, EventArgs e)
+        private void OnImageChanged(object sender, EventArgs e)
         {
             Image = (sender as INativeImageSource).GetImageSource();
             SizeToFit();

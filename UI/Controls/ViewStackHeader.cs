@@ -84,10 +84,10 @@ namespace Prism.iOS.UI.Controls
             {
                 if (value != background)
                 {
-                    (background as ImageBrush).ClearImageHandler(OnBackgroundImageLoaded);
+                    (background as ImageBrush).ClearImageHandler(OnBackgroundImageChanged);
 
                     background = value;
-                    NavigationBar.BarTintColor = background.GetColor(NavigationBar.Bounds.Width, NavigationBar.Bounds.Height, OnBackgroundImageLoaded);
+                    NavigationBar.BarTintColor = background.GetColor(NavigationBar.Bounds.Width, NavigationBar.Bounds.Height, OnBackgroundImageChanged);
                     OnPropertyChanged(Prism.UI.Controls.ViewStackHeader.BackgroundProperty);
                 }
             }
@@ -194,7 +194,7 @@ namespace Prism.iOS.UI.Controls
             {
                 if (value != foreground)
                 {
-                    (foreground as ImageBrush).ClearImageHandler(OnForegroundImageLoaded);
+                    (foreground as ImageBrush).ClearImageHandler(OnForegroundImageChanged);
 
                     foreground = value;
 
@@ -203,7 +203,7 @@ namespace Prism.iOS.UI.Controls
                     NavigationBar.TitleTextAttributes = new UIStringAttributes()
                     {
                         Font = uifont,
-                        ForegroundColor = foreground.GetColor(size.Width, size.Height, OnForegroundImageLoaded)
+                        ForegroundColor = foreground.GetColor(size.Width, size.Height, OnForegroundImageChanged)
                     };
 
                     OnPropertyChanged(Prism.UI.Controls.ViewStackHeader.ForegroundProperty);
@@ -430,12 +430,12 @@ namespace Prism.iOS.UI.Controls
             }
         }
 
-        private void OnBackgroundImageLoaded(object sender, EventArgs e)
+        private void OnBackgroundImageChanged(object sender, EventArgs e)
         {
             NavigationBar.BarTintColor = background.GetColor(NavigationBar.Bounds.Width, NavigationBar.Bounds.Height, null);
         }
 
-        private void OnForegroundImageLoaded(object sender, EventArgs e)
+        private void OnForegroundImageChanged(object sender, EventArgs e)
         {
             SetForeground();
         }

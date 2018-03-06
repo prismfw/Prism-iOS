@@ -97,7 +97,7 @@ namespace Prism.iOS.UI.Controls
             {
                 if (value != background)
                 {
-                    (background as ImageBrush).ClearImageHandler(OnBackgroundImageLoaded);
+                    (background as ImageBrush).ClearImageHandler(OnBackgroundImageChanged);
 
                     background = value;
 
@@ -108,7 +108,7 @@ namespace Prism.iOS.UI.Controls
                         {
                             size = Controller.PreferredContentSize;
                         }
-                        SetBackground(background.GetColor(size.Width, size.Height, OnBackgroundImageLoaded));
+                        SetBackground(background.GetColor(size.Width, size.Height, OnBackgroundImageChanged));
                     }
 
                     OnPropertyChanged(FlyoutBase.BackgroundProperty);
@@ -127,14 +127,14 @@ namespace Prism.iOS.UI.Controls
             {
                 if (value != foreground)
                 {
-                    (foreground as ImageBrush).ClearImageHandler(OnForegroundImageLoaded);
+                    (foreground as ImageBrush).ClearImageHandler(OnForegroundImageChanged);
 
                     foreground = value;
 
                     var imageBrush = foreground as ImageBrush;
                     if (imageBrush != null)
                     {
-                        var image = imageBrush.BeginLoadingImage(OnForegroundImageLoaded);
+                        var image = imageBrush.BeginLoadingImage(OnForegroundImageChanged);
                         if (Controller != null)
                         {
                             var size = Controller.PopoverPresentationController?.PresentedView?.Frame.Size ?? CGSize.Empty;
@@ -384,7 +384,7 @@ namespace Prism.iOS.UI.Controls
             PropertyChanged(this, new FrameworkPropertyChangedEventArgs(pd));
         }
 
-        private void OnBackgroundImageLoaded(object sender, EventArgs e)
+        private void OnBackgroundImageChanged(object sender, EventArgs e)
         {
             if (Controller != null)
             {
@@ -404,7 +404,7 @@ namespace Prism.iOS.UI.Controls
             OnUnloaded();
         }
 
-        private void OnForegroundImageLoaded(object sender, EventArgs e)
+        private void OnForegroundImageChanged(object sender, EventArgs e)
         {
             if (Controller != null)
             {

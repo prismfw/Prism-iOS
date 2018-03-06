@@ -124,10 +124,10 @@ namespace Prism.iOS.UI.Controls
             {
                 if (value != background)
                 {
-                    (background as ImageBrush).ClearImageHandler(OnBackgroundImageLoaded);
+                    (background as ImageBrush).ClearImageHandler(OnBackgroundImageChanged);
 
                     background = value;
-                    BackgroundColor = background.GetColor(Bounds.Width, Bounds.Height, OnBackgroundImageLoaded);
+                    BackgroundColor = background.GetColor(Bounds.Width, Bounds.Height, OnBackgroundImageChanged);
                     OnPropertyChanged(Control.BackgroundProperty);
                 }
             }
@@ -144,10 +144,10 @@ namespace Prism.iOS.UI.Controls
             {
                 if (value != borderBrush)
                 {
-                    (borderBrush as ImageBrush).ClearImageHandler(OnBorderImageLoaded);
+                    (borderBrush as ImageBrush).ClearImageHandler(OnBorderImageChanged);
 
                     borderBrush = value;
-                    Layer.BorderColor = borderBrush.GetColor(Bounds.Width, Bounds.Height, OnBorderImageLoaded)?.CGColor ?? UIColor.Black.CGColor;
+                    Layer.BorderColor = borderBrush.GetColor(Bounds.Width, Bounds.Height, OnBorderImageChanged)?.CGColor ?? UIColor.Black.CGColor;
                     OnPropertyChanged(Control.BorderBrushProperty);
                 }
             }
@@ -786,12 +786,12 @@ namespace Prism.iOS.UI.Controls
             PropertyChanged(this, new FrameworkPropertyChangedEventArgs(pd));
         }
 
-        private void OnBackgroundImageLoaded(object sender, EventArgs e)
+        private void OnBackgroundImageChanged(object sender, EventArgs e)
         {
             BackgroundColor = background.GetColor(Bounds.Width, Bounds.Height, null);
         }
 
-        private void OnBorderImageLoaded(object sender, EventArgs e)
+        private void OnBorderImageChanged(object sender, EventArgs e)
         {
             Layer.BorderColor = borderBrush.GetColor(Bounds.Width, Bounds.Height, null)?.CGColor ?? UIColor.Black.CGColor;
         }
@@ -874,7 +874,7 @@ namespace Prism.iOS.UI.Controls
                 {
                     if (value != background)
                     {
-                        (background as ImageBrush).ClearImageHandler(OnBackgroundImageLoaded);
+                        (background as ImageBrush).ClearImageHandler(OnBackgroundImageChanged);
 
                         background = value;
 
@@ -882,7 +882,7 @@ namespace Prism.iOS.UI.Controls
                         {
                             TableView.BackgroundView = new UIView();
                         }
-                        TableView.BackgroundView.BackgroundColor = value.GetColor(TableView.Bounds.Width, TableView.Bounds.Height, OnBackgroundImageLoaded);
+                        TableView.BackgroundView.BackgroundColor = value.GetColor(TableView.Bounds.Width, TableView.Bounds.Height, OnBackgroundImageChanged);
                     }
                 }
             }
@@ -895,10 +895,10 @@ namespace Prism.iOS.UI.Controls
                 {
                     if (value != separatorBrush)
                     {
-                        (separatorBrush as ImageBrush).ClearImageHandler(OnSeparatorImageLoaded);
+                        (separatorBrush as ImageBrush).ClearImageHandler(OnSeparatorImageChanged);
 
                         separatorBrush = value;
-                        TableView.SeparatorColor = separatorBrush.GetColor(TableView.Bounds.Width, TableView.Bounds.Height, OnSeparatorImageLoaded) ??
+                        TableView.SeparatorColor = separatorBrush.GetColor(TableView.Bounds.Width, TableView.Bounds.Height, OnSeparatorImageChanged) ??
                             new UIColor(0.78f, 0.78f, 0.8f, 1);
                     }
                 }
@@ -1027,7 +1027,7 @@ namespace Prism.iOS.UI.Controls
                 }
             }
 
-            private void OnBackgroundImageLoaded(object sender, EventArgs e)
+            private void OnBackgroundImageChanged(object sender, EventArgs e)
             {
                 if (TableView.BackgroundView != null)
                 {
@@ -1035,7 +1035,7 @@ namespace Prism.iOS.UI.Controls
                 }
             }
 
-            private void OnSeparatorImageLoaded(object sender, EventArgs e)
+            private void OnSeparatorImageChanged(object sender, EventArgs e)
             {
                 TableView.SeparatorColor = separatorBrush.GetColor(TableView.Bounds.Width, TableView.Bounds.Height, null) ??
                     new UIColor(0.78f, 0.78f, 0.8f, 1);

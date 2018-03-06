@@ -105,10 +105,10 @@ namespace Prism.iOS.UI.Controls
             {
                 if (value != background)
                 {
-                    (background as ImageBrush).ClearImageHandler(OnBackgroundImageLoaded);
+                    (background as ImageBrush).ClearImageHandler(OnBackgroundImageChanged);
 
                     background = value;
-                    BackgroundColor = background.GetColor(base.Bounds.Width, base.Bounds.Height, OnBackgroundImageLoaded);
+                    BackgroundColor = background.GetColor(base.Bounds.Width, base.Bounds.Height, OnBackgroundImageChanged);
                     OnPropertyChanged(Prism.UI.Controls.Border.BackgroundProperty);
                 }
             }
@@ -125,10 +125,10 @@ namespace Prism.iOS.UI.Controls
             {
                 if (value != borderBrush)
                 {
-                    (borderBrush as ImageBrush).ClearImageHandler(OnBorderImageLoaded);
+                    (borderBrush as ImageBrush).ClearImageHandler(OnBorderImageChanged);
 
                     borderBrush = value;
-                    borderView.BorderColor = borderBrush.GetColor(base.Bounds.Width, base.Bounds.Height, OnBorderImageLoaded)?.CGColor;
+                    borderView.BorderColor = borderBrush.GetColor(base.Bounds.Width, base.Bounds.Height, OnBorderImageChanged)?.CGColor;
                     OnPropertyChanged(Prism.UI.Controls.Border.BorderBrushProperty);
                     borderView.SetNeedsDisplay();
                 }
@@ -465,12 +465,12 @@ namespace Prism.iOS.UI.Controls
             PropertyChanged(this, new FrameworkPropertyChangedEventArgs(pd));
         }
 
-        private void OnBackgroundImageLoaded(object sender, EventArgs e)
+        private void OnBackgroundImageChanged(object sender, EventArgs e)
         {
             BackgroundColor = background.GetColor(base.Bounds.Width, base.Bounds.Height, null);
         }
 
-        private void OnBorderImageLoaded(object sender, EventArgs e)
+        private void OnBorderImageChanged(object sender, EventArgs e)
         {
             borderView.BorderColor = borderBrush.GetColor(base.Bounds.Width, base.Bounds.Height, null)?.CGColor;
             borderView.SetNeedsDisplay();

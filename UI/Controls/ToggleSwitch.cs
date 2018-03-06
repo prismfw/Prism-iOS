@@ -120,10 +120,10 @@ namespace Prism.iOS.UI.Controls
             {
                 if (value != background)
                 {
-                    (background as ImageBrush).ClearImageHandler(OnBackgroundImageLoaded);
+                    (background as ImageBrush).ClearImageHandler(OnBackgroundImageChanged);
 
                     background = value;
-                    BackgroundColor = TintColor = background.GetColor(Bounds.Width, Bounds.Height, OnBackgroundImageLoaded);
+                    BackgroundColor = TintColor = background.GetColor(Bounds.Width, Bounds.Height, OnBackgroundImageChanged);
                     OnPropertyChanged(Control.BackgroundProperty);
                 }
             }
@@ -140,10 +140,10 @@ namespace Prism.iOS.UI.Controls
             {
                 if (value != borderBrush)
                 {
-                    (borderBrush as ImageBrush).ClearImageHandler(OnBorderImageLoaded);
+                    (borderBrush as ImageBrush).ClearImageHandler(OnBorderImageChanged);
 
                     borderBrush = value;
-                    Layer.BorderColor = borderBrush.GetColor(Bounds.Width, Bounds.Height, OnBorderImageLoaded)?.CGColor ?? UIColor.Black.CGColor;
+                    Layer.BorderColor = borderBrush.GetColor(Bounds.Width, Bounds.Height, OnBorderImageChanged)?.CGColor ?? UIColor.Black.CGColor;
                     OnPropertyChanged(Control.BorderBrushProperty);
                 }
             }
@@ -235,10 +235,10 @@ namespace Prism.iOS.UI.Controls
             {
                 if (value != foreground)
                 {
-                    (foreground as ImageBrush).ClearImageHandler(OnForegroundImageLoaded);
+                    (foreground as ImageBrush).ClearImageHandler(OnForegroundImageChanged);
 
                     foreground = value;
-                    OnTintColor = foreground.GetColor(Bounds.Width, Bounds.Height, OnForegroundImageLoaded);
+                    OnTintColor = foreground.GetColor(Bounds.Width, Bounds.Height, OnForegroundImageChanged);
                     OnPropertyChanged(Control.ForegroundProperty);
                 }
             }
@@ -356,7 +356,7 @@ namespace Prism.iOS.UI.Controls
             {
                 if (value != thumbOffBrush)
                 {
-                    (thumbOffBrush as ImageBrush).ClearImageHandler(OnThumbOffImageLoaded);
+                    (thumbOffBrush as ImageBrush).ClearImageHandler(OnThumbOffImageChanged);
 
                     thumbOffBrush = value;
                     if (!On)
@@ -380,7 +380,7 @@ namespace Prism.iOS.UI.Controls
             {
                 if (value != thumbOnBrush)
                 {
-                    (thumbOnBrush as ImageBrush).ClearImageHandler(OnThumbOnImageLoaded);
+                    (thumbOnBrush as ImageBrush).ClearImageHandler(OnThumbOnImageChanged);
 
                     thumbOnBrush = value;
                     if (On)
@@ -657,22 +657,22 @@ namespace Prism.iOS.UI.Controls
             PropertyChanged(this, new FrameworkPropertyChangedEventArgs(pd));
         }
 
-        private void OnBackgroundImageLoaded(object sender, EventArgs e)
+        private void OnBackgroundImageChanged(object sender, EventArgs e)
         {
             BackgroundColor = TintColor = background.GetColor(Bounds.Width, Bounds.Height, null);
         }
 
-        private void OnBorderImageLoaded(object sender, EventArgs e)
+        private void OnBorderImageChanged(object sender, EventArgs e)
         {
             Layer.BorderColor = borderBrush.GetColor(Bounds.Width, Bounds.Height, null)?.CGColor ?? UIColor.Black.CGColor;
         }
 
-        private void OnForegroundImageLoaded(object sender, EventArgs e)
+        private void OnForegroundImageChanged(object sender, EventArgs e)
         {
             OnTintColor = foreground.GetColor(Bounds.Width, Bounds.Height, null);
         }
 
-        private void OnThumbOffImageLoaded(object sender, EventArgs e)
+        private void OnThumbOffImageChanged(object sender, EventArgs e)
         {
             if (!On)
             {
@@ -680,7 +680,7 @@ namespace Prism.iOS.UI.Controls
             }
         }
 
-        private void OnThumbOnImageLoaded(object sender, EventArgs e)
+        private void OnThumbOnImageChanged(object sender, EventArgs e)
         {
             if (On)
             {

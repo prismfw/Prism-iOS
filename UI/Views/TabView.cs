@@ -92,10 +92,10 @@ namespace Prism.iOS.UI
             {
                 if (value != background)
                 {
-                    (background as ImageBrush).ClearImageHandler(OnBackgroundImageLoaded);
+                    (background as ImageBrush).ClearImageHandler(OnBackgroundImageChanged);
 
                     background = value;
-                    TabBar.BarTintColor = background.GetColor(TabBar.Bounds.Width, TabBar.Bounds.Height, OnBackgroundImageLoaded);
+                    TabBar.BarTintColor = background.GetColor(TabBar.Bounds.Width, TabBar.Bounds.Height, OnBackgroundImageChanged);
                     OnPropertyChanged(Prism.UI.TabView.BackgroundProperty);
                 }
             }
@@ -120,10 +120,10 @@ namespace Prism.iOS.UI
             {
                 if (value != foreground)
                 {
-                    (foreground as ImageBrush).ClearImageHandler(OnForegroundImageLoaded);
+                    (foreground as ImageBrush).ClearImageHandler(OnForegroundImageChanged);
 
                     foreground = value;
-                    TabBar.TintColor = foreground.GetColor(TabBar.Bounds.Width, TabBar.Bounds.Height, OnForegroundImageLoaded);
+                    TabBar.TintColor = foreground.GetColor(TabBar.Bounds.Width, TabBar.Bounds.Height, OnForegroundImageChanged);
                     
                     if (TabBar.Items != null)
                     {
@@ -468,12 +468,12 @@ namespace Prism.iOS.UI
             PropertyChanged(this, new FrameworkPropertyChangedEventArgs(pd));
         }
 
-        private void OnBackgroundImageLoaded(object sender, EventArgs e)
+        private void OnBackgroundImageChanged(object sender, EventArgs e)
         {
             TabBar.BarTintColor = background.GetColor(TabBar.Bounds.Width, TabBar.Bounds.Height, null);
         }
 
-        private void OnForegroundImageLoaded(object sender, EventArgs e)
+        private void OnForegroundImageChanged(object sender, EventArgs e)
         {
             TabBar.TintColor = foreground.GetColor(TabBar.Bounds.Width, TabBar.Bounds.Height, null);
             

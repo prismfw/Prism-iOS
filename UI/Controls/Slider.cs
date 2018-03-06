@@ -120,7 +120,7 @@ namespace Prism.iOS.UI.Controls
             {
                 if (value != background)
                 {
-                    (background as ImageBrush).ClearImageHandler(OnBackgroundImageLoaded);
+                    (background as ImageBrush).ClearImageHandler(OnBackgroundImageChanged);
 
                     background = value;
 
@@ -128,7 +128,7 @@ namespace Prism.iOS.UI.Controls
                     if (imageBrush != null)
                     {
                         MaximumTrackTintColor = null;
-                        SetMaxTrackImage(imageBrush.BeginLoadingImage(OnBackgroundImageLoaded), UIControlState.Normal);
+                        SetMaxTrackImage(imageBrush.BeginLoadingImage(OnBackgroundImageChanged), UIControlState.Normal);
                     }
                     else
                     {
@@ -152,10 +152,10 @@ namespace Prism.iOS.UI.Controls
             {
                 if (value != borderBrush)
                 {
-                    (borderBrush as ImageBrush).ClearImageHandler(OnBorderImageLoaded);
+                    (borderBrush as ImageBrush).ClearImageHandler(OnBorderImageChanged);
 
                     borderBrush = value;
-                    Layer.BorderColor = borderBrush.GetColor(Bounds.Width, Bounds.Height, OnBorderImageLoaded)?.CGColor ?? UIColor.Black.CGColor;
+                    Layer.BorderColor = borderBrush.GetColor(Bounds.Width, Bounds.Height, OnBorderImageChanged)?.CGColor ?? UIColor.Black.CGColor;
                     OnPropertyChanged(Control.BorderBrushProperty);
                 }
             }
@@ -247,7 +247,7 @@ namespace Prism.iOS.UI.Controls
             {
                 if (value != foreground)
                 {
-                    (foreground as ImageBrush).ClearImageHandler(OnForegroundImageLoaded);
+                    (foreground as ImageBrush).ClearImageHandler(OnForegroundImageChanged);
 
                     foreground = value;
 
@@ -255,7 +255,7 @@ namespace Prism.iOS.UI.Controls
                     if (imageBrush != null)
                     {
                         MinimumTrackTintColor = null;
-                        SetMinTrackImage(imageBrush.BeginLoadingImage(OnForegroundImageLoaded), UIControlState.Normal);
+                        SetMinTrackImage(imageBrush.BeginLoadingImage(OnForegroundImageChanged), UIControlState.Normal);
                     }
                     else
                     {
@@ -456,7 +456,7 @@ namespace Prism.iOS.UI.Controls
             {
                 if (value != thumbBrush)
                 {
-                    (thumbBrush as ImageBrush).ClearImageHandler(OnThumbImageLoaded);
+                    (thumbBrush as ImageBrush).ClearImageHandler(OnThumbImageChanged);
 
                     thumbBrush = value;
 
@@ -464,7 +464,7 @@ namespace Prism.iOS.UI.Controls
                     if (imageBrush != null)
                     {
                         ThumbTintColor = null;
-                        SetThumbImage(imageBrush.BeginLoadingImage(OnThumbImageLoaded), UIControlState.Normal);
+                        SetThumbImage(imageBrush.BeginLoadingImage(OnThumbImageChanged), UIControlState.Normal);
                     }
                     else
                     {
@@ -749,22 +749,22 @@ namespace Prism.iOS.UI.Controls
             PropertyChanged(this, new FrameworkPropertyChangedEventArgs(pd));
         }
 
-        private void OnBackgroundImageLoaded(object sender, EventArgs e)
+        private void OnBackgroundImageChanged(object sender, EventArgs e)
         {
             SetMaxTrackImage((sender as INativeImageSource).GetImageSource(), UIControlState.Normal);
         }
 
-        private void OnBorderImageLoaded(object sender, EventArgs e)
+        private void OnBorderImageChanged(object sender, EventArgs e)
         {
             Layer.BorderColor = borderBrush.GetColor(Bounds.Width, Bounds.Height, null)?.CGColor ?? UIColor.Black.CGColor;
         }
 
-        private void OnForegroundImageLoaded(object sender, EventArgs e)
+        private void OnForegroundImageChanged(object sender, EventArgs e)
         {
             SetMinTrackImage((sender as INativeImageSource).GetImageSource(), UIControlState.Normal);
         }
 
-        private void OnThumbImageLoaded(object sender, EventArgs e)
+        private void OnThumbImageChanged(object sender, EventArgs e)
         {
             SetThumbImage((sender as INativeImageSource).GetImageSource(), UIControlState.Normal);
         }

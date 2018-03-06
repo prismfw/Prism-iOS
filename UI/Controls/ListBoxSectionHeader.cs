@@ -105,7 +105,7 @@ namespace Prism.iOS.UI.Controls
             {
                 if (value != background)
                 {
-                    (background as ImageBrush).ClearImageHandler(OnBackgroundImageLoaded);
+                    (background as ImageBrush).ClearImageHandler(OnBackgroundImageChanged);
 
                     background = value;
 
@@ -113,7 +113,7 @@ namespace Prism.iOS.UI.Controls
                     {
                         BackgroundView = new UIView();
                     }
-                    BackgroundView.BackgroundColor = value.GetColor(Bounds.Width, Bounds.Height, OnBackgroundImageLoaded) ?? UIColor.GroupTableViewBackgroundColor;
+                    BackgroundView.BackgroundColor = value.GetColor(Bounds.Width, Bounds.Height, OnBackgroundImageChanged) ?? UIColor.GroupTableViewBackgroundColor;
 
                     OnPropertyChanged(Prism.UI.Controls.ListBoxSectionHeader.BackgroundProperty);
                 }
@@ -429,7 +429,7 @@ namespace Prism.iOS.UI.Controls
             PropertyChanged(this, new FrameworkPropertyChangedEventArgs(pd));
         }
 
-        private void OnBackgroundImageLoaded(object sender, EventArgs e)
+        private void OnBackgroundImageChanged(object sender, EventArgs e)
         {
             if (BackgroundView != null)
             {

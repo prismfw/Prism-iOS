@@ -147,10 +147,10 @@ namespace Prism.iOS.UI.Controls
             {
                 if (value != foreground)
                 {
-                    (foreground as ImageBrush).ClearImageHandler(OnForegroundImageLoaded);
+                    (foreground as ImageBrush).ClearImageHandler(OnForegroundImageChanged);
 
                     foreground = value;
-                    TextColor = foreground.GetColor(base.Bounds.Width, foreground is ImageBrush ? base.Bounds.Height : base.Font.LineHeight, OnForegroundImageLoaded) ?? UIColor.Black;
+                    TextColor = foreground.GetColor(base.Bounds.Width, foreground is ImageBrush ? base.Bounds.Height : base.Font.LineHeight, OnForegroundImageChanged) ?? UIColor.Black;
                     OnPropertyChanged(Prism.UI.Controls.Label.ForegroundProperty);
                 }
             }
@@ -180,10 +180,10 @@ namespace Prism.iOS.UI.Controls
             {
                 if (value != highlightBrush)
                 {
-                    (highlightBrush as ImageBrush).ClearImageHandler(OnHighlightBrushImageLoaded);
+                    (highlightBrush as ImageBrush).ClearImageHandler(OnHighlightBrushImageChanged);
 
                     highlightBrush = value;
-                    HighlightedTextColor = highlightBrush.GetColor(base.Bounds.Width, highlightBrush is ImageBrush ? base.Bounds.Height : base.Font.LineHeight, OnHighlightBrushImageLoaded);
+                    HighlightedTextColor = highlightBrush.GetColor(base.Bounds.Width, highlightBrush is ImageBrush ? base.Bounds.Height : base.Font.LineHeight, OnHighlightBrushImageChanged);
                     OnPropertyChanged(Prism.UI.Controls.Label.HighlightBrushProperty);
                 }
             }
@@ -491,12 +491,12 @@ namespace Prism.iOS.UI.Controls
             PropertyChanged(this, new FrameworkPropertyChangedEventArgs(pd));
         }
 
-        private void OnForegroundImageLoaded(object sender, EventArgs e)
+        private void OnForegroundImageChanged(object sender, EventArgs e)
         {
             TextColor = foreground.GetColor(base.Bounds.Width, foreground is ImageBrush ? base.Bounds.Height : base.Font.LineHeight, null) ?? UIColor.Black;
         }
 
-        private void OnHighlightBrushImageLoaded(object sender, EventArgs e)
+        private void OnHighlightBrushImageChanged(object sender, EventArgs e)
         {
             HighlightedTextColor = highlightBrush.GetColor(base.Bounds.Width, highlightBrush is ImageBrush ? base.Bounds.Height : base.Font.LineHeight, null);
         }

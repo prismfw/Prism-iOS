@@ -192,7 +192,7 @@ namespace Prism.iOS.UI.Controls
             {
                 if (value != foreground)
                 {
-                    (foreground as ImageBrush).ClearImageHandler(OnForegroundImageLoaded);
+                    (foreground as ImageBrush).ClearImageHandler(OnForegroundImageChanged);
 
                     foreground = value;
 
@@ -200,7 +200,7 @@ namespace Prism.iOS.UI.Controls
                     SetTitleTextAttributes(new UITextAttributes()
                     {
                         Font = attributes.Font,
-                        TextColor = foreground.GetColor(View?.Frame.Width ?? 1, attributes.Font.LineHeight, OnForegroundImageLoaded) ?? UIColor.Gray,
+                        TextColor = foreground.GetColor(View?.Frame.Width ?? 1, attributes.Font.LineHeight, OnForegroundImageChanged) ?? UIColor.Gray,
                         TextShadowColor = attributes.TextShadowColor,
                         TextShadowOffset = attributes.TextShadowOffset
                     }, UIControlState.Normal);
@@ -226,10 +226,10 @@ namespace Prism.iOS.UI.Controls
             {
                 if (value != image)
                 {
-                    image.ClearImageHandler(OnImageLoaded);
+                    image.ClearImageHandler(OnImageChanged);
 
                     image = value;
-                    base.Image = image.BeginLoadingImage(OnImageLoaded);
+                    base.Image = image.BeginLoadingImage(OnImageChanged);
                     OnPropertyChanged(Prism.UI.Controls.TabItem.ImageProperty);
                 }
             }
@@ -402,7 +402,7 @@ namespace Prism.iOS.UI.Controls
             PropertyChanged(this, new FrameworkPropertyChangedEventArgs(pd));
         }
 
-        private void OnForegroundImageLoaded(object sender, EventArgs e)
+        private void OnForegroundImageChanged(object sender, EventArgs e)
         {
             var font = GetTitleTextAttributes(UIControlState.Normal).Font;
             SetTitleTextAttributes(new UITextAttributes()
@@ -412,7 +412,7 @@ namespace Prism.iOS.UI.Controls
             }, UIControlState.Normal);
         }
 
-        private void OnImageLoaded(object sender, EventArgs e)
+        private void OnImageChanged(object sender, EventArgs e)
         {
             base.Image = (sender as INativeImageSource).GetImageSource();
         }

@@ -114,10 +114,10 @@ namespace Prism.iOS.UI.Controls
             {
                 if (value != foreground)
                 {
-                    (foreground as ImageBrush).ClearImageHandler(OnForegroundImageLoaded);
+                    (foreground as ImageBrush).ClearImageHandler(OnForegroundImageChanged);
 
                     foreground = value;
-                    Color = foreground.GetColor(base.Bounds.Width, base.Bounds.Height, OnForegroundImageLoaded) ?? UIColor.Black;
+                    Color = foreground.GetColor(base.Bounds.Width, base.Bounds.Height, OnForegroundImageChanged) ?? UIColor.Black;
                     OnPropertyChanged(Prism.UI.Controls.ActivityIndicator.ForegroundProperty);
                 }
             }
@@ -411,7 +411,7 @@ namespace Prism.iOS.UI.Controls
             PropertyChanged(this, new FrameworkPropertyChangedEventArgs(pd));
         }
 
-        private void OnForegroundImageLoaded(object sender, EventArgs e)
+        private void OnForegroundImageChanged(object sender, EventArgs e)
         {
             Color = foreground.GetColor(base.Bounds.Width, base.Bounds.Height, null) ?? UIColor.Black;
         }

@@ -47,6 +47,11 @@ namespace Prism.iOS.UI.Media.Imaging
         public event EventHandler ImageLoaded;
 
         /// <summary>
+        /// Occurs when the underlying image data has changed.
+        /// </summary>
+        public event EventHandler SourceChanged;
+
+        /// <summary>
         /// Gets a value indicating whether the image has encountered an error during loading.
         /// </summary>
         public bool IsFaulted { get; private set; }
@@ -157,6 +162,8 @@ namespace Prism.iOS.UI.Media.Imaging
                             context.Post((obj) => OnImageFailed(null), null);
                             return;
                         }
+
+                        context.Post((obj) => SourceChanged?.Invoke(this, EventArgs.Empty), null);
                     }
 
                     if (!IsLoaded)

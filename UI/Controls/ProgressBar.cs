@@ -104,7 +104,7 @@ namespace Prism.iOS.UI.Controls
             {
                 if (value != background)
                 {
-                    (background as ImageBrush).ClearImageHandler(OnBackgroundImageLoaded);
+                    (background as ImageBrush).ClearImageHandler(OnBackgroundImageChanged);
 
                     background = value;
 
@@ -112,7 +112,7 @@ namespace Prism.iOS.UI.Controls
                     if (imageBrush != null)
                     {
                         TrackTintColor = null;
-                        TrackImage = imageBrush.BeginLoadingImage(OnBackgroundImageLoaded);
+                        TrackImage = imageBrush.BeginLoadingImage(OnBackgroundImageChanged);
                     }
                     else
                     {
@@ -136,7 +136,7 @@ namespace Prism.iOS.UI.Controls
             {
                 if (value != foreground)
                 {
-                    (foreground as ImageBrush).ClearImageHandler(OnForegroundImageLoaded);
+                    (foreground as ImageBrush).ClearImageHandler(OnForegroundImageChanged);
 
                     foreground = value;
 
@@ -144,7 +144,7 @@ namespace Prism.iOS.UI.Controls
                     if (imageBrush != null)
                     {
                         ProgressTintColor = null;
-                        ProgressImage = imageBrush.BeginLoadingImage(OnForegroundImageLoaded);
+                        ProgressImage = imageBrush.BeginLoadingImage(OnForegroundImageChanged);
                     }
                     else
                     {
@@ -433,12 +433,12 @@ namespace Prism.iOS.UI.Controls
             PropertyChanged(this, new FrameworkPropertyChangedEventArgs(pd));
         }
 
-        private void OnBackgroundImageLoaded(object sender, EventArgs e)
+        private void OnBackgroundImageChanged(object sender, EventArgs e)
         {
             TrackImage = (sender as INativeImageSource).GetImageSource();
         }
 
-        private void OnForegroundImageLoaded(object sender, EventArgs e)
+        private void OnForegroundImageChanged(object sender, EventArgs e)
         {
             ProgressImage = (sender as INativeImageSource).GetImageSource();
         }

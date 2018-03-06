@@ -25,6 +25,7 @@ using AVFoundation;
 using CoreGraphics;
 using Foundation;
 using Prism.Input;
+using Prism.iOS.UI.Media.Imaging;
 using Prism.Native;
 using Prism.Systems;
 using Prism.UI;
@@ -40,14 +41,13 @@ namespace Prism.iOS
     /// </summary>
     public static class iOSExtensions
     {
-        private static readonly WeakEventManager imageLoadedEventManager = new WeakEventManager("ImageLoaded", typeof(INativeBitmapImage));
+        private static readonly WeakEventManager imageChangedEventManager = new WeakEventManager("SourceChanged", typeof(IImageSource));
 
         /// <summary>
-        /// Checks the state of the image brush's image.  If the image is not loaded, the specified handler
-        /// is attached to the image's load event and loading is initiated.
+        /// Checks the state of the image brush's image.  If the image is not loaded, loading is initiated.
         /// </summary>
         /// <param name="brush">The brush.</param>
-        /// <param name="handler">The handler to attach to the ImageLoaded event of the brush's image if the image is not already loaded.</param>
+        /// <param name="handler">The handler to attach to the SourceChanged event of the brush's image.</param>
         /// <returns>If the image is already loaded, the UIImage instance; otherwise, <c>null</c>.</returns>
         public static UIImage BeginLoadingImage(this ImageBrush brush, EventHandler handler)
         {
@@ -55,11 +55,10 @@ namespace Prism.iOS
         }
 
         /// <summary>
-        /// Checks the state of the image.  If the image is not loaded, the specified handler
-        /// is attached to the image's load event and loading is initiated.
+        /// Checks the state of the image.  If the image is not loaded, loading is initiated.
         /// </summary>
         /// <param name="source">The source.</param>
-        /// <param name="handler">The handler to attach to the ImageLoaded event of the image if the image is not already loaded.</param>
+        /// <param name="handler">The handler to attach to the SourceChanged event of the image.</param>
         /// <returns>If the image is already loaded, the UIImage instance; otherwise, <c>null</c>.</returns>
         public static UIImage BeginLoadingImage(this INativeImageSource source, EventHandler handler)
         {
@@ -68,26 +67,20 @@ namespace Prism.iOS
                 return null;
             }
 
+            if (handler != null && source is IImageSource)
+            {
+                imageChangedEventManager.RemoveHandler(source, handler);
+                imageChangedEventManager.AddHandler(source, handler);
+            }
+
             var bitmapImage = source as INativeBitmapImage;
-            if (bitmapImage == null)
+            if (bitmapImage == null || bitmapImage.IsLoaded)
             {
                 return source.GetImageSource();
             }
-
-            if (handler != null)
-            {
-                imageLoadedEventManager.RemoveHandler(bitmapImage, handler);
-                imageLoadedEventManager.AddHandler(bitmapImage, handler);
-            }
-
-            if (bitmapImage.IsLoaded)
-            {
-                imageLoadedEventManager.RemoveHandler(bitmapImage, handler);
-                return bitmapImage.GetImageSource();
-            }
             else if (bitmapImage.IsFaulted)
             {
-                imageLoadedEventManager.RemoveHandler(bitmapImage, handler);
+                imageChangedEventManager.RemoveHandler(bitmapImage, handler);
             }
             else
             {
@@ -98,29 +91,29 @@ namespace Prism.iOS
         }
 
         /// <summary>
-        /// Removes the specified handler from the brush image's load event.
+        /// Removes the specified handler from the brush image's SourceChanged event.
         /// </summary>
         /// <param name="brush">The brush.</param>
         /// <param name="handler">The handler to be removed.</param>
         public static void ClearImageHandler(this ImageBrush brush, EventHandler handler)
         {
-            var image = ObjectRetriever.GetNativeObject(brush?.Image) as INativeImageSource;
+            var image = ObjectRetriever.GetNativeObject(brush?.Image) as IImageSource;
             if (image != null)
             {
-                imageLoadedEventManager.RemoveHandler(image, handler);
+                imageChangedEventManager.RemoveHandler(image, handler);
             }
         }
 
         /// <summary>
-        /// Removes the specified handler from the image's load event.
+        /// Removes the specified handler from the image's SourceChanged event.
         /// </summary>
         /// <param name="source">The source.</param>
         /// <param name="handler">The handler to be removed.</param>
         public static void ClearImageHandler(this INativeImageSource source, EventHandler handler)
         {
-            if (source != null)
+            if (source is IImageSource)
             {
-                imageLoadedEventManager.RemoveHandler(source, handler);
+                imageChangedEventManager.RemoveHandler(source, handler);
             }
         }
 

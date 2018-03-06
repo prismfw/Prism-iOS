@@ -142,14 +142,14 @@ namespace Prism.iOS.UI.Controls
             {
                 if (value != background)
                 {
-                    (background as ImageBrush).ClearImageHandler(OnBackgroundImageLoaded);
+                    (background as ImageBrush).ClearImageHandler(OnBackgroundImageChanged);
 
                     background = value;
 
                     var imageBrush = background as ImageBrush;
                     if (imageBrush != null)
                     {
-                        var image = imageBrush.BeginLoadingImage(OnBackgroundImageLoaded);
+                        var image = imageBrush.BeginLoadingImage(OnBackgroundImageChanged);
                         var tf = this.GetSubview<UITextField>();
                         if (tf != null)
                         {
@@ -182,7 +182,7 @@ namespace Prism.iOS.UI.Controls
                 if (value != borderBrush)
                 {
                     borderBrush = value;
-                    BarTintColor = borderBrush.GetColor(Bounds.Width, Bounds.Height, OnBorderImageLoaded);
+                    BarTintColor = borderBrush.GetColor(Bounds.Width, Bounds.Height, OnBorderImageChanged);
                     OnPropertyChanged(Control.BorderBrushProperty);
                 }
             }
@@ -278,14 +278,14 @@ namespace Prism.iOS.UI.Controls
             {
                 if (value != foreground)
                 {
-                    (foreground as ImageBrush).ClearImageHandler(OnForegroundImageLoaded);
+                    (foreground as ImageBrush).ClearImageHandler(OnForegroundImageChanged);
 
                     foreground = value;
 
                     var imageBrush = foreground as ImageBrush;
                     if (imageBrush != null)
                     {
-                        var image = imageBrush.BeginLoadingImage(OnForegroundImageLoaded);
+                        var image = imageBrush.BeginLoadingImage(OnForegroundImageChanged);
                         var tf = this.GetSubview<UITextField>();
                         if (tf != null)
                         {
@@ -695,7 +695,7 @@ namespace Prism.iOS.UI.Controls
             PropertyChanged(this, new FrameworkPropertyChangedEventArgs(pd));
         }
 
-        private void OnBackgroundImageLoaded(object sender, EventArgs e)
+        private void OnBackgroundImageChanged(object sender, EventArgs e)
         {
             var tf = this.GetSubview<UITextField>();
             if (tf != null)
@@ -704,12 +704,12 @@ namespace Prism.iOS.UI.Controls
             }
         }
 
-        private void OnBorderImageLoaded(object sender, EventArgs e)
+        private void OnBorderImageChanged(object sender, EventArgs e)
         {
             BarTintColor = borderBrush.GetColor(Bounds.Width, Bounds.Height, null);
         }
 
-        private void OnForegroundImageLoaded(object sender, EventArgs e)
+        private void OnForegroundImageChanged(object sender, EventArgs e)
         {
             var tf = this.GetSubview<UITextField>();
             if (tf != null)
